@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#endif
 /*
 $info$
 tags: ir|opts
@@ -752,4 +755,9 @@ fextl::unique_ptr<Pass> CreateDeadFlagCalculationEliminination() {
   return fextl::make_unique<DeadFlagCalculationEliminination>();
 }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<Pass> CreatePearDeadFlagCalculationEliminination() {
+  return FEXCore::Allocator::TryMakePearObject<DeadFlagCalculationEliminination>();
+}
+#endif
 } // namespace FEXCore::IR

@@ -7,13 +7,20 @@
 #include <FEXCore/Config/Config.h>
 #include <FEXCore/Debug/InternalThreadState.h>
 #include "InvalidationTracker.h"
+#include <FEXCore/Utils/PearSourceGuard.h>
 #include <windef.h>
 #include <winternl.h>
 
 namespace FEX::Windows {
-InvalidationTracker::InvalidationTracker(FEXCore::Context::Context& CTX, const std::unordered_map<DWORD, FEXCore::Core::InternalThreadState*>& Threads)
+InvalidationTracker::InvalidationTracker(FEXCore::Context::Context& CTX, const std::unordered_map<DWORD, FEXCore::Core::InternalThreadState*>& Threads,
+                                         uint64_t BootstrapGuestAddress, uint64_t BootstrapGuestSize)
   : CTX {CTX}
   , Threads {Threads} {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // ProcessInit owns this initial snapshot before any translated thread exists.
+  // There are no translated blocks to invalidate; do not invent a JIT writer.
+  PEAR_FEX_REQUIRE(Threads.empty(), "Initial interval snapshot requires no guest threads");
+#endif
   FEX_CONFIG_OPT(SMCChecks, SMCCHECKS);
   SMCDetectionDisabled = (SMCChecks == FEXCore::Config::CONFIG_SMC_NONE);
 
@@ -23,11 +30,18 @@ InvalidationTracker::InvalidationTracker(FEXCore::Context::Context& CTX, const s
   while (VirtualQuery(reinterpret_cast<LPCVOID>(Address), &Info, sizeof(Info))) {
     uint64_t BaseAddress = reinterpret_cast<uint64_t>(Info.BaseAddress);
     if (Info.State == MEM_COMMIT) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+      UpdateProtectionIntervals(BaseAddress, Info.RegionSize, Info.Protect, false);
+#else
       HandleMemoryProtectionNotification(BaseAddress, Info.RegionSize, Info.Protect);
+#endif
     }
 
     Address = BaseAddress + Info.RegionSize;
   }
+  // The return instruction is guest data kept NX in the native address space.
+  // Seed its logical guest permission as part of the same initial snapshot.
+  if (BootstrapGuestSize) UpdateProtectionIntervals(BootstrapGuestAddress, BootstrapGuestSize, PAGE_EXECUTE_READ, false);
 }
 
 static bool ProtHasExec(ULONG Prot) {
@@ -44,6 +58,10 @@ static bool ProtIsWritable(ULONG Prot) {
 }
 
 void InvalidationTracker::HandleMemoryProtectionNotification(uint64_t Address, uint64_t Size, ULONG Prot) {
+  UpdateProtectionIntervals(Address, Size, Prot, true);
+}
+
+void InvalidationTracker::UpdateProtectionIntervals(uint64_t Address, uint64_t Size, ULONG Prot, bool Invalidate) {
   const auto AlignedBase = Address & FEXCore::Utils::FEX_PAGE_MASK;
   const auto AlignedSize = (Address - AlignedBase + Size + FEXCore::Utils::FEX_PAGE_SIZE - 1) & FEXCore::Utils::FEX_PAGE_MASK;
 
@@ -78,7 +96,7 @@ void InvalidationTracker::HandleMemoryProtectionNotification(uint64_t Address, u
     return false;
   }();
 
-  if (NeedsInvalidate) {
+  if (NeedsInvalidate && Invalidate) {
     // IntervalsLock cannot be held during invalidation
     InvalidateIntervalInternal(AlignedBase, AlignedSize);
   }

@@ -5,13 +5,20 @@
 #include <memory>
 #include <new>
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+namespace FEXCore::Allocator { void FreePearMetadataOrHeap(void*); }
+#endif
 namespace fextl {
 template<class T>
 struct default_delete : public std::default_delete<T> {
   void operator()(T* ptr) const {
     if (ptr) {
       std::destroy_at(ptr);
+#ifdef PEAR_FEX_MEMORY_OWNER
+      FEXCore::Allocator::FreePearMetadataOrHeap(ptr);
+#else
       FEXCore::Allocator::aligned_free(ptr);
+#endif
     }
   }
 

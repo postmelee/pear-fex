@@ -10,6 +10,9 @@
 #include <FEXCore/fextl/list.h>
 #include <FEXCore/fextl/string.h>
 #include <FEXCore/fextl/unordered_map.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Config/PearConfigAllocator.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -127,11 +130,19 @@ FEX_DEFAULT_VISIBILITY const fextl::string& GetCacheDirectory();
 
 using LayerValue = std::variant< fextl::string, StringArrayType, uint8_t, int8_t, uint16_t, int16_t, uint32_t, int32_t, uint64_t, int64_t, bool >;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+using LayerOptions = fextl::unordered_map<ConfigOption, LayerValue,std::hash<ConfigOption>,std::equal_to<ConfigOption>,
+                                        Pear::Allocator<std::pair<const ConfigOption,LayerValue>>>;
+#else
 using LayerOptions = fextl::unordered_map<ConfigOption, LayerValue>;
+#endif
 
 class FEX_DEFAULT_VISIBILITY Layer {
 public:
   explicit Layer(const LayerType _Type);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  Layer(const LayerType _Type,Pear::Arena* Storage);
+#endif
   virtual ~Layer();
 
   virtual void Load() = 0;
@@ -214,6 +225,13 @@ protected:
   LayerOptions OptionMap;
 };
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+// Finite empty-source profile only: real MetaLayer, no loaded file/env layers.
+FEX_DEFAULT_VISIBILITY bool InitializePearEmpty(bool& Created);
+FEX_DEFAULT_VISIBILITY bool SealPearEmpty();
+FEX_DEFAULT_VISIBILITY bool ShutdownPearEmpty();
+FEX_DEFAULT_VISIBILITY size_t PearEmptyStorageBytes();
+#endif
 FEX_DEFAULT_VISIBILITY void Initialize();
 FEX_DEFAULT_VISIBILITY void Shutdown();
 

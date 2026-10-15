@@ -10,6 +10,8 @@
 #include <FEXCore/Utils/PrctlUtils.h>
 
 #include <cstdint>
+#include <FEXCore/Debug/InternalThreadState.h>
+#include "Interface/Core/ArchHelpers/Arm64Emitter.h"
 
 namespace FEXCore {
 namespace CPU {
@@ -338,6 +340,111 @@ namespace CPU {
     return nullptr;
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result CPUBackend::PreparePearFiniteCode() {
+    namespace M=FEXCore::Utils::PearFEXMemory;
+    auto Life=M::AcquireCurrentSourceLifetime();
+    if (!Life || Life.ActualThread()!=ThreadState || ThreadState->CPUBackend.get()!=this ||
+        !ThreadState->CurrentFrame || ThreadState->CurrentFrame->Thread!=ThreadState ||
+        ThreadState->CurrentFrame->State.InlineJITBlockHeader || !CurrentCodeBuffer ||
+        CurrentCodeBuffer->AllocatedSpaceUsed()) return {PEAR_FEX_UNAVAILABLE,0,0};
+    auto Owner=CurrentCodeBuffer;
+    auto Facts=Owner->GetPearSnapshot();
+    if (!Facts || Facts.Token.ec_role!=PEAR_FEX_ROLE_NATIVE || Facts.Token.expected_state!=PEAR_FEX_RESERVED_NONE)
+      return {PEAR_FEX_UNAVAILABLE,0,0};
+    const auto Before=Facts;
+    const auto Slot=Owner->AtomicAllocateBuffer(4096);
+    if (Slot.Owner!=Owner.get() || Slot.BufferAllocationOffset!=Owner->GetBufferBase())
+      return {PEAR_FEX_UNAVAILABLE,0,0};
+    M::WriteGuard Write{Facts,0,4096};
+    if (!Write) return Write.Status();
+    std::memset(Write.Data(),0,4096);
+    // MOV W0,42; RET is original native fixture code. LDAR below is decoded
+    // and patched as data only; this fixture never executes an unaligned load.
+    const uint32_t Leaf[]={0x52800540,0xd65f03c0};
+    std::memcpy(Write.Data(),Leaf,sizeof(Leaf));
+    std::array<uint32_t,13> Instructions;Instructions.fill(0xd503201f);
+    Instructions[1]=0xc8dffc20; // LDAR X0,[X1], matching upstream mask fields.
+    std::memcpy(Write.Data()+128,Instructions.data(),sizeof(Instructions));
+    const JITCodeHeader Header{192};
+    const JITCodeTail Tail{512,0x1000,4,1,sizeof(JITCodeTail),0,true,{0,0,0}};
+    std::memcpy(Write.Data()+64,&Header,sizeof(Header));
+    std::memcpy(Write.Data()+256,&Tail,sizeof(Tail));
+    // Zero encodes the upstream compact pair (host delta 4, guest delta 1).
+    Write.Data()[256+sizeof(Tail)]=0;
+    // Six original shapes cover jump/call erase, whole-map clear and range invalidation.
+    for (uint32_t I=0;I<6;++I) {
+      const size_t Marker=480+128*I,Thunk=512+128*I;
+      ARMEmitter::Emitter Caller{Write.Data()+Marker,12};
+      if (I&1) Caller.adr(TMP1,0xc); else Caller.nop();
+      Caller.nop();
+      if (I&1) Caller.bl(6); else Caller.b(6);
+      ARMEmitter::Emitter Stub{Write.Data()+Thunk,16};
+      Stub.b(2);Stub.br(TMP1);Stub.ldr(TMP1,8);Stub.blr(TMP1);
+      const FEXCore::Context::ExitFunctionLinkData Record{
+        ThreadState->CurrentFrame->Pointers.ExitFunctionLink,0x2000+4*I,-24};
+      std::memcpy(Write.Data()+Thunk+16,&Record,sizeof(Record));
+    }
+    constexpr uint32_t Inputs[]={0x08dffc00,0x38bfc000,0x089ffc00,0x19400000,0x19000000};
+    for (uint32_t I=0;I<40;++I) {
+      const uint32_t Kind=(I/4)%5,Width=I%4,Addr=I%29+1,Data=(I*3)%31;
+      std::array<uint32_t,13> Words;Words.fill(0xd503201f);
+      const uint32_t Immediate=Kind>=3 ? ((I&1) ? 0x1ff : 0xff)<<12 : 0;
+      Words[1]=Inputs[Kind]|(Width<<30)|(Addr<<5)|Data|Immediate;
+      std::memcpy(Write.Data()+1536+64*I,Words.data(),sizeof(Words));
+    }
+    const auto Published=Write.Publish();
+    if (!Published) {
+      const auto Aborted=Write.Abort();
+      if (!Owner->ComparePearUpdate(Before,Facts)) M::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY,0,0});
+      if (!Aborted) M::Retirement::PoisonSourceAdmission(Aborted);
+      return Published;
+    }
+    if (!Owner->ComparePearUpdate(Before,Facts)) return M::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY,0,0});
+    ThreadState->CurrentFrame->State.InlineJITBlockHeader=reinterpret_cast<uintptr_t>(Owner->GetBufferBase()+64);
+    return Published;
+  }
+  std::optional<CPUBackend::PearManagedWindow> CPUBackend::FindPearManagedWindow(uintptr_t PC) const {
+    const auto Match = [PC](const fextl::shared_ptr<CodeBuffer>& Buffer) -> std::optional<PearManagedWindow> {
+      if (!Buffer) return std::nullopt;
+      const auto Facts = Buffer->GetPearSnapshot();
+      const auto Begin = reinterpret_cast<uintptr_t>(Buffer->GetBufferBase());
+      const auto Size = Buffer->UsableSize();
+      if (!Facts || !Facts.Token.owner_pid || !Facts.Token.allocation_id || !Facts.Token.generation ||
+          !Facts.Token.write_epoch || Facts.Token.expected_state != PEAR_FEX_PUBLISHED_RX ||
+          Facts.Token.allocation_class != PEAR_FEX_CLASS_SHARED || Facts.Token.ec_role != PEAR_SOURCE_CODE_ROLE ||
+          Facts.Base != Buffer->GetBufferBase() || PC < Begin || PC-Begin >= Size || (PC & 3)) return std::nullopt;
+      return PearManagedWindow {Buffer, Facts, Begin, Size, static_cast<size_t>(PC-Begin)};
+    };
+    if (auto Window = Match(CurrentCodeBuffer)) return Window;
+    for (const auto& Buffer : SignalHandlerCodeBuffers) if (auto Window = Match(Buffer)) return Window;
+    return std::nullopt;
+  }
+  std::optional<CPUBackend::PearManagedWindow> CPUBackend::FindPearPublishedBarrierTarget() const {
+    if (!ThreadState || !ThreadState->CTX || !ThreadState->CurrentFrame || ThreadState->CurrentFrame->Thread!=ThreadState ||
+        ThreadState->CPUBackend.get()!=this || !CurrentCodeBuffer || CurrentCodeBuffer->UsableSize()<16) return std::nullopt;
+    return FindPearManagedWindow(reinterpret_cast<uintptr_t>(CurrentCodeBuffer->GetBufferBase()));
+  }
+  std::optional<FEXCore::Utils::PearFEXMemory::Links::ReservedBarrierTarget> CPUBackend::FindPearReservedBarrierTarget() const {
+    if (!ThreadState || !ThreadState->CTX || !ThreadState->CurrentFrame || ThreadState->CurrentFrame->Thread!=ThreadState ||
+        ThreadState->CPUBackend.get()!=this || !CurrentCodeBuffer) return std::nullopt;
+    const auto A=CurrentCodeBuffer->GetPearSnapshot();
+    if (!A || A.Base || !A.Token.owner_pid || !A.Token.allocation_id || !A.Token.generation || !A.Token.write_epoch ||
+        A.Token.expected_state!=PEAR_FEX_RESERVED_NONE || A.Token.allocation_class!=PEAR_FEX_CLASS_SHARED ||
+        A.Token.ec_role!=PEAR_SOURCE_CODE_ROLE || CurrentCodeBuffer->UsableSize()<16 || !CurrentCodeBuffer->GetBufferBase())
+      return std::nullopt;
+    return FEXCore::Utils::PearFEXMemory::Links::ReservedBarrierTarget{CurrentCodeBuffer,A,ThreadState};
+  }
+  std::optional<FEXCore::Utils::PearFEXMemory::RetainedManagedTarget> CPUBackend::FindPearRetainedTarget(uintptr_t PC) const {
+    const auto Window = FindPearManagedWindow(PC);
+    if (!Window || !ThreadState || !ThreadState->CurrentFrame || ThreadState->CurrentFrame->Thread != ThreadState)
+      return std::nullopt;
+    // Window.Owner was copied solely from CurrentCodeBuffer or this backend's
+    // preserved signal-buffer list; Window.Facts is the same member's snapshot.
+    return FEXCore::Utils::PearFEXMemory::RetainedManagedTarget {
+      Window->Owner, Window->Owner->GetPearTokenState(), Window->Facts};
+  }
+#endif
   bool CPUBackend::IsAddressInCodeBuffer(uintptr_t Address) const {
     const auto CheckCodeBuffer = [](const CodeBuffer& Buffer, uintptr_t Address) {
       const auto BufferPtr = reinterpret_cast<uintptr_t>(Buffer.GetBufferBase());

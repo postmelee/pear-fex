@@ -13,6 +13,10 @@ $end_info$
 #include <FEXCore/fextl/unordered_map.h>
 #include <FEXCore/fextl/vector.h>
 
+#include <array>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearFEXMemory.h>
+#endif
 #include <concepts>
 #include <utility>
 
@@ -43,6 +47,9 @@ public:
     AddDefaultPasses(CTX);
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static fextl::unique_ptr<PassManager> CreatePear(Context::ContextImpl*,FEXCore::Utils::PearFEXMemory::Result&);
+#endif
   // Executes all of the passes added to the manager.
   // If assertions are enabled, this will also run all validation passes.
   void Run(IREmitter* IREmit);
@@ -53,6 +60,9 @@ public:
 
   // Whether or not a pass with the given name is within the manager.
   bool HasPass(const fextl::string& Name) const {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    if (PearFinite) return Name=="RA" && PearRA;
+#endif
     return NameToPassMaping.contains(Name);
   }
 
@@ -63,6 +73,9 @@ public:
     return dynamic_cast<T*>(GetPass(Name));
   }
   Pass* GetPass(const fextl::string& Name) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    if (PearFinite) return Name=="RA" ? PearRA : nullptr;
+#endif
     const auto Iter = NameToPassMaping.find(Name);
     if (Iter == NameToPassMaping.end()) {
       return nullptr;
@@ -76,6 +89,15 @@ public:
 
 private:
   void AddDefaultPasses(Context::ContextImpl* ctx);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  struct PearEmptyTag {};
+  explicit PassManager(PearEmptyTag) : PearFinite {true} {}
+  // The selected non-dumping pipeline contains these same three upstream passes.
+  std::array<fextl::unique_ptr<Pass>,3> PearPasses {};
+  Pass* PearRA {};
+  size_t PearCount {};
+  bool PearFinite {};
+#endif
 
   using PassArrayType = fextl::vector<fextl::unique_ptr<Pass>>;
   PassArrayType::iterator InsertAt(PassArrayType::iterator pos, fextl::unique_ptr<Pass> Pass);

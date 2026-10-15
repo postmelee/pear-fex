@@ -1,3 +1,6 @@
+#ifdef PEAR_FEX_DARWIN
+#include "Common/DarwinConfigPolicy.h"
+#endif
 // SPDX-License-Identifier: MIT
 /*
 $info$
@@ -12,6 +15,11 @@ $end_info$
 #include <FEXCore/Core/X86Enums.h>
 #include <FEXCore/Core/SignalDelegator.h>
 #include <FEXCore/Core/Context.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearFEXMemory.h>
+#include <atomic>
+#include <mutex>
+#endif
 #include <FEXCore/Core/CoreState.h>
 #include <FEXCore/Core/DiskCacheFileMapper.h>
 #include <FEXCore/Debug/InternalThreadState.h>
@@ -120,11 +128,17 @@ struct FrontendThreadData {
 
   FrontendThreadData(FEXCore::Core::InternalThreadState* Thread) {
     CpuArea.SuspendDoorbell = reinterpret_cast<ULONG*>(&Thread->CurrentFrame->SuspendDoorbell);
+#ifndef PEAR_FEX_MEMORY_OWNER
     GetCpuArea() = &CpuArea;
+#endif
   }
 
   ~FrontendThreadData() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    if (GetCpuArea() == &CpuArea) GetCpuArea() = nullptr;
+#else
     GetCpuArea() = nullptr;
+#endif
   }
 };
 
@@ -137,7 +151,11 @@ namespace BridgeInstrs {
   void* UnixCall {};
 } // namespace BridgeInstrs
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+FEXCore::Context::PearContextOwner CTX;
+#else
 fextl::unique_ptr<FEXCore::Context::Context> CTX;
+#endif
 fextl::unique_ptr<FEX::DummyHandlers::DummySignalDelegator> SignalDelegator;
 fextl::unique_ptr<WowSyscallHandler> SyscallHandler;
 fextl::unique_ptr<FEX::Windows::StatAlloc> StatAllocHandler;
@@ -150,6 +168,77 @@ std::optional<FEX::Windows::ImageTracker> ImageTracker;
 std::mutex ThreadCreationMutex;
 // Map of TIDs to their FEX thread state, `ThreadCreationMutex` must be locked when accessing
 std::unordered_map<DWORD, FEXCore::Core::InternalThreadState*> Threads;
+
+#ifdef PEAR_FEX_MEMORY_OWNER
+namespace PearMemory = FEXCore::Utils::PearFEXMemory;
+std::atomic<bool> PearSourceReady {false};
+std::atomic<NTSTATUS> PearSourceStatus {STATUS_NOT_SUPPORTED};
+static_assert(std::atomic<NTSTATUS>::is_always_lock_free, "Raw refusal status must not acquire a hidden lock");
+// Actual bridge/source-construction results retain their native error domain.
+// These private records are not exports and do not assert runtime admission.
+std::mutex PearOutcomeMutex;
+PearMemory::Result PearPrimaryOutcome {};
+PearMemory::Result PearCleanupOutcome {};
+bool PearHasPrimaryOutcome {};
+bool PearHasCleanupOutcome {};
+void PearRecordPrimary(PearMemory::Result Outcome) {
+  std::scoped_lock Lock(PearOutcomeMutex);
+  if (!PearHasPrimaryOutcome) { PearPrimaryOutcome = Outcome; PearHasPrimaryOutcome = true; }
+}
+void PearRecordCleanup(PearMemory::Result Outcome) {
+  std::scoped_lock Lock(PearOutcomeMutex);
+  if (!PearHasCleanupOutcome || PearCleanupOutcome) {
+    PearCleanupOutcome = Outcome; PearHasCleanupOutcome = true;
+  }
+}
+NTSTATUS PearFailureStatus(const PearMemory::Result& Outcome) {
+  // Only a real signed NTSTATUS domain is forwarded as the source NTSTATUS.
+  // Other native domains stay intact in the private Result, not reinterpreted.
+  return Outcome.ErrorDomain == PEAR_FEX_ERROR_NTSTATUS && Outcome.ErrorCode ?
+    static_cast<NTSTATUS>(Outcome.ErrorCode) : STATUS_NOT_SUPPORTED;
+}
+// One bounded in-progress slot per actual TID prevents owner-wait reentry from
+// constructing an additional source ThreadState before final publication.
+DWORD PearPendingTIDs[64] {};
+static_assert(sizeof(PearPendingTIDs) == 256, "Bounded Module pending NX ledger");
+inline constexpr size_t PearModuleNXMetadataBytes = sizeof(PearPendingTIDs) +
+  sizeof(PearSourceReady) + sizeof(PearSourceStatus) + sizeof(PearOutcomeMutex) +
+  sizeof(PearPrimaryOutcome) + sizeof(PearCleanupOutcome) +
+  sizeof(PearHasPrimaryOutcome) + sizeof(PearHasCleanupOutcome);
+static_assert(PearModuleNXMetadataBytes <= 1024, "Module ledger enters aggregate NX accounting");
+class PearThreadPreparation {
+public:
+  PearThreadPreparation() : TID(GetCurrentThreadId()) {
+    std::scoped_lock Lock(ThreadCreationMutex);
+    if (!TID || Threads.contains(TID)) return;
+    DWORD* Empty {};
+    for (auto& Pending : PearPendingTIDs) {
+      if (Pending == TID) return;
+      if (!Pending && !Empty) Empty = &Pending;
+    }
+    if (!Empty) { Failure = STATUS_NO_MEMORY; return; }
+    *Empty = TID; Owned = true;
+  }
+  ~PearThreadPreparation() {
+    if (!Owned) return;
+    // A constructor/ordinary metadata exception preserves the original
+    // exception. It cannot leave mandatory followups treating setup as ready.
+    if (!Committed) PearSourceReady.store(false, std::memory_order_release);
+    std::scoped_lock Lock(ThreadCreationMutex);
+    for (auto& Pending : PearPendingTIDs) if (Pending == TID) { Pending = 0; break; }
+  }
+  void Commit() { Committed = true; }
+  explicit operator bool() const { return Owned; }
+  DWORD ID() const { return TID; }
+  NTSTATUS Status() const { return Failure; }
+private:
+  DWORD TID {};
+  NTSTATUS Failure {STATUS_NOT_SUPPORTED};
+  bool Owned {};
+  bool Committed {};
+};
+#endif
+
 
 decltype(__wine_unix_call_dispatcher) WineUnixCall;
 
@@ -498,13 +587,54 @@ public:
   }
 };
 
+
+#ifdef PEAR_FEX_MEMORY_OWNER
+static void PearCleanupPartialContext(NTSTATUS Status, const PearMemory::Result* Primary = nullptr) {
+  PearSourceReady.store(false, std::memory_order_release);
+  PearSourceStatus.store(Status, std::memory_order_release);
+  if (Primary) PearRecordPrimary(*Primary);
+  if (CTX) {
+    const auto ActualPrimary = PearMemory::GetOriginalAttachFailure(CTX.get());
+    if (ActualPrimary.Status != PEAR_FEX_UNAVAILABLE) PearRecordPrimary(ActualPrimary);
+    if (PearMemory::CleanupWasAttempted(CTX.get()))
+      PearRecordCleanup(PearMemory::GetCleanupOutcome(CTX.get()));
+    // Core verifies the actual matching bootstrap/native-idle while Context
+    // stays alive, detaches dispatcher/source buffers, drains retirement while
+    // registered, and observes UNREGISTER before source-bound release proof.
+    // Any refused/unknown step retains the actual Context and first failure.
+    PearMemory::Result ConstructionCleanup {};
+    const bool Cleaned = CTX->PreparePearConstructionCleanup(ConstructionCleanup);
+    PearRecordCleanup(ConstructionCleanup);
+    if (!Cleaned || !ConstructionCleanup || !PearMemory::SourceContextCanRelease(CTX.get())) return;
+  }
+  Context::HandlerConfig.reset();
+  CPUFeatures.reset(); ImageTracker.reset(); InvalidationTracker.reset();
+  CTX.reset();
+}
+#endif
+
 void BTCpuProcessInit() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (CTX || PearSourceReady.load(std::memory_order_acquire)) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+    return;
+  }
+#endif
+
   FEX::Windows::InitCRTProcess();
   FEX::Windows::SetupThreadHandlers();
   const auto ExecutablePath = FEX::Windows::GetExecutableFilePath();
   const auto ExecutableName = FEX::Windows::BaseName(ExecutablePath);
   FEX::Config::LoadConfig(fextl::string {ExecutableName}, _environ, FEX::ReadPortabilityInformation());
   FEXCore::Config::ReloadMetaLayer();
+#ifdef PEAR_FEX_DARWIN
+  if (!FEX::Windows::DarwinPolicy::Apply()) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+#endif
+    return;
+  }
+#endif
   FEX::Windows::Logging::Init();
 
   FEXCore::Config::Set(FEXCore::Config::CONFIG_INTERPRETER_INSTALLED, "0");
@@ -522,6 +652,13 @@ void BTCpuProcessInit() {
 
   FEX::Windows::Allocator::SetupHooks(NtDll);
   FEX::Windows::UnixLib::Init(NtDll);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  const auto OwnerInit = PearMemory::Init(NtDll, FEX::Windows::UnixLib::GetPID());
+  if (!OwnerInit) {
+    PearRecordPrimary(OwnerInit); PearSourceStatus.store(PearFailureStatus(OwnerInit), std::memory_order_release);
+    return;
+  }
+#endif
   if (FEX::Windows::UnixLib::Available()) {
     FEXCore::DiskCache::SetFileMapper(FEX::Windows::UnixLib::MapFile);
   }
@@ -529,12 +666,55 @@ void BTCpuProcessInit() {
   {
     auto HostFeatures =
       FEX::Windows::CPUFeatures::FetchHostFeatures(IsWine, FEXCore::HostFeatures::HostTypeEnum::Wow64, FEX::Windows::UnixLib::GetPID());
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PearMemory::Result Created;
+    CTX=FEXCore::Context::Context::CreatePearContext(HostFeatures,Created);
+    if (!Created) PearRecordPrimary(Created);
+#else
     CTX = FEXCore::Context::Context::CreateNewContext(HostFeatures);
+#endif
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!CTX) { PearCleanupPartialContext(STATUS_NO_MEMORY); return; }
+#endif
   CTX->SetSignalDelegator(SignalDelegator.get());
   CTX->SetSyscallHandler(SyscallHandler.get());
+#ifdef PEAR_FEX_MEMORY_OWNER
+  const auto Bootstrap = PearMemory::BindBootstrapContext(CTX.get());
+  if (!Bootstrap) {
+    const auto BootstrapStatus = PearFailureStatus(Bootstrap);
+    PearCleanupPartialContext(BootstrapStatus, &Bootstrap);
+    return;
+  }
+  const auto Registered = PearMemory::RegisterExecutor(PEAR_FEX_ROLE_NATIVE);
+  if (!Registered) {
+    const auto RegisterStatus = PearFailureStatus(Registered);
+    PearCleanupPartialContext(RegisterStatus, &Registered);
+    return;
+  }
+  // Actual Context bootstrap may publish only its source dispatcher. It cannot
+  // reserve a shared JIT class, enter managed code or fabricate a ThreadState.
+  PearMemory::Result CoreOutcome {};
+  bool CoreReady {};
+#if defined(__cpp_exceptions) || defined(__EXCEPTIONS)
+  try {
+#endif
+    CoreReady = CTX->InitPearCore(CoreOutcome);
+#if defined(__cpp_exceptions) || defined(__EXCEPTIONS)
+  } catch (...) {
+    PearSourceReady.store(false, std::memory_order_release);
+    throw; // Preserve the actual upstream construction exception.
+  }
+#endif
+  if (!CoreReady || !CoreOutcome) {
+    const auto CoreStatus = PearFailureStatus(CoreOutcome);
+    PearCleanupPartialContext(CoreStatus, &CoreOutcome);
+    return;
+  }
+#else
   CTX->InitCore();
+#endif
   Context::HandlerConfig.emplace(*CTX);
   InvalidationTracker.emplace(*CTX, Threads);
   ImageTracker.emplace(*CTX, false);
@@ -550,7 +730,17 @@ void BTCpuProcessInit() {
   // Allocate the syscall/unixcall trampolines in the lower 2GB of the address space
   SIZE_T Size = 4;
   void* Addr = nullptr;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Low guest INT2E bytes remain NX data. Actual low-address admission is a later gate.
+  const NTSTATUS GuestDataStatus = NtAllocateVirtualMemory(NtCurrentProcess(), &Addr,
+      (1U << 31) - 1, &Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+  if (GuestDataStatus || !Addr || Size < 4) {
+    PearCleanupPartialContext(GuestDataStatus ? GuestDataStatus : STATUS_NOT_SUPPORTED);
+    return;
+  }
+#else
   NtAllocateVirtualMemory(NtCurrentProcess(), &Addr, (1U << 31) - 1, &Size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+#endif
   InvalidationTracker->HandleMemoryProtectionNotification(reinterpret_cast<uint64_t>(Addr), Size, PAGE_EXECUTE);
   *reinterpret_cast<uint32_t*>(Addr) = 0x2ecd2ecd;
   BridgeInstrs::Syscall = Addr;
@@ -578,11 +768,107 @@ void BTCpuProcessInit() {
     LogMan::Msg::IFmt("[{}][{}] Sleeping for {} seconds", GetCurrentProcessId(), ExecutableName, StartupSleep());
     std::this_thread::sleep_for(std::chrono::seconds(StartupSleep()));
   }
+#ifdef PEAR_FEX_MEMORY_OWNER
+  PearSourceStatus.store(STATUS_SUCCESS, std::memory_order_release);
+  PearSourceReady.store(true, std::memory_order_release);
+#endif
 }
 
-void BTCpuProcessTerm(HANDLE Handle, BOOL After, ULONG Status) {}
+void BTCpuProcessTerm(HANDLE Handle, BOOL After, ULONG Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+}
 
 void BTCpuThreadInit() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+
+  if (!PearSourceReady.load(std::memory_order_acquire) || !CTX) {
+    PearSourceReady.store(false, std::memory_order_release); PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return;
+  }
+  PearThreadPreparation Preparation;
+  if (!Preparation) {
+    PearSourceReady.store(false, std::memory_order_release); PearSourceStatus.store(Preparation.Status(), std::memory_order_release); return;
+  }
+
+  static constexpr size_t DefaultWow64CS {4};
+  const auto TLS = GetTLS();
+  if (TLS.ThreadState() || GetCpuArea()) {
+    PearSourceReady.store(false, std::memory_order_release); PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return;
+  }
+  FEX::Windows::InitCRTThread();
+  PearMemory::Result ThreadOutcome {}, ThreadCleanup {};
+  bool ThreadCleanupAttempted {};
+  FEXCore::Core::InternalThreadState* Thread {};
+#if defined(__cpp_exceptions) || defined(__EXCEPTIONS)
+  try {
+#endif
+    Thread = CTX->CreatePearThread(nullptr, ThreadOutcome, &ThreadCleanup, &ThreadCleanupAttempted);
+#if defined(__cpp_exceptions) || defined(__EXCEPTIONS)
+  } catch (...) {
+    PearSourceReady.store(false, std::memory_order_release);
+    throw; // Keep the original exception and native result history unchanged.
+  }
+#endif
+  // Core binds/registers this actual state before InitializeCompiler and
+  // retains/quarantines any source object with unresolved owner registration.
+  if (!Thread || !ThreadOutcome) {
+    PearRecordPrimary(ThreadOutcome);
+    // An explicit cleanup failure may itself return UNAVAILABLE. Preserve the
+    // actual Core attempted flag even after a clean binding was released.
+    if (ThreadCleanupAttempted)
+      PearRecordCleanup(ThreadCleanup);
+    const auto ThreadStatus = PearFailureStatus(ThreadOutcome);
+    PearSourceReady.store(false, std::memory_order_release);
+    PearSourceStatus.store(ThreadStatus, std::memory_order_release);
+    return;
+  }
+
+  // Default segment setup.
+  auto Frame = Thread->CurrentFrame;
+  auto NewSegments = new FEXCore::Core::CPUState::gdt_segment[32]();
+
+  // Setup initial code-segment GDT
+  auto& GDT = NewSegments[DefaultWow64CS];
+  FEXCore::Core::CPUState::SetGDTBase(&GDT, 0);
+  FEXCore::Core::CPUState::SetGDTLimit(&GDT, 0xF'FFFFU);
+  GDT.L = 0; // L = Long Mode = 32-bit
+  GDT.D = 1; // D = Default Operand Size = 32-bit
+
+  Frame->State.segment_arrays[FEXCore::Core::CPUState::SEGMENT_ARRAY_INDEX_GDT] = &NewSegments[0];
+  // TODO: LDTs are currently unsupported, mirror them to GDT.
+  Frame->State.segment_arrays[FEXCore::Core::CPUState::SEGMENT_ARRAY_INDEX_LDT] = &NewSegments[0];
+
+  Frame->State.cs_idx = DefaultWow64CS << 3;
+  Frame->State.cs_cached = FEXCore::Core::CPUState::CalculateGDTBase(GDT);
+
+  FEX::Windows::CallRetStack::InitializeThread(Thread);
+
+
+
+  Thread->FrontendPtr = new FrontendThreadData(Thread);
+
+  bool Published {};
+  {
+    std::scoped_lock Lock(ThreadCreationMutex);
+    const auto TID = Preparation.ID();
+    if (!Threads.contains(TID) && !TLS.ThreadState() && !GetCpuArea()) {
+      Threads.emplace(TID, Thread);
+      if (StatAllocHandler) Thread->ThreadStats = StatAllocHandler->AllocateSlot(TID);
+      GetCpuArea() = &static_cast<FrontendThreadData*>(Thread->FrontendPtr)->CpuArea;
+      TLS.ThreadState() = Thread;
+      Published = true;
+    }
+  }
+  if (!Published) {
+    // The actual constructed state remains retained pending reviewed cleanup.
+    PearSourceReady.store(false, std::memory_order_release); PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return;
+  }
+  Preparation.Commit();
+#else
+
   static constexpr size_t DefaultWow64CS {4};
   std::scoped_lock Lock(ThreadCreationMutex);
   FEX::Windows::InitCRTThread();
@@ -618,9 +904,16 @@ void BTCpuThreadInit() {
   if (StatAllocHandler) {
     Thread->ThreadStats = StatAllocHandler->AllocateSlot(ThreadTID);
   }
+#endif
 }
 
 void BTCpuThreadTerm(HANDLE Thread, LONG ExitCode) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   if (!FEX::Windows::ValidateHandleAccess(Thread, THREAD_TERMINATE)) {
     return;
   }
@@ -672,18 +965,42 @@ void BTCpuThreadTerm(HANDLE Thread, LONG ExitCode) {
 }
 
 void* BTCpuGetBopCode() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || true) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return nullptr;
+  }
+#endif
+
   return BridgeInstrs::Syscall;
 }
 
 void* __wine_get_unix_opcode() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || true) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return nullptr;
+  }
+#endif
+
   return BridgeInstrs::UnixCall;
 }
 
 NTSTATUS BTCpuGetContext(HANDLE Thread, HANDLE Process, void* Unknown, WOW64_CONTEXT* Context) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || true) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return STATUS_NOT_SUPPORTED;
+  }
+#endif
+
   return RtlWow64GetThreadContext(Thread, Context);
 }
 
 NTSTATUS BTCpuSetContext(HANDLE Thread, HANDLE Process, void* Unknown, WOW64_CONTEXT* Context) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || true) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return STATUS_NOT_SUPPORTED;
+  }
+#endif
+
   return RtlWow64SetThreadContext(Thread, Context);
 }
 
@@ -708,6 +1025,12 @@ __attribute__((naked)) void BTCpuSimulate() {
 }
 
 extern "C" void BTCpuSimulateImpl(CONTEXT* entry_context) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   const auto TLS = GetTLS();
   TLS.EntryContext() = entry_context;
   TLS.CachedCallRetSp() = TLS.ThreadState()->CurrentFrame->State.callret_sp;
@@ -718,11 +1041,23 @@ extern "C" void BTCpuSimulateImpl(CONTEXT* entry_context) {
 }
 
 NTSTATUS BTCpuSuspendLocalThread(HANDLE Thread, ULONG* Count) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return STATUS_NOT_SUPPORTED;
+#endif
+
   return NtSuspendThread(Thread, Count);
 }
 
 // Returns true if exception dispatch should be halted and the execution context restored to Ptrs->Context
 bool BTCpuResetToConsistentStateImpl(EXCEPTION_POINTERS* Ptrs) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return false;
+#endif
+
   auto* Context = Ptrs->ContextRecord;
   auto* Exception = Ptrs->ExceptionRecord;
   auto Thread = GetTLS().ThreadState();
@@ -801,6 +1136,12 @@ bool BTCpuResetToConsistentStateImpl(EXCEPTION_POINTERS* Ptrs) {
 }
 
 NTSTATUS BTCpuResetToConsistentState(EXCEPTION_POINTERS* Ptrs) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return STATUS_NOT_SUPPORTED;
+#endif
+
   if (BTCpuResetToConsistentStateImpl(Ptrs)) {
     NtContinue(Ptrs->ContextRecord, FALSE);
   }
@@ -809,21 +1150,45 @@ NTSTATUS BTCpuResetToConsistentState(EXCEPTION_POINTERS* Ptrs) {
 }
 
 void BTCpuFlushInstructionCache2(const void* Address, SIZE_T Size) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   std::scoped_lock Lock(ThreadCreationMutex);
   InvalidationTracker->InvalidateAlignedInterval(reinterpret_cast<uint64_t>(Address), static_cast<uint64_t>(Size), false);
 }
 
 void BTCpuFlushInstructionCacheHeavy(const void* Address, SIZE_T Size) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   std::scoped_lock Lock(ThreadCreationMutex);
   InvalidationTracker->InvalidateAlignedInterval(reinterpret_cast<uint64_t>(Address), static_cast<uint64_t>(Size), false);
 }
 
 void BTCpuNotifyMemoryDirty(void* Address, SIZE_T Size) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   std::scoped_lock Lock(ThreadCreationMutex);
   InvalidationTracker->InvalidateAlignedInterval(reinterpret_cast<uint64_t>(Address), static_cast<uint64_t>(Size), false);
 }
 
 void BTCpuNotifyMemoryAlloc(void* Address, SIZE_T Size, ULONG Type, ULONG Prot, BOOL After, ULONG Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   if (!After) {
     ThreadCreationMutex.lock();
   } else {
@@ -836,6 +1201,12 @@ void BTCpuNotifyMemoryAlloc(void* Address, SIZE_T Size, ULONG Type, ULONG Prot, 
 }
 
 void BTCpuNotifyMemoryProtect(void* Address, SIZE_T Size, ULONG NewProt, BOOL After, ULONG Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   if (!After) {
     ThreadCreationMutex.lock();
   } else {
@@ -847,6 +1218,12 @@ void BTCpuNotifyMemoryProtect(void* Address, SIZE_T Size, ULONG NewProt, BOOL Af
 }
 
 void BTCpuNotifyMemoryFree(void* Address, SIZE_T Size, ULONG FreeType, BOOL After, ULONG Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   if (!After) {
     ThreadCreationMutex.lock();
   } else {
@@ -858,12 +1235,24 @@ void BTCpuNotifyMemoryFree(void* Address, SIZE_T Size, ULONG FreeType, BOOL Afte
 }
 
 NTSTATUS BTCpuNotifyMapViewOfSection(void* Unk1, void* Address, void* Unk2, SIZE_T Size, ULONG AllocType, ULONG Prot) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return STATUS_NOT_SUPPORTED;
+#endif
+
   std::scoped_lock Lock(ThreadCreationMutex);
   HandleImageMap(reinterpret_cast<uint64_t>(Address));
   return STATUS_SUCCESS;
 }
 
 void BTCpuNotifyUnmapViewOfSection(void* Address, BOOL After, ULONG Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   if (!After) {
     ThreadCreationMutex.lock();
     auto [Start, Size] = InvalidationTracker->InvalidateContainingSection(reinterpret_cast<uint64_t>(Address), true);
@@ -876,6 +1265,12 @@ void BTCpuNotifyUnmapViewOfSection(void* Address, BOOL After, ULONG Status) {
 }
 
 void BTCpuNotifyReadFile(HANDLE Handle, void* Address, SIZE_T Size, BOOL After, NTSTATUS Status) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   auto* ThreadState = GetTLS().ThreadState();
   if (!InvalidationTracker || !ThreadState) {
     return;
@@ -889,14 +1284,32 @@ void BTCpuNotifyReadFile(HANDLE Handle, void* Address, SIZE_T Size, BOOL After, 
 }
 
 void BTCpuNotifyProcessExecuteFlagsChange(ULONG Flags) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Delivered/source notification behavior is unqualified in this profile.
+  PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release);
+  return;
+#endif
+
   std::scoped_lock Lock(ThreadCreationMutex);
   InvalidationTracker->HandleProcessExecuteFlagsChange(Flags);
 }
 
 BOOLEAN WINAPI BTCpuIsProcessorFeaturePresent(UINT Feature) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || !CPUFeatures) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return FALSE;
+  }
+#endif
+
   return CPUFeatures->IsFeaturePresent(Feature) ? TRUE : FALSE;
 }
 
 void BTCpuUpdateProcessorInformation(SYSTEM_CPU_INFORMATION* Info) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!PearSourceReady.load(std::memory_order_acquire) || !CPUFeatures || !Info) {
+    PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return;
+  }
+#endif
+
   CPUFeatures->UpdateInformation(Info);
 }

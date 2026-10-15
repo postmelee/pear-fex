@@ -8,22 +8,40 @@ $end_info$
 #pragma once
 
 #include <FEXCore/fextl/memory.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearSourceGuard.h>
+#include <FEXCore/Utils/PearFEXMemory.h>
+#include <FEXCore/Utils/PearFEXRetirement.h>
+#endif
 #include <FEXCore/Utils/MathUtils.h>
 #include <FEXCore/Utils/SignalScopeGuards.h>
 #include <FEXCore/Utils/TypeDefines.h>
 
 #include <cstddef>
 #include <cstdint>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <mutex>
+#endif
 
 namespace FEXCore {
 struct GuestToHostMap;
 }
 
 namespace FEXCore::CPU {
+#ifdef PEAR_FEX_MEMORY_OWNER
+#ifdef ARCHITECTURE_arm64ec
+inline constexpr uint32_t PEAR_SOURCE_CODE_ROLE = PEAR_FEX_ROLE_ARM64EC;
+#else
+inline constexpr uint32_t PEAR_SOURCE_CODE_ROLE = PEAR_FEX_ROLE_NATIVE;
+#endif
+#endif
 struct CodeBuffer {
   fextl::unique_ptr<GuestToHostMap> LookupCache;
 
   CodeBuffer(size_t Size, bool ShouldBeNamed);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static fextl::shared_ptr<CodeBuffer> CreatePear(size_t, bool, FEXCore::Utils::PearFEXMemory::Result&);
+#endif
   CodeBuffer(const CodeBuffer&) = delete;
   CodeBuffer& operator=(const CodeBuffer&) = delete;
   CodeBuffer(CodeBuffer&& oth) = delete;
@@ -36,13 +54,27 @@ struct CodeBuffer {
   struct CodeBufferAllocation {
     const uint8_t* BufferBase;
     uint8_t* BufferAllocationOffset;
+#ifdef PEAR_FEX_MEMORY_OWNER
+    CodeBuffer* Owner;
+#endif
   };
 
   CodeBufferAllocation AtomicAllocateBuffer(size_t Size) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    // An exhausted or overflowing request never wraps a metadata pointer.
+    if (!Size || Size > UsableSize() || Size > SIZE_MAX - 15) return {};
+#endif
     Size = FEXCore::AlignUp(Size, 16);
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(reinterpret_cast<uintptr_t>(CodeBufferOffset.load()) % 16 == 0, "Buffer needs to always be 16B aligned!");
+#else
     LOGMAN_THROW_A_FMT(reinterpret_cast<uintptr_t>(CodeBufferOffset.load()) % 16 == 0, "Buffer needs to always be 16B aligned!");
+#endif
 
     auto ExpectedOffset = CodeBufferOffset.load(std::memory_order_relaxed);
+#ifdef PEAR_FEX_MEMORY_OWNER
+    if (ExpectedOffset > CodeBufferEnd || Size > static_cast<size_t>(CodeBufferEnd - ExpectedOffset)) return {};
+#endif
     auto DesiredOffset = ExpectedOffset + Size;
 
     if (DesiredOffset > CodeBufferEnd) {
@@ -51,6 +83,9 @@ struct CodeBuffer {
     }
 
     while (!CodeBufferOffset.compare_exchange_strong(ExpectedOffset, DesiredOffset)) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+      if (ExpectedOffset > CodeBufferEnd || Size > static_cast<size_t>(CodeBufferEnd - ExpectedOffset)) return {};
+#endif
       DesiredOffset = ExpectedOffset + Size;
 
       if (DesiredOffset > CodeBufferEnd) {
@@ -63,6 +98,9 @@ struct CodeBuffer {
     return {
       .BufferBase = Ptr,
       .BufferAllocationOffset = ExpectedOffset,
+#ifdef PEAR_FEX_MEMORY_OWNER
+      .Owner = this,
+#endif
     };
   }
 
@@ -91,9 +129,22 @@ struct CodeBuffer {
     return Ptr;
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Allocation GetPearSnapshot() const { return PearToken.Snapshot(); }
+  const FEXCore::Utils::PearFEXMemory::TokenState& GetPearTokenState() const { return PearToken; }
+  bool ComparePearUpdate(const FEXCore::Utils::PearFEXMemory::Allocation& Expected,
+                         const FEXCore::Utils::PearFEXMemory::Allocation& Next) {
+    return PearToken.CompareUpdate(Expected, Next);
+  }
+#endif
+
 private:
-  uint8_t* Ptr;
-  uint8_t* CodeBufferEnd;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result InitializePear();
+  FEXCore::Utils::PearFEXMemory::TokenState PearToken {};
+#endif
+  uint8_t* Ptr {};
+  uint8_t* CodeBufferEnd {};
   size_t AllocatedSize; // including guard page; see UsableSize()
 
   // Code buffer allocation information.
@@ -117,6 +168,12 @@ public:
   // Get the CodeBuffer that was most recently allocated.
   // This is the only CodeBuffer that data may be written to.
   fextl::shared_ptr<CodeBuffer> GetLatest();
+#ifdef PEAR_FEX_MEMORY_OWNER
+  fextl::shared_ptr<CodeBuffer> GetPearLatest(FEXCore::Utils::PearFEXMemory::Result&);
+  // Construction failure only, while its actual binding remains alive.
+  void DetachPearLatest();
+  bool HasPearLatest();
+#endif
 
   // Allocate a new CodeBuffer with geometric growth up to an internal maximum.
   // Subsequent calls to GetLatest will point to the returned buffer.
@@ -130,8 +187,16 @@ public:
 
 private:
   fextl::shared_ptr<CodeBuffer> Latest;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Holds only shared_ptr copies/exchanges. Never construct, wait, invoke
+  // callbacks or destroy an old owner generation while this mutex is held.
+  std::mutex PearLatestMutex;
+#endif
 
   fextl::shared_ptr<CodeBuffer> AllocateNew(size_t Size);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  fextl::shared_ptr<CodeBuffer> AllocatePearNew(size_t, FEXCore::Utils::PearFEXMemory::Result&);
+#endif
 
   bool NameJITBuffers {true};
 };

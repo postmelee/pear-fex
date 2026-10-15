@@ -13,13 +13,53 @@ $end_info$
 #include "Interface/IR/Passes/RegisterAllocationPass.h"
 
 #include <FEXCore/Config/Config.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#include <FEXCore/Utils/PearSourceGuard.h>
+#endif
 #include <FEXCore/Utils/LogManager.h>
 #include <FEXCore/Utils/Profiler.h>
 
 namespace FEXCore::IR {
 class IREmitter;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<PassManager> PassManager::CreatePear(Context::ContextImpl* CTX,FEXCore::Utils::PearFEXMemory::Result& Outcome) {
+  Outcome={PEAR_FEX_UNAVAILABLE,0,0};
+#if defined(ASSERTIONS_ENABLED) && ASSERTIONS_ENABLED
+  return {}; // Validation-pass insertion is not the selected finite pipeline.
+#else
+  void* Storage=FEXCore::Allocator::AllocatePearMetadataStorage(alignof(PassManager),sizeof(PassManager));
+  if (!Storage) return {};
+  fextl::unique_ptr<PassManager> Actual {::new (Storage) PassManager(PearEmptyTag {})};
+  if (Actual->PassManagerDumpIR()) return {};
+  auto Append=[&](fextl::unique_ptr<Pass> Next) {
+    if (!Next) return false;
+    PEAR_FEX_REQUIRE(Actual->PearCount<Actual->PearPasses.size(),"Finite pass count");
+    Next->RegisterPassManager(Actual.get());
+    Actual->PearPasses[Actual->PearCount++]=std::move(Next);
+    return true;
+  };
+  FEX_CONFIG_OPT(DisablePasses,O0);
+  if (!DisablePasses()) {
+    if (!Append(CreatePearX87StackOptimizationPass(CTX->HostFeatures,CTX->Config.Is64BitMode ? IR::OpSize::i64Bit : IR::OpSize::i32Bit))) return {};
+    if (!Append(CreatePearDeadFlagCalculationEliminination())) return {};
+  }
+  auto RA=CreatePearRegisterAllocationPass(&CTX->CPUID);
+  if (!RA) return {};
+  Actual->PearRA=RA.get();
+  if (!Append(std::move(RA))) return {};
+  Outcome={PEAR_FEX_OK,0,0};return Actual;
+#endif
+}
+#endif
 void PassManager::Finalize() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (PearFinite) {
+    PEAR_FEX_REQUIRE(!PassManagerDumpIR(),"Finite pipeline does not insert dumping passes");
+    return;
+  }
+#endif
   if (!PassManagerDumpIR()) {
     // Not configured to dump any IR, just return.
     return;
@@ -85,6 +125,9 @@ void PassManager::AddDefaultPasses(Context::ContextImpl* ctx) {
 }
 
 Pass* PassManager::InsertPass(fextl::unique_ptr<Pass> Pass, const fextl::string& Name) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  PEAR_FEX_REQUIRE(!PearFinite,"Finite pass pipeline cannot accept dynamic insertion");
+#endif
   auto* PassPtr = InsertAt(Passes.end(), std::move(Pass))->get();
   AttemptNameMapping(Name, PassPtr);
   return PassPtr;
@@ -104,6 +147,12 @@ void PassManager::InsertValidationPass(fextl::unique_ptr<Pass> Pass, const fextl
 #endif
 
 void PassManager::Run(IREmitter* IREmit) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (PearFinite) {
+    for (size_t I=0;I<PearCount;++I) PearPasses[I]->Run(IREmit);
+    return;
+  }
+#endif
   FEXCORE_PROFILE_SCOPED("PassManager::Run");
 
   for (const auto& Pass : Passes) {

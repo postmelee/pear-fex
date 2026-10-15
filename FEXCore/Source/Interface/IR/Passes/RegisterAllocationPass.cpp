@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#endif
 /*
 $info$
 tags: ir|opts
@@ -792,4 +795,9 @@ void ConstrainedRAPass::Run(IREmitter* IREmit_) {
 fextl::unique_ptr<IR::Pass> CreateRegisterAllocationPass(const CPUIDEmu* CPUID) {
   return fextl::make_unique<ConstrainedRAPass>(CPUID);
 }
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<Pass> CreatePearRegisterAllocationPass(const CPUIDEmu* CPUID) {
+  return FEXCore::Allocator::TryMakePearObject<ConstrainedRAPass>(CPUID);
+}
+#endif
 } // namespace FEXCore::IR

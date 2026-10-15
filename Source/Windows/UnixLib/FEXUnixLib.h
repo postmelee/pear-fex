@@ -16,7 +16,7 @@ enum class FEXUnixLibFunctions : uint32_t {
 };
 
 // Structures for passing arguments to unix library handlers.
-// This must match between wow64, arm64ec, and Linux.
+// This must match between wow64, arm64ec, Linux and Darwin.
 struct FEXUnixLib_SetHardwareTSOControlArgs {
   bool Enable;
 };

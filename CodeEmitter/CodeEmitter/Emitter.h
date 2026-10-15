@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FEXCore/Utils/PearSourceGuard.h>
 #include <FEXCore/Utils/CompilerDefs.h>
 #include <FEXCore/Utils/EnumUtils.h>
 #include <FEXCore/Utils/LogManager.h>
@@ -549,7 +550,28 @@ struct ForwardLabel {
   // The first element is stored separately to avoid allocations for simple cases
   Reference FirstInst;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Direct owner emission stays allocation-free. Private NX JIT staging may
+  // reuse the upstream vector for additional references before publication.
+  struct References {
+    Reference Items[16] {};
+    size_t Count {};
+    bool Overflow {};
+    fextl::vector<Reference> Extra;
+    void push_back(const Reference& R, bool PrivateNX = false) {
+      if (Count==16) {
+        if (PrivateNX) Extra.push_back(R);
+        else Overflow=true;
+        return;
+      }
+      Items[Count++]=R;
+    }
+    Reference* begin() { return Items; }
+    Reference* end() { return Items+Count; }
+  } Insts;
+#else
   fextl::vector<Reference> Insts;
+#endif
 };
 
 /* This `BiDirectionalLabel` struct used for retaining a location for PC-Relative instructions.
@@ -641,6 +663,33 @@ constexpr bool IsImmAddSub(uint64_t imm) {
 class Emitter : public ARMEmitter::Buffer {
 public:
   Emitter() = default;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  bool PearLabelFailure {};
+  // Only the existing checked private staging path enables vector growth.
+  // Reset the permission whenever the emitter changes its destination.
+  void SetBuffer(uint8_t* Base, uint64_t BaseSize) {
+    Buffer::SetBuffer(Base, BaseSize);
+    PearPrivateLabels = false;
+    PearLabelReferences = 0;
+  }
+  void SetPrivateStagingBuffer(uint8_t* Base, uint64_t BaseSize) {
+    SetBuffer(Base, BaseSize);
+    PEAR_FEX_REQUIRE(Base && BaseSize >= 4, "Pear private label buffer is unavailable");
+    PearPrivateLabels = true;
+  }
+private:
+  bool PearPrivateLabels {};
+  size_t PearLabelReferences {};
+  void AddLocationToLabel(ForwardLabel* Label, ForwardLabel::Reference&& Location) {
+    CheckRange(Location.Location, 4);
+    PEAR_FEX_REQUIRE(PearLabelReferences < GetBufferSize()/4,
+                     "Pear label references exceed the instruction buffer");
+    ++PearLabelReferences;
+    if (!Label->FirstInst.Location) Label->FirstInst = Location;
+    else Label->Insts.push_back(Location, PearPrivateLabels);
+  }
+public:
+#endif
 
   Emitter(uint8_t* Base, uint64_t BaseSize)
     : Buffer(Base, BaseSize) {}
@@ -648,7 +697,12 @@ public:
   // Bind a backward label to an address.
   // Address that is bound is the current emitter location.
   [[nodiscard]] bool Bind(BackwardLabel* Label) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(Label, "Pear backward label is unavailable");
+    PEAR_FEX_REQUIRE(Label->Location == nullptr, "Pear backward label was already bound");
+#else
     LOGMAN_THROW_A_FMT(Label->Location == nullptr, "Trying to bind a label twice");
+#endif
     Label->Location = GetCursorAddress<uint8_t*>();
 
     // Always binds because it is only storing a location.
@@ -656,6 +710,11 @@ public:
   }
 
   [[nodiscard]] bool Bind(const ForwardLabel::Reference* Label) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(Label, "Pear emitter label is unavailable");
+    CheckRange(Label->Location, Label->Type == ForwardLabel::InstType::LONG_ADDRESS_GEN ? 12 : 4);
+    CheckRange(GetCursorAddress<uint8_t*>(), 0);
+#endif
     uint8_t* CurrentAddress = GetCursorAddress<uint8_t*>();
     // Patch up the instructions
     switch (Label->Type) {
@@ -794,6 +853,11 @@ public:
   // This walks all the instructions in the label's vector.
   // Then backpatching all instructions that have used the label.
   [[nodiscard]] bool Bind(ForwardLabel* Label) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    if (Label->Insts.Overflow) { PearLabelFailure=true;return false; }
+    PEAR_FEX_REQUIRE(PearPrivateLabels || Label->Insts.Extra.empty(),
+                     "Pear direct emitter received private label storage");
+#endif
     bool Bound = true;
     if (Label->FirstInst.Location) {
       Bound &= Bind(&Label->FirstInst);
@@ -801,7 +865,10 @@ public:
     for (auto& Inst : Label->Insts) {
       Bound &= Bind(&Inst);
     }
-
+#ifdef PEAR_FEX_MEMORY_OWNER
+    for (auto& Inst : Label->Insts.Extra) Bound &= Bind(&Inst);
+    PearLabelFailure |= !Bound;
+#endif
     return Bound;
   }
 
@@ -819,7 +886,7 @@ public:
 
   static constexpr Condition InvertCondition(Condition cond) {
     // These behave as always, so it makes no sense to allow inverting these.
-    LOGMAN_THROW_A_FMT(cond != Condition::CC_AL && cond != Condition::CC_NV, "Cannot invert CC_AL or CC_NV");
+    PEAR_FEX_REQUIRE(cond != Condition::CC_AL && cond != Condition::CC_NV, "Cannot invert CC_AL or CC_NV");
     return static_cast<Condition>(FEXCore::ToUnderlying(cond) ^ 1);
   }
 

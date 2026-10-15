@@ -1,0 +1,3 @@
+LIBRARY libpearemptyinit.dll
+EXPORTS
+  PearEmptySourceInit

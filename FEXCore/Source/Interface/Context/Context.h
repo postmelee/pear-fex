@@ -20,6 +20,9 @@
 #include <FEXCore/fextl/unordered_map.h>
 #include <FEXCore/fextl/vector.h>
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <array>
+#endif
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -74,7 +77,11 @@ public:
   ~CodeCache();
 
   ContextImpl& CTX;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  fextl::unique_ptr<ContextImpl, PearContextDeleter> ValidationCTX;
+#else
   fextl::unique_ptr<ContextImpl> ValidationCTX;
+#endif
   fextl::unique_ptr<Core::InternalThreadState> ValidationThread;
   FEXCore::Core::CPUState::gdt_segment ValidationGDT[32] {};
   bool IsGeneratingCache = false;
@@ -136,9 +143,22 @@ public:
 };
 
 class ContextImpl final : public FEXCore::Context::Context, public CPU::SharedCodeBufferManager {
+#ifdef PEAR_FEX_MEMORY_OWNER
+private:
+  // Only the existing checked actual-source owner API may invoke this helper.
+  // SourceLifecycle already friends this genuine owning implementation class.
+  friend bool Context::DestroyPearContextChecked(PearContextOwner&, FEXCore::Utils::PearFEXMemory::Result&, bool&, bool&);
+  static bool DestroyPearContextBackingChecked(PearContextOwner&, FEXCore::Utils::PearFEXMemory::Result&, bool&, bool&);
+#endif
 public:
   // Context base class implementation.
   bool InitCore() override;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  bool InitPearCore(FEXCore::Utils::PearFEXMemory::Result&) override;
+  bool PreparePearConstructionCleanup(FEXCore::Utils::PearFEXMemory::Result&) override;
+  bool PreparePearThreadCleanup(FEXCore::Core::InternalThreadState*, FEXCore::Utils::PearFEXMemory::Result&) override;
+  FEXCore::Utils::PearFEXMemory::Result GetPearLifetimeCreation() const { return PearLifetimeCreation; }
+#endif
 
   void ExecuteThread(FEXCore::Core::InternalThreadState* Thread) override;
 
@@ -186,6 +206,11 @@ public:
    */
 
   FEXCore::Core::InternalThreadState* CreateThread(const FEXCore::Core::CPUState* NewThreadState) override;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Core::InternalThreadState* CreatePearThread(const FEXCore::Core::CPUState*,
+    FEXCore::Utils::PearFEXMemory::Result&, FEXCore::Utils::PearFEXMemory::Result* Cleanup = nullptr,
+    bool* CleanupAttempted = nullptr) override;
+#endif
 
   /**
    * @brief Destroys this FEX thread object and stops tracking it internally
@@ -193,6 +218,10 @@ public:
    * @param Thread The internal FEX thread state object
    */
   void DestroyThread(FEXCore::Core::InternalThreadState* Thread) override;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  bool DestroyPearThreadChecked(FEXCore::Core::InternalThreadState*,
+    FEXCore::Utils::PearFEXMemory::Result&, bool& Destroyed, bool& Freed) override;
+#endif
 
 #ifndef _WIN32
   void LockBeforeFork(FEXCore::Core::InternalThreadState* Thread) override;
@@ -380,6 +409,41 @@ public:
   bool HostRNGAvailable {};
 
   FEXCore::Utils::WritePriorityMutex::Mutex CodeInvalidationMutex {};
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Every selected guest mutation/invalidation writer records under its
+  // existing exclusive invalidation guard. Missing source hooks remain closed.
+  FEXCore::Utils::PearFEXMemory::Result BeginPearLinkInvalidation(FEXCore::Core::InternalThreadState*) override;
+  FEXCore::Utils::PearFEXMemory::Result FinishPearLinkInvalidation(FEXCore::Core::InternalThreadState*) override;
+  bool PearLinkInvalidationAdmitted() const override;
+  bool RecordPearInvalidation() override;
+  uint64_t GetPearInvalidationRevision() const override { return PearInvalidationRevision.load(std::memory_order_acquire); }
+private:
+  std::atomic<uint64_t> PearInvalidationRevision {1};
+public:
+  // Added NX construction metadata is measured separately from upstream state.
+  struct PearConstructionMetadata {
+    std::array<FEXCore::Core::InternalThreadState*, PEAR_FEX_MEMORY_MAX_EXECUTORS> Quarantined {};
+    uint64_t Slots {};
+    uint64_t DestroyedBackings {};
+    uint32_t PublishedThreads {};
+    bool StartupCleanupPending {};
+    std::mutex Mutex;
+  };
+  static_assert(PEAR_FEX_MEMORY_MAX_EXECUTORS == 64);
+  static_assert(sizeof(PearConstructionMetadata) <= 1024, "Bounded real-thread quarantine and construction gates");
+private:
+  // Reserve before allocating a real Thread. Unknown attachment retains that
+  // exact source object; overflow cannot drop a pointer or fake a ThreadState.
+  PearConstructionMetadata PearConstruction;
+  FEXCore::Utils::PearFEXMemory::Result PearLifetimeCreation {};
+  bool PearDeletionReady {};
+  std::optional<size_t> AcquirePearConstructionSlot();
+  void FinishPearConstructionSlot(size_t, FEXCore::Core::InternalThreadState*, bool Published, bool Destroyed=false);
+  FEXCore::Core::InternalThreadState* FailPearThreadConstruction(size_t,
+    FEXCore::Core::InternalThreadState*, FEXCore::Utils::PearFEXMemory::Result,
+    FEXCore::Utils::PearFEXMemory::Result*, bool*);
+public:
+#endif
 
   uint32_t StrictSplitLockMutex {};
 
@@ -429,6 +493,27 @@ public:
   CompileCodeResult CompileCode(FEXCore::Core::InternalThreadState* Thread, uint64_t GuestRIP, uint64_t MaxInst = 0);
   uintptr_t CompileBlock(FEXCore::Core::CpuStateFrame* Frame, uint64_t GuestRIP, uint64_t MaxInst = 0);
   uintptr_t CompileSingleStep(FEXCore::Core::CpuStateFrame* Frame, uint64_t GuestRIP);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  uintptr_t CompilePearBlock(FEXCore::Core::CpuStateFrame* Frame, uint64_t GuestRIP, uint64_t MaxInst);
+  struct PearDispatcherGate {
+    FEXCore::Utils::PearFEXMemory::Allocation Facts {};
+    FEXCore::Core::CpuStateFrame* Frame {};
+    FEXCore::Utils::PearFEXMemory::SourceLifetime Lifetime {};
+    uint64_t Continuation {};
+    uint64_t OriginalPinEpoch {};
+    size_t ResumeOffset {};
+    std::array<uint8_t, 4> ResumeWord {};
+    bool Open {};
+  };
+  static_assert(sizeof(PearDispatcherGate) <= 256, "Bounded source native-gate metadata");
+  FEXCore::Utils::PearFEXMemory::Result BeginPearDispatcherGate(FEXCore::Core::CpuStateFrame*, uintptr_t ResumePC, PearDispatcherGate&);
+  FEXCore::Utils::PearFEXMemory::Result FinishPearDispatcherGate(PearDispatcherGate&);
+  // Source-owned tail transfer. It returns to the native wrapper even on
+  // refusal, so a retained pin never forces a return through managed code.
+  static void PearFiniteNativeTransfer(FEXCore::Core::CpuStateFrame*, uintptr_t ResumePC, uintptr_t NativeTarget,
+                                     FEXCore::Utils::PearFEXMemory::Result*);
+  uintptr_t CompilePearFromDispatcher(FEXCore::Core::CpuStateFrame*, uint64_t GuestRIP, uint64_t MaxInst, uintptr_t ResumePC);
+#endif
 
   FEXCore::JITSymbols Symbols;
 
@@ -492,7 +577,16 @@ private:
    *
    * InitializeCompiler is called inside of CreateThread, so you likely don't need this
    */
-  void InitializeCompiler(FEXCore::Core::InternalThreadState* Thread);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result
+#else
+  void
+#endif
+  InitializeCompiler(FEXCore::Core::InternalThreadState* Thread
+#ifdef PEAR_FEX_MEMORY_OWNER
+    , fextl::shared_ptr<FEXCore::CPU::CodeBuffer> InitialBuffer
+#endif
+  );
 
   bool SupportsHardwareTSO = false;
   bool AtomicTSOEmulationEnabled = true;

@@ -32,3 +32,10 @@ elseif (ARCHITECTURE_arm64)
 endif()
 
 add_subdirectory(../Tools/FEXOfflineCompiler ${CMAKE_CURRENT_BINARY_DIR}/FEXOfflineCompiler)
+
+# A separate finite ordinary ARM64 target is compile-only by default. Selecting
+# the target cannot open its literal source/admission proof or initialize FEX.
+option(PEAR_FEX_BUILD_EMPTY_SOURCE_FIXTURE "Build the private finite source fixture" OFF)
+if(PEAR_FEX_BUILD_EMPTY_SOURCE_FIXTURE)
+  add_subdirectory(PearEmptyInit)
+endif()

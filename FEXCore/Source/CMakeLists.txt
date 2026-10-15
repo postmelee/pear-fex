@@ -74,6 +74,13 @@ set(SRCS
   Utils/WorkQueueThread.cpp
   Utils/Profiler.cpp)
 
+if (PEAR_FEX_MEMORY_OWNER)
+  # The owner-dependent drain belongs to the FEXCore object, not the portable
+  # FEXCore_Base allocation/logger library. No source glob or service swap.
+  list(APPEND SRCS Utils/PearFEXRetirement.cpp Interface/Core/PearJITLinks.cpp)
+  list(APPEND FEXCORE_BASE_SRCS Utils/PearEmptyObjectStorage.cpp)
+endif()
+
 if (ARCHITECTURE_arm64)
   list(APPEND SRCS Utils/ArchHelpers/Arm64.cpp)
 else()
@@ -86,6 +93,9 @@ if (ENABLE_GLIBC_ALLOCATOR_HOOK_FAULT)
 endif()
 
 set(DEFINES -DJIT_ARM64)
+if (PEAR_FEX_MEMORY_OWNER)
+  list(APPEND DEFINES -DPEAR_FEX_MEMORY_OWNER=1)
+endif()
 
 if (ARCHITECTURE_x86_64)
   list(APPEND DEFINES -DARCHITECTURE_x86_64=1)
@@ -149,7 +159,7 @@ add_custom_command(
   OUTPUT "${OUTPUT_NAME}" "${OUTPUT_DISPATCHER_NAME}"
   DEPENDS "${INPUT_NAME}"
   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_generator.py"
-  COMMAND "python3" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_generator.py"
+  COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_generator.py"
     "${INPUT_NAME}" "${OUTPUT_NAME}" "${OUTPUT_DISPATCHER_NAME}")
 
 set_source_files_properties(${OUTPUT_NAME} PROPERTIES GENERATED TRUE)
@@ -161,7 +171,7 @@ add_custom_command(
   OUTPUT "${OUTPUT_IR_DOC}"
   DEPENDS "${INPUT_NAME}"
   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_doc_generator.py"
-  COMMAND "python3" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_doc_generator.py"
+  COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/json_ir_doc_generator.py"
     "${INPUT_NAME}" "${OUTPUT_IR_DOC}")
 
 set_source_files_properties(${OUTPUT_IR_NAME} PROPERTIES GENERATED TRUE)
@@ -187,7 +197,7 @@ add_custom_command(
   OUTPUT "${OUTPUT_MAN_NAME}"
   DEPENDS "${INPUT_CONFIG_NAME}"
   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/config_generator.py"
-  COMMAND "python3" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/config_generator.py" "${INPUT_CONFIG_NAME}" "${OUTPUT_CONFIG_NAME}" "${OUTPUT_MAN_NAME}"
+  COMMAND "${Python_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/../Scripts/config_generator.py" "${INPUT_CONFIG_NAME}" "${OUTPUT_CONFIG_NAME}" "${OUTPUT_MAN_NAME}"
   "${OUTPUT_CONFIG_OPTION_NAME}")
 
 add_custom_command(
@@ -305,6 +315,7 @@ endif()
 # Meta-library to link jemalloc libraries enabled in the build configuration.
 # Only needed for targets that run emulation. For others, use JemallocDummy.
 add_library(JemallocLibs STATIC Utils/AllocatorHooks.cpp)
+
 if (ENABLE_FEX_ALLOCATOR)
   target_compile_definitions(JemallocLibs PRIVATE ENABLE_FEX_ALLOCATOR=1)
   target_link_libraries(JemallocLibs PUBLIC rpmalloc)

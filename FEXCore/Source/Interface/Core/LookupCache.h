@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <FEXCore/Utils/PearSourceGuard.h>
 #include "Interface/Context/Context.h"
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include "Interface/Core/PearJITLinks.h"
+#endif
 #include <FEXCore/Utils/LogManager.h>
 #include <FEXCore/Utils/SHMStats.h>
 #include <FEXCore/Utils/WritePriorityMutex.h>
@@ -78,9 +82,22 @@ struct GuestToHostMap {
   //
   // This makes `BlockLinks` look like a raw pointer that could memory leak, but since it is backed by the MBR, it won't.
   fextl::pmr::named_monotonic_page_buffer_resource BlockLinks_mbr;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  using BlockLinksMapType=std::pmr::map<BlockLinkTag,FEXCore::CPU::PearJITLinks::Ticket>;
+#else
   using BlockLinksMapType = std::pmr::map<BlockLinkTag, FEXCore::Context::BlockDelinkerFunc>;
+#endif
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Empty construction needs neither a PMR page nor a separately allocated map.
+  // Map nodes retain the upstream resource and its normal release lifetime.
+  std::pmr::polymorphic_allocator<std::byte> PearBlockLinksAllocator {&BlockLinks_mbr};
+  BlockLinksMapType PearBlockLinks {&BlockLinks_mbr};
+  std::pmr::polymorphic_allocator<std::byte>* BlockLinks_pma {&PearBlockLinksAllocator};
+  BlockLinksMapType* BlockLinks {&PearBlockLinks};
+#else
   fextl::unique_ptr<std::pmr::polymorphic_allocator<std::byte>> BlockLinks_pma;
   BlockLinksMapType* BlockLinks;
+#endif
 
   struct BlockEntry {
     uint64_t HostCode;
@@ -92,6 +109,7 @@ struct GuestToHostMap {
   fextl::map<uint64_t, fextl::vector<uint64_t>> CodePages;
 
   GuestToHostMap();
+  ~GuestToHostMap();
 
   // Adds to Guest -> Host code mapping
   const BlockEntry& AddBlockMapping(uint64_t Address, std::span<const uint64_t> CodePages, void* HostCode, const LookupCacheWriteLockToken&) {
@@ -118,7 +136,14 @@ struct GuestToHostMap {
     auto lower = BlockLinks->lower_bound({Address, nullptr});
     auto upper = BlockLinks->upper_bound({Address, reinterpret_cast<FEXCore::Context::ExitFunctionLinkData*>(UINTPTR_MAX)});
     for (auto it = lower; it != upper; it = BlockLinks->erase(it)) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+      // Only bounded NX ticket copying occurs under lookup locks. A real
+      // source target WriteGuard was admitted before the caller's mutation.
+      const auto Queued=FEXCore::CPU::PearJITLinks::Queue(it->second);
+      PEAR_FEX_REQUIRE_RESULT(!!Queued, "Pear delink queue refused: status {}, domain {}, code {}", Queued);
+#else
       it->second(it->first.HostLink);
+#endif
     }
 
     // Remove from BlockList
@@ -141,9 +166,23 @@ struct GuestToHostMap {
 
   void AddBlockLink(uint64_t GuestDestination, FEXCore::Context::ExitFunctionLinkData* HostLink,
                     const FEXCore::Context::BlockDelinkerFunc& delinker, const LookupCacheWriteLockToken&) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(false, "Pear under-lock block link registration is unavailable");
+    return;
+#else
     BlockLinks->insert({{GuestDestination, HostLink}, delinker});
+#endif
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  void AddPearBlockLink(uint64_t GuestDestination,FEXCore::Context::ExitFunctionLinkData* NumericSourceLink,
+                       FEXCore::CPU::PearJITLinks::Ticket T,const LookupCacheWriteLockToken&) {
+    // The actual source JIT minted T and published its observed owner/token.
+    // NumericSourceLink is a lookup key only and is never read beneath locks.
+    const auto Added=BlockLinks->insert({{GuestDestination,NumericSourceLink},T});
+    PEAR_FEX_REQUIRE(Added.second,"Pear source link key was already registered");
+  }
+#endif
   bool AddBlockExecutableRange(const std::ranges::input_range auto& Addresses, uint64_t Start, uint64_t Length, const LookupCacheWriteLockToken&) {
     bool rv = false;
 
@@ -168,6 +207,10 @@ public:
 
   LookupCache(FEXCore::Context::ContextImpl* CTX);
   ~LookupCache();
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static fextl::unique_ptr<LookupCache> CreatePear(FEXCore::Context::ContextImpl*,FEXCore::Utils::PearFEXMemory::Result&);
+  FEXCore::Utils::PearFEXMemory::Result ReleasePearBacking();
+#endif
 
   // Swaps out the underlying GuestToHostMap and clears all associated caches.
   // This interface requires the previous CodeBuffer to be provided despite not using it. This ensures the shared write lock is still valid.
@@ -177,10 +220,20 @@ public:
   }
 
   uintptr_t FindBlock(FEXCore::Core::InternalThreadState* Thread, uint64_t Address) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    const auto OwnedPublished = [Thread, this](uintptr_t Host) {
+      const auto Window = Thread->CPUBackend->FindPearManagedWindow(Host);
+      return Window && Window->Owner->LookupCache.get() == Shared;
+    };
+#endif
     // Try L1, no lock needed
     auto& L1Entry = reinterpret_cast<LookupCacheEntry*>(L1Pointer)[Address & L1PointerMask];
     if (L1Entry.GuestCode == Address) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+      return OwnedPublished(L1Entry.HostCode) ? L1Entry.HostCode : 0;
+#else
       return L1Entry.HostCode;
+#endif
     }
 
     // L2 and L3 need to be locked
@@ -205,6 +258,9 @@ public:
           auto BlockPointers = reinterpret_cast<LookupCacheEntry*>(LocalPagePointer);
 
           if (BlockPointers[PageOffset].GuestCode == Address) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+            if (!OwnedPublished(BlockPointers[PageOffset].HostCode)) return 0;
+#endif
             L1Entry.GuestCode = Address;
             L1Entry.HostCode = BlockPointers[PageOffset].HostCode;
             HostPtr = L1Entry.HostCode;
@@ -216,6 +272,9 @@ public:
         // Try L3
         auto Entry = Shared->FindBlock(Address, lk);
         if (Entry) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+          if (!OwnedPublished(Entry->HostCode)) return 0;
+#endif
           CacheBlockMapping(Address, *Entry, false, lk);
           HostPtr = Entry->HostCode;
         }
@@ -295,6 +354,13 @@ public:
 
   // Adds to Guest -> Host code mapping
   void AddBlockMapping(FEXCore::Core::InternalThreadState* Thread, uint64_t Address, std::span<const uint64_t> CodePages, void* HostCode) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    // Metadata matching is not execution admission; the dispatcher still needs
+    // the exact owner entry lease. No NX/pending/raw byte-span pointer is cached.
+    const auto Window = Thread->CPUBackend->FindPearManagedWindow(reinterpret_cast<uintptr_t>(HostCode));
+    PEAR_FEX_REQUIRE(Window && Window->Owner->LookupCache.get() == Shared,
+                      "Pear lookup insertion lacks a matching published owner generation");
+#endif
     std::optional<FEXCore::SHMStats::AccumulationBlock<uint64_t>> LockTime(
       Thread->ThreadStats ? &Thread->ThreadStats->AccumulatedCacheWriteLockTime : nullptr);
     auto lk = Shared->AcquireWriteLock();
@@ -360,6 +426,12 @@ public:
     Shared->AddBlockLink(GuestDestination, HostLink, delinker, lk);
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  void AddPearBlockLink(uint64_t GuestDestination,FEXCore::Context::ExitFunctionLinkData* NumericSourceLink,
+                       FEXCore::CPU::PearJITLinks::Ticket T,const LookupCacheWriteLockToken& L) {
+    Shared->AddPearBlockLink(GuestDestination,NumericSourceLink,T,L);
+  }
+#endif
   void ClearCache(const LookupCacheWriteLockToken&);
   void ClearL2Cache(const LookupCacheBaseLockToken&);
   void ClearThreadLocalCaches(const LookupCacheWriteLockToken&);
@@ -453,7 +525,10 @@ private:
   // Maps from a page index to all blocks in the page that have at some point been fetched into L1/L2
   fextl::map<uint64_t, fextl::robin_set<uint64_t>> CachedCodePages;
 
-  uintptr_t PagePointer;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result PearCreation {};
+#endif
+  uintptr_t PagePointer {};
   uintptr_t PageMemory;
   uintptr_t L1Pointer;
   uintptr_t L1PointerMask;

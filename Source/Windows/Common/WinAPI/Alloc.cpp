@@ -2,12 +2,16 @@
 #define NTDDI_VERSION 0x0A000005
 #define WINAPI
 #define WINBASEAPI
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#endif
 
 #include <cstdlib>
 #include <cstdio>
 #include <cstdint>
 #include <cerrno>
 #include <winternl.h>
+#include <ntstatus.h>
 #include <windows.h>
 #include <processenv.h>
 #include "../Priv.h"
@@ -28,13 +32,44 @@ MEM_ADDRESS_REQUIREMENTS MakeWOW64AddressReqs() {
   return Reqs;
 }
 } // namespace
+namespace FEX::Windows::PearCRT {
+bool IsOriginalBasicInfoInitializer(uintptr_t Address) {
+  return Address==reinterpret_cast<uintptr_t>(&InitBasicInfo);
+}
+NTSTATUS InitializeBasicInfoChecked() {
+  // Preserve the real provider status and publish only complete observations.
+  // The original module callback remains unchanged; the finite checked CRT
+  // substitutes this typed call only for its exact original callback address.
+  SYSTEM_BASIC_INFORMATION Observed {};ULONG Returned {};
+  const auto Status=NtQuerySystemInformation(SystemEmulationBasicInformation,&Observed,sizeof(Observed),&Returned);
+  if (Status) return Status;
+  const auto Grain=Observed.AllocationGranularity;
+  if (Returned!=sizeof(Observed) || Observed.PhysicalPageSize!=4096 ||
+      !Grain || (Grain&(Grain-1)) || Grain<Observed.PhysicalPageSize ||
+      Observed.HighestUserAddress<Observed.LowestUserAddress || Observed.HighestUserAddress<Grain)
+    return STATUS_INVALID_PARAMETER;
+  BasicInfo=Observed;
+  return STATUS_SUCCESS;
+}
+} // namespace FEX::Windows::PearCRT
 #endif
 
-DLLEXPORT_FUNC(void*, VirtualAlloc, (void* lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect)) {
+namespace {
+#if defined(_M_ARM64EC) && defined(PEAR_FEX_MEMORY_OWNER)
+MEM_ADDRESS_REQUIREMENTS MakeWOW64AddressReqs() {
+  // These wrappers serve FEX's private CRT/allocators, not guest VirtualAlloc.
+  // Follow the upstream low-VA preservation policy with an explicit bound:
+  // a 512 MiB rpmalloc slab can otherwise fall below 4 GiB on Wine/macOS.
+  MEM_ADDRESS_REQUIREMENTS Reqs {};
+  Reqs.LowestStartingAddress=reinterpret_cast<void*>(UINT64_C(0x100000000));
+  return Reqs;
+}
+#endif
+NTSTATUS AllocateVirtualChecked(void*& lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect) {
   NTSTATUS Status;
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) || defined(PEAR_FEX_MEMORY_OWNER)
   if (!lpAddress) {
-    // Add address requirements for WOW64 to limit allocations to outside the 32-bit user address space
+    // Keep anonymous translator allocations outside the low guest address space.
     MEM_EXTENDED_PARAMETER ExtParam {};
     MEM_ADDRESS_REQUIREMENTS AddrReq = MakeWOW64AddressReqs();
 
@@ -45,15 +80,37 @@ DLLEXPORT_FUNC(void*, VirtualAlloc, (void* lpAddress, SIZE_T dwSize, DWORD flAll
   } else {
 #endif
     Status = NtAllocateVirtualMemory(NtCurrentProcess(), &lpAddress, 0, &dwSize, flAllocationType, flProtect);
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) || defined(PEAR_FEX_MEMORY_OWNER)
   }
 #endif
-  if (Status) {
-    SetLastError(RtlNtStatusToDosError(Status));
-    return nullptr;
-  }
+  return Status;
+}
+} // namespace
+DLLEXPORT_FUNC(void*, VirtualAlloc, (void* lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect)) {
+  const auto Status=AllocateVirtualChecked(lpAddress,dwSize,flAllocationType,flProtect);
+  if (Status) { SetLastError(RtlNtStatusToDosError(Status)); return nullptr; }
   return lpAddress;
 }
+#ifdef PEAR_FEX_MEMORY_OWNER
+namespace FEXCore::Allocator {
+FEXCore::Utils::PearFEXMemory::Result ReservePearData(size_t Size,bool Commit,void*& Address) {
+  Address=nullptr;
+  if (!Size) return {PEAR_FEX_INVALID_REQUEST,0,0};
+  void* Candidate=nullptr;
+  const auto Status=AllocateVirtualChecked(Candidate,Size,MEM_RESERVE|MEM_TOP_DOWN|(Commit ? MEM_COMMIT : 0),PAGE_READWRITE);
+  if (Status) return {PEAR_FEX_UNAVAILABLE,PEAR_FEX_ERROR_NTSTATUS,static_cast<int32_t>(Status)};
+  Address=Candidate;
+  return {PEAR_FEX_OK,0,0};
+}
+FEXCore::Utils::PearFEXMemory::Result ReleasePearData(void* Address) {
+  if (!Address) return {PEAR_FEX_INVALID_REQUEST,0,0};
+  SIZE_T Size=0;
+  const auto Status=NtFreeVirtualMemory(NtCurrentProcess(),&Address,&Size,MEM_RELEASE);
+  if (Status) return {PEAR_FEX_UNAVAILABLE,PEAR_FEX_ERROR_NTSTATUS,static_cast<int32_t>(Status)};
+  return {PEAR_FEX_OK,0,0};
+}
+} // namespace FEXCore::Allocator
+#endif
 
 DLLEXPORT_FUNC(SIZE_T, VirtualQuery, (LPCVOID lpAddress, PMEMORY_BASIC_INFORMATION lpBuffer, SIZE_T dwLength)) {
   SIZE_T WrittenSize;
@@ -74,9 +131,9 @@ DLLEXPORT_FUNC(void*, VirtualAlloc2,
                (HANDLE Process, void* BaseAddress, SIZE_T Size, ULONG AllocationType, ULONG PageProtection,
                 MEM_EXTENDED_PARAMETER* ExtendedParameters, ULONG ParameterCount)) {
   NTSTATUS Status;
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) || defined(PEAR_FEX_MEMORY_OWNER)
   if (!BaseAddress) {
-    // Add address requirements for WOW64 to limit allocations to outside the 32-bit user address space
+    // Keep anonymous translator allocations outside the low guest address space.
     auto* NewExtParams = reinterpret_cast<MEM_EXTENDED_PARAMETER*>(alloca((ParameterCount + 1) * sizeof(MEM_EXTENDED_PARAMETER)));
     if (ExtendedParameters && ParameterCount > 0) {
       memcpy(NewExtParams, ExtendedParameters, ParameterCount * sizeof(MEM_EXTENDED_PARAMETER));
@@ -93,7 +150,7 @@ DLLEXPORT_FUNC(void*, VirtualAlloc2,
 #endif
     Status = NtAllocateVirtualMemoryEx(Process ? Process : NtCurrentProcess(), &BaseAddress, &Size, AllocationType, PageProtection,
                                        ExtendedParameters, ParameterCount);
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) || defined(PEAR_FEX_MEMORY_OWNER)
   }
 #endif
   if (Status) {

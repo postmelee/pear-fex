@@ -38,12 +38,19 @@ namespace pmr {
     explicit named_monotonic_page_buffer_resource(const char* Name)
       : Name {Name} {}
 
+    ~named_monotonic_page_buffer_resource() override { release(); }
+    named_monotonic_page_buffer_resource(const named_monotonic_page_buffer_resource&) = delete;
+    named_monotonic_page_buffer_resource& operator=(const named_monotonic_page_buffer_resource&) = delete;
+    named_monotonic_page_buffer_resource(named_monotonic_page_buffer_resource&&) = delete;
+    named_monotonic_page_buffer_resource& operator=(named_monotonic_page_buffer_resource&&) = delete;
+
     void release() noexcept {
       for (auto& Iter : Buffers) {
         FEXCore::Allocator::VirtualFree(Iter.Buffer, Iter.BufferSize);
       }
       Buffers.clear();
 
+      CurrentBuffer = nullptr;
       CurrentBufferRemaining = 0;
       CurrentAllocationSize = FEXCore::Utils::FEX_PAGE_SIZE;
     }

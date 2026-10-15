@@ -249,6 +249,12 @@ DEF_OP(CondJump) {
   auto Op = IROp->C<IR::IROp_CondJump>();
 
   auto TrueTargetLabel = JumpTarget(Op->TrueBlock);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Upstream already polls entry points and unconditional backedges. A hot
+  // conditional loop also needs the same check; ldr/cbz preserves NZCV.
+  if (TrueTargetLabel->Backward.Location) EmitSuspendInterruptCheck();
+#endif
+
 
   if (Op->FromNZCV) {
     b_OrRestart(MapCC(Op->Cond), TrueTargetLabel);

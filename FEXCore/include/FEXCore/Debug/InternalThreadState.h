@@ -58,6 +58,13 @@ struct NonMovableUniquePtr {
     fextl::default_delete<T> {}(Ptr);
   }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Layout-preserving native cleanup helper. The Core lifecycle owner must
+  // close actual source holds and observe native-idle before detaching.
+  void ResetAtPearNativeGate() {
+    auto* Actual=Ptr; Ptr=nullptr; fextl::default_delete<T>{}(Actual);
+  }
+#endif
   T* operator->() const noexcept {
     return Ptr;
   }

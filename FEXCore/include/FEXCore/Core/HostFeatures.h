@@ -97,5 +97,9 @@ struct HostFeatures {
   // The Linux PID of this process. Useful for punching through perf-top information.
   uint32_t ProcessPID {};
   uint32_t pad2 {};
+#ifdef PEAR_FEX_DARWIN
+  // Actual GetSystemInfo count when hardware MIDR metadata is unavailable.
+  uint32_t HostCPUCount {};
+#endif
 };
 } // namespace FEXCore

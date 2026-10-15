@@ -14,6 +14,9 @@
 #include <FEXCore/fextl/string.h>
 #include <FEXCore/fextl/vector.h>
 #include <FEXCore/Utils/WritePriorityMutex.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearFEXMemory.h>
+#endif
 
 namespace FEXCore {
 struct HostFeatures;
@@ -46,6 +49,11 @@ using CustomIREntrypointHandler = std::function<void(uintptr_t Entrypoint, IR::I
 
 using ExitHandler = std::function<void(Core::InternalThreadState* Thread)>;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+class Context;
+struct PearContextDeleter { void operator()(Context*) const; };
+using PearContextOwner = fextl::unique_ptr<Context, PearContextDeleter>;
+#endif
 class Context {
 public:
   virtual ~Context() = default;
@@ -56,7 +64,16 @@ public:
    *
    * @return a new context object
    */
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEX_DEFAULT_VISIBILITY static PearContextOwner CreateNewContext(const FEXCore::HostFeatures& Features);
+  FEX_DEFAULT_VISIBILITY static PearContextOwner CreatePearContext(const FEXCore::HostFeatures& Features, FEXCore::Utils::PearFEXMemory::Result&);
+  // Private selected-source receipt, not a wire or stable export. Freed means
+  // the genuine aligned_free/rpfree call returned, not OS page reclamation.
+  static bool DestroyPearContextChecked(PearContextOwner&, FEXCore::Utils::PearFEXMemory::Result&,
+                                       bool& Destroyed, bool& Freed);
+#else
   FEX_DEFAULT_VISIBILITY static fextl::unique_ptr<FEXCore::Context::Context> CreateNewContext(const FEXCore::HostFeatures& Features);
+#endif
 
   /**
    * @brief Allows setting up in memory code and other things prior to launchign code execution
@@ -67,6 +84,19 @@ public:
    * @return true if we loaded code
    */
   FEX_DEFAULT_VISIBILITY virtual bool InitCore() = 0;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Nonvirtual entry adapters preserve the existing Context layout/vtable.
+  FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result EnterPearEC(Core::InternalThreadState*, bool FillState);
+  FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result ExitPearEC(Core::InternalThreadState*, bool Required);
+  FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result ObservePearInstruction(Core::InternalThreadState*, uintptr_t PC, uint32_t& Word);
+  // Private compiled-exception adapter; preserves the Context layout and owner ABI.
+  FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result RepairPearUnaligned(
+    Core::InternalThreadState*, uintptr_t PC, bool& Handled, int32_t& ResumeDelta);
+  // Private paired-source construction outcomes, not a stable runtime ABI.
+  virtual bool InitPearCore(FEXCore::Utils::PearFEXMemory::Result&) = 0;
+  virtual bool PreparePearConstructionCleanup(FEXCore::Utils::PearFEXMemory::Result&) = 0;
+  virtual bool PreparePearThreadCleanup(Core::InternalThreadState*, FEXCore::Utils::PearFEXMemory::Result&) = 0;
+#endif
 
   /**
    * @brief Executes the supplied thread context on the current thread until a return is requested
@@ -119,8 +149,17 @@ public:
    */
 
   FEX_DEFAULT_VISIBILITY virtual FEXCore::Core::InternalThreadState* CreateThread(const FEXCore::Core::CPUState* NewThreadState = nullptr) = 0;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  virtual FEXCore::Core::InternalThreadState* CreatePearThread(const FEXCore::Core::CPUState*,
+    FEXCore::Utils::PearFEXMemory::Result&, FEXCore::Utils::PearFEXMemory::Result* Cleanup = nullptr,
+    bool* CleanupAttempted = nullptr) = 0;
+#endif
 
   FEX_DEFAULT_VISIBILITY virtual void DestroyThread(FEXCore::Core::InternalThreadState* Thread) = 0;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  virtual bool DestroyPearThreadChecked(FEXCore::Core::InternalThreadState*,
+    FEXCore::Utils::PearFEXMemory::Result&, bool& Destroyed, bool& Freed) = 0;
+#endif
 #ifndef _WIN32
   FEX_DEFAULT_VISIBILITY virtual void LockBeforeFork(FEXCore::Core::InternalThreadState* Thread) {}
   FEX_DEFAULT_VISIBILITY virtual void UnlockAfterFork(FEXCore::Core::InternalThreadState* Thread, bool Child) {}
@@ -144,6 +183,14 @@ public:
   FEX_DEFAULT_VISIBILITY virtual void
   InvalidateThreadCachedCodeRange(FEXCore::Core::InternalThreadState* Thread, uint64_t Start, uint64_t Length) = 0;
   FEX_DEFAULT_VISIBILITY virtual FEXCore::Utils::WritePriorityMutex::Mutex& GetCodeInvalidationMutex() = 0;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // Conditional source-integration interface; no stable runtime ABI is added.
+  FEX_DEFAULT_VISIBILITY virtual FEXCore::Utils::PearFEXMemory::Result BeginPearLinkInvalidation(FEXCore::Core::InternalThreadState*) = 0;
+  FEX_DEFAULT_VISIBILITY virtual FEXCore::Utils::PearFEXMemory::Result FinishPearLinkInvalidation(FEXCore::Core::InternalThreadState*) = 0;
+  FEX_DEFAULT_VISIBILITY virtual bool PearLinkInvalidationAdmitted() const = 0;
+  FEX_DEFAULT_VISIBILITY virtual bool RecordPearInvalidation() = 0;
+  FEX_DEFAULT_VISIBILITY virtual uint64_t GetPearInvalidationRevision() const = 0;
+#endif
 
   FEX_DEFAULT_VISIBILITY virtual void
   ConfigureAOTGen(FEXCore::Core::InternalThreadState* Thread, fextl::set<uint64_t>* ExternalBranches, uint64_t SectionMaxAddress) = 0;

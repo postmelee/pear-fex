@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FEXCore/Utils/PearSourceGuard.h>
 #include "Interface/Core/ArchHelpers/Arm64Emitter.h"
 #include "Interface/Core/Interpreter/InterpreterOps.h"
 
 #include <FEXCore/Config/Config.h>
 #include <FEXCore/fextl/memory.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearFEXMemory.h>
+#include <FEXCore/Utils/PearFEXRetirement.h>
+#ifdef VIXL_SIMULATOR
+#error Pear owner source hooks require the selected native dispatcher.
+#endif
+#endif
 
 #include <array>
 #include <cstddef>
@@ -36,6 +44,9 @@ namespace FEXCore::CPU {
 class Dispatcher final : public Arm64Emitter {
 public:
   static fextl::unique_ptr<Dispatcher> Create(FEXCore::Context::ContextImpl* CTX);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static fextl::unique_ptr<Dispatcher> CreatePear(FEXCore::Context::ContextImpl*, FEXCore::Utils::PearFEXMemory::Result&);
+#endif
 
   Dispatcher(FEXCore::Context::ContextImpl* ctx);
   ~Dispatcher();
@@ -47,11 +58,41 @@ public:
   void ExecuteJITCallback(FEXCore::Core::CpuStateFrame* Frame, uint64_t RIP);
 #else
   void ExecuteDispatch(FEXCore::Core::CpuStateFrame* Frame) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(FEXCore::Utils::PearFEXMemory::Retirement::AdmissionOpen(), "Pear source retirement admission is closed");
+    const auto Facts = GetPearSnapshot();
+    const auto Base = reinterpret_cast<uintptr_t>(Facts.Base);
+    const auto Address = reinterpret_cast<uintptr_t>(DispatchPtr);
+    PEAR_FEX_REQUIRE(Facts && Facts.Token.expected_state == PEAR_FEX_PUBLISHED_RX &&
+                      Facts.Token.allocation_class == PEAR_FEX_CLASS_DISPATCHER && Address >= Base &&
+                      Address-Base < Facts.Token.extent_size && !(Address & 3), "Pear dispatcher entry range unavailable");
+    const auto Entered = FEXCore::Utils::PearFEXMemory::Enter(Facts, Address-Base);
+    PEAR_FEX_REQUIRE_RESULT(!!Entered, "Pear dispatcher entry refused: status {}, domain {}, code {}", Entered);
+#endif
     DispatchPtr(Frame, false);
+#ifdef PEAR_FEX_MEMORY_OWNER
+    const auto Exited = FEXCore::Utils::PearFEXMemory::Exit(Facts);
+    PEAR_FEX_REQUIRE_RESULT(!!Exited, "Pear dispatcher native return refused: status {}, domain {}, code {}", Exited);
+#endif
   }
 
   void ExecuteJITCallback(FEXCore::Core::CpuStateFrame* Frame, uint64_t RIP) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+    PEAR_FEX_REQUIRE(FEXCore::Utils::PearFEXMemory::Retirement::AdmissionOpen(), "Pear source retirement admission is closed");
+    const auto Facts = GetPearSnapshot();
+    const auto Base = reinterpret_cast<uintptr_t>(Facts.Base);
+    const auto Address = reinterpret_cast<uintptr_t>(CallbackPtr);
+    PEAR_FEX_REQUIRE(Facts && Facts.Token.expected_state == PEAR_FEX_PUBLISHED_RX &&
+                      Facts.Token.allocation_class == PEAR_FEX_CLASS_DISPATCHER && Address >= Base &&
+                      Address-Base < Facts.Token.extent_size && !(Address & 3), "Pear dispatcher entry range unavailable");
+    const auto Entered = FEXCore::Utils::PearFEXMemory::Enter(Facts, Address-Base);
+    PEAR_FEX_REQUIRE_RESULT(!!Entered, "Pear dispatcher entry refused: status {}, domain {}, code {}", Entered);
+#endif
     CallbackPtr(Frame, RIP);
+#ifdef PEAR_FEX_MEMORY_OWNER
+    const auto Exited = FEXCore::Utils::PearFEXMemory::Exit(Facts);
+    PEAR_FEX_REQUIRE_RESULT(!!Exited, "Pear dispatcher native return refused: status {}, domain {}, code {}", Exited);
+#endif
   }
 #endif
 
@@ -61,15 +102,32 @@ public:
 
   SignalDelegatorConfig MakeSignalDelegatorConfig() const;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Allocation GetPearSnapshot() const { return PearToken.Snapshot(); }
+  // Private finite source fixture: caller supplies only its real Frame. The
+  // native target is fixed by this translation unit; no guest callback input.
+  FEXCore::Utils::PearFEXMemory::Result ExecutePearFiniteTransfer(FEXCore::Core::CpuStateFrame*);
+  bool IsPearNativeResume(uintptr_t PC) const {
+    return PC && (PC == PearCompileResumePC || PC == PearSingleStepResumePC || PC == PearExitLinkResumePC || PC == PearFiniteResumePC);
+  }
+#endif
 protected:
   FEXCore::Context::ContextImpl* CTX;
 
   using AsmDispatch = void (*)(FEXCore::Core::CpuStateFrame* Frame, bool SingleInst);
   using JITCallback = void (*)(FEXCore::Core::CpuStateFrame* Frame, uint64_t RIP);
 
-  AsmDispatch DispatchPtr;
-  JITCallback CallbackPtr;
+  AsmDispatch DispatchPtr {};
+  JITCallback CallbackPtr {};
 private:
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result InitializePear();
+  FEXCore::Utils::PearFEXMemory::TokenState PearToken {};
+  uintptr_t PearCompileResumePC {};
+  uintptr_t PearSingleStepResumePC {};
+  uintptr_t PearExitLinkResumePC {};
+  uintptr_t PearFiniteEntryPC {}, PearFiniteResumePC {};
+#endif
   /**
    * @name Dispatch Helper functions
    * @{ */
@@ -114,6 +172,9 @@ private:
   uint64_t F64FPREM1HandlerAddress {};
 
   void EmitDispatcher();
+#ifdef PEAR_FEX_MEMORY_OWNER
+  void RegisterDispatcherSymbols();
+#endif
   uint64_t GenerateABICall(FallbackABI ABI);
 
   // Inline softfloat conversion emitters - avoid FPCR save/restore overhead

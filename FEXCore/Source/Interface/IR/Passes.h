@@ -15,6 +15,11 @@ fextl::unique_ptr<Pass> CreateDeadFlagCalculationEliminination();
 fextl::unique_ptr<Pass> CreateRegisterAllocationPass(const CPUIDEmu* CPUID);
 fextl::unique_ptr<Pass> CreateX87StackOptimizationPass(const HostFeatures&, OpSize GPROpSize);
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<Pass> CreatePearDeadFlagCalculationEliminination();
+fextl::unique_ptr<Pass> CreatePearRegisterAllocationPass(const CPUIDEmu*);
+fextl::unique_ptr<Pass> CreatePearX87StackOptimizationPass(const HostFeatures&,OpSize);
+#endif
 namespace Validation {
   fextl::unique_ptr<Pass> CreateIRValidation();
 } // namespace Validation

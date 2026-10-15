@@ -156,6 +156,14 @@ static uint32_t GetCPUID_TPIDRRO() {
 
 void CPUIDEmu::SetupHostHybridFlag() {
   FEX_CONFIG_OPT(HideHybrid, HIDEHYBRID);
+#ifdef PEAR_FEX_DARWIN
+  if (CTX->HostFeatures.CPUMIDRs.empty()) {
+    // Every observed core has the same unavailable product metadata. Reuse a
+    // constant unknown row without allocating a redundant per-core vector.
+    Hybrid = false;
+    return;
+  }
+#endif
   PerCPUData.resize(Cores);
 
   uint64_t MIDR {};
@@ -935,7 +943,7 @@ FEXCore::CPUID::FunctionResults CPUIDEmu::Function_1Ah(uint32_t Leaf) const {
   FEXCore::CPUID::FunctionResults Res {};
   if (Hybrid) {
     uint32_t CPU = GetCPUID();
-    auto& Data = PerCPUData[CPU];
+    const auto& Data = DataForCPU(CPU);
     // 0x40 is a big CPU
     // 0x20 is a little CPU
     Res.eax |= (Data.IsBig ? 0x40 : 0x20) << 24;
@@ -1131,27 +1139,32 @@ FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0004h(uint32_t Leaf) con
   return Function_8000_0004h(Leaf, GetCPUID());
 }
 
-FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0002h(uint32_t Leaf, uint32_t CPU) const {
-  FEXCore::CPUID::FunctionResults Res {};
-  auto& Data = PerCPUData[CPU];
-  memcpy(&Res, Data.ProductName, std::min(strlen(Data.ProductName), sizeof(FEXCore::CPUID::FunctionResults)));
-  return Res;
+const CPUIDEmu::CPUData& CPUIDEmu::DataForCPU(uint32_t CPU) const {
+#ifdef PEAR_FEX_DARWIN
+  if (PerCPUData.empty()) {
+    static constexpr CPUData Unknown {.ProductName=ProductNames::ARM_UNKNOWN};
+    return Unknown;
+  }
+#endif
+  return PerCPUData[CPU];
 }
-
-FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0003h(uint32_t Leaf, uint32_t CPU) const {
-  FEXCore::CPUID::FunctionResults Res {};
-  auto& Data = PerCPUData[CPU];
-  const auto RemainingStringSize = std::max<ssize_t>(0, strlen(Data.ProductName) - 16);
-  memcpy(&Res, Data.ProductName + 16, std::min<size_t>(RemainingStringSize, sizeof(FEXCore::CPUID::FunctionResults)));
-  return Res;
+namespace {
+FEXCore::CPUID::FunctionResults CopyCPUBrandChunk(const char* Name,size_t Offset) {
+  FEXCore::CPUID::FunctionResults Result {};
+  const size_t Length=strlen(Name);
+  // Do not even form an out-of-bounds pointer for a short unknown CPU name.
+  if (Offset<Length) memcpy(&Result,Name+Offset,std::min(Length-Offset,sizeof(Result)));
+  return Result;
 }
-
-FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0004h(uint32_t Leaf, uint32_t CPU) const {
-  FEXCore::CPUID::FunctionResults Res {};
-  auto& Data = PerCPUData[CPU];
-  const auto RemainingStringSize = std::max<ssize_t>(0, strlen(Data.ProductName) - 32);
-  memcpy(&Res, Data.ProductName + 32, std::min<size_t>(RemainingStringSize, sizeof(FEXCore::CPUID::FunctionResults)));
-  return Res;
+} // namespace
+FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0002h(uint32_t Leaf,uint32_t CPU) const {
+  return CopyCPUBrandChunk(DataForCPU(CPU).ProductName,0);
+}
+FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0003h(uint32_t Leaf,uint32_t CPU) const {
+  return CopyCPUBrandChunk(DataForCPU(CPU).ProductName,16);
+}
+FEXCore::CPUID::FunctionResults CPUIDEmu::Function_8000_0004h(uint32_t Leaf,uint32_t CPU) const {
+  return CopyCPUBrandChunk(DataForCPU(CPU).ProductName,32);
 }
 
 // L1 Cache and TLB identifiers
@@ -1361,7 +1374,12 @@ CPUIDEmu::CPUIDEmu(const FEXCore::Context::ContextImpl* ctx)
   : CTX {ctx}
   , SupportsCPUIndexInTPIDRRO {CTX->HostFeatures.SupportsCPUIndexInTPIDRRO != 0}
   , GetCPUID {GetCPUID_Syscall} {
+#ifdef PEAR_FEX_DARWIN
+  Cores = CTX->HostFeatures.HostCPUCount;
+  LOGMAN_THROW_A_FMT(Cores > 0 && Cores <= 1024, "Invalid observed Darwin host CPU count");
+#else
   Cores = CTX->HostFeatures.CPUMIDRs.size();
+#endif
 
   // Setup some state tracking
   SetupHostHybridFlag();

@@ -2,6 +2,9 @@
 #include "Common/ArgumentLoader.h"
 #include "Common/Config.h"
 #include "Common/JSONPool.h"
+#ifdef PEAR_FEX_DARWIN
+#include "Windows/Common/DarwinConfigPolicy.h"
+#endif
 
 #include <FEXCore/Config/Config.h>
 #include <FEXCore/fextl/fmt.h>
@@ -218,6 +221,11 @@ OptionMapper::OptionMapper(FEXCore::Config::LayerType Layer)
   : FEXCore::Config::Layer(Layer) {}
 
 void OptionMapper::MapNameToOption(const char* ConfigName, const char* ConfigString) {
+#ifdef PEAR_FEX_DARWIN
+  if (!FEX::Windows::DarwinPolicy::AcceptJSON(ConfigName, ConfigString)) {
+    ERROR_AND_DIE_FMT("Unsupported Pear Darwin configuration override '{}'", ConfigName);
+  }
+#endif
   std::optional<FEXCore::Config::ConfigOption> KeyOptionValue;
   for (auto& it : ConfigLookup) {
     if (it.first != ConfigName) {
@@ -303,6 +311,11 @@ void EnvLoader::Load() {
 
     std::string_view Key = Var.substr(0, pos);
     std::string_view Value_View {Var.substr(pos + 1)};
+#ifdef PEAR_FEX_DARWIN
+    if (!FEX::Windows::DarwinPolicy::AcceptEnvironment(Key, Value_View)) {
+      ERROR_AND_DIE_FMT("Unsupported Pear Darwin environment override '{}'", Key);
+    }
+#endif
     std::optional<fextl::string> Value;
 
 #define ENVLOADER
@@ -332,12 +345,24 @@ void EnvLoader::Load() {
 
   std::optional<std::string_view> Value;
 
+#ifdef PEAR_FEX_DARWIN
+  // GetVar also falls back to getenv; validate those values before generated Set.
+  auto ValidateEnvironment = [](std::string_view name, const auto& value) {
+    if (value && !FEX::Windows::DarwinPolicy::AcceptEnvironment(name, *value)) {
+      ERROR_AND_DIE_FMT("Unsupported Pear Darwin environment override '{}'", name);
+    }
+  };
+#else
+  auto ValidateEnvironment = [](std::string_view, const auto&) {};
+#endif
   // Walk all the environment options and corresponding config option.
 #define OPT_BASE(type, group, enum, json, default) \
   Value = GetVar(EnvMap, "FEX_" #enum);            \
+  ValidateEnvironment("FEX_" #enum, Value);        \
   if (Value.has_value()) Set(FEXCore::Config::ConfigOption::CONFIG_##enum, *Value);
 #define OPT_STRARRAY(group, enum, json, default) \
   Value = GetVar(EnvMap, "FEX_" #enum);          \
+  ValidateEnvironment("FEX_" #enum, Value);      \
   if (Value.has_value()) AppendStrArrayValue(FEXCore::Config::ConfigOption::CONFIG_##enum, *Value);
 
 #include <FEXCore/Config/ConfigValues.inl>

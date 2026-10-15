@@ -47,7 +47,11 @@ class RegisterAllocationPass;
 namespace FEXCore::CPU {
 class Arm64JITCore final : public CPUBackend, public Arm64Emitter {
 public:
-  explicit Arm64JITCore(FEXCore::Context::ContextImpl* ctx, FEXCore::Core::InternalThreadState* Thread);
+  explicit Arm64JITCore(FEXCore::Context::ContextImpl* ctx, FEXCore::Core::InternalThreadState* Thread
+#ifdef PEAR_FEX_MEMORY_OWNER
+    , fextl::shared_ptr<CodeBuffer> InitialBuffer
+#endif
+  );
   ~Arm64JITCore() override;
 
   [[nodiscard]]
@@ -58,6 +62,17 @@ public:
   CPUBackend::CompiledCode LoadCachedCode(std::span<const uint8_t> HostBytes) override;
 
   void ClearCache() override;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static FEXCore::Utils::PearFEXMemory::Result ExecutePearFinitePublication(FEXCore::Core::CpuStateFrame*, uintptr_t ResumePC);
+  static FEXCore::Utils::PearFEXMemory::Result ExecutePearFiniteLinks(FEXCore::Core::CpuStateFrame*,uintptr_t);
+#endif
+#ifdef PEAR_FEX_MEMORY_OWNER
+  bool BeginPreparedPublication(CompiledCode&) override;
+  bool FinishPreparedPublication(CompiledCode&, bool SourceStillValid) override;
+  void DiscardPreparedPublication() override;
+  void CancelUnchangedPreparedPublication();
+  static FEXCore::Utils::PearFEXMemory::Result ExecutePearFiniteBufferGrowth(FEXCore::Core::CpuStateFrame*, uintptr_t);
+#endif
 
   void ClearRelocations() override {
     Relocations.clear();
@@ -111,7 +126,19 @@ private:
   fextl::vector<PendingJumpThunk> PendingJumpThunks;
 
   Utils::PoolBufferWithTimedRetirement<uint8_t*, 5000, 500> TempCodeBufferAllocator;
+#ifdef PEAR_FEX_MEMORY_OWNER
+  fextl::shared_ptr<CodeBuffer> PearPreparedBuffer;
+  FEXCore::Utils::PearFEXMemory::Allocation PearBefore;
+  FEXCore::Utils::PearFEXMemory::Allocation PearTransaction;
+  fextl::unique_ptr<FEXCore::Utils::PearFEXMemory::WriteGuard> PearWriter;
+  uint8_t* PearPendingTemp {};
+  uint8_t* PearPreparedDestination {};
+  size_t PearPendingSize {};
+#endif
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  static uint64_t ExitPearFunctionLink(FEXCore::Core::CpuStateFrame*, FEXCore::Context::ExitFunctionLinkData*, uintptr_t ResumePC);
+#endif
   static uint64_t ExitFunctionLink(FEXCore::Core::CpuStateFrame* Frame, FEXCore::Context::ExitFunctionLinkData* Record);
 
   [[nodiscard]]
@@ -656,5 +683,8 @@ private:
 
 [[nodiscard]]
 fextl::unique_ptr<CPUBackend> CreateArm64JITCore(FEXCore::Context::ContextImpl* ctx, FEXCore::Core::InternalThreadState* Thread);
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<CPUBackend> CreatePearArm64JITCore(FEXCore::Context::ContextImpl*, FEXCore::Core::InternalThreadState*, fextl::shared_ptr<CodeBuffer>);
+#endif
 
 } // namespace FEXCore::CPU

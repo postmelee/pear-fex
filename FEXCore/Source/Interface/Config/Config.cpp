@@ -142,6 +142,11 @@ constexpr std::array<FEXCore::Config::LayerType, 10> LoadOrder = {
 Layer::Layer(const LayerType _Type)
   : Type {_Type} {}
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+Layer::Layer(const LayerType _Type,Pear::Arena* Storage)
+  : Type {_Type},OptionMap {0,std::hash<ConfigOption> {},std::equal_to<ConfigOption> {},
+                          Pear::Allocator<std::pair<const ConfigOption,LayerValue>> {Storage}} {}
+#endif
 Layer::~Layer() {}
 
 class MetaLayer final : public FEXCore::Config::Layer {
@@ -149,6 +154,10 @@ public:
   MetaLayer(const LayerType _Type)
     : FEXCore::Config::Layer(_Type) {}
   ~MetaLayer() {}
+#ifdef PEAR_FEX_MEMORY_OWNER
+  explicit MetaLayer(Pear::Arena* Storage):FEXCore::Config::Layer {LayerType::LAYER_TOP,Storage} {}
+  void ReservePearEmpty() { OptionMap.reserve(Pear::Arena::MAX_ENTRIES); }
+#endif
   void Load();
 
   template<typename T>
@@ -185,6 +194,46 @@ private:
   void MergeConfigMap(const LayerOptions& Options);
   void MergeEnvironmentVariables(const ConfigOption& Option, const StringArrayType& Value);
 };
+
+#ifdef PEAR_FEX_MEMORY_OWNER
+namespace {
+Pear::Arena PearConfigArena;
+alignas(MetaLayer) std::byte PearMetaStorage[sizeof(MetaLayer)];
+bool PearConfigActive {},PearConfigConsumed {};
+static_assert(sizeof(PearConfigArena)+sizeof(PearMetaStorage)+2<=4352);
+}
+size_t PearEmptyStorageBytes() {return sizeof(PearConfigArena)+sizeof(PearMetaStorage)+2;}
+bool InitializePearEmpty(bool& Created) {
+  Created=false;
+  if (Meta || !ConfigLayers.empty() || PearConfigActive || PearConfigConsumed || PearConfigArena.Live) return false;
+  // Empty standard-container construction does not request allocation. The
+  // selected libc++ reserve(14) requests one 17-pointer bucket array; later
+  // fourteen scalar entries use one node each, all inside the retained arena.
+  PearConfigConsumed=true;
+  Meta=std::construct_at(reinterpret_cast<MetaLayer*>(PearMetaStorage),&PearConfigArena);
+  PearConfigActive=true;Created=true;
+  Meta->Load();
+  Meta->ReservePearEmpty();
+  if (Meta->GetOptionMap().bucket_count()!=17 || PearConfigArena.Requests!=1 || PearConfigArena.Live!=1)
+    return false;
+  return true;
+}
+bool SealPearEmpty() {
+  if (!PearConfigActive || Meta!=reinterpret_cast<MetaLayer*>(PearMetaStorage) || !ConfigLayers.empty() ||
+      Meta->GetOptionMap().size()!=Pear::Arena::MAX_ENTRIES || Meta->GetOptionMap().bucket_count()!=17 ||
+      PearConfigArena.Requests!=15 || PearConfigArena.Live!=15 || PearConfigArena.Used>Pear::Arena::CAPACITY)
+    return false;
+  PearConfigArena.Sealed=true;
+  return true;
+}
+bool ShutdownPearEmpty() {
+  if (!PearConfigActive || Meta!=reinterpret_cast<MetaLayer*>(PearMetaStorage) || !ConfigLayers.empty()) return false;
+  std::destroy_at(Meta);Meta=nullptr;PearConfigActive=false;
+  // Keep the non-resetting consumed state. A failed record cannot authorize a
+  // second attempt, and static backing remains valid after any refused cleanup.
+  return PearConfigArena.Live==0;
+}
+#endif
 
 void MetaLayer::Load() {
   OptionMap.clear();
@@ -252,11 +301,17 @@ void MetaLayer::MergeConfigMap(const LayerOptions& Options) {
 }
 
 void Initialize() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  PEAR_FEX_REQUIRE(!PearConfigActive && !PearConfigConsumed,"Finite config cannot become a loaded profile");
+#endif
   AddLayer(fextl::make_unique<MetaLayer>(FEXCore::Config::LayerType::LAYER_TOP));
   Meta = dynamic_cast<MetaLayer*>(ConfigLayers.begin()->second.get());
 }
 
 void Shutdown() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  PEAR_FEX_REQUIRE(!PearConfigActive,"Finite config requires matching cleanup");
+#endif
   ConfigLayers.clear();
   Meta = nullptr;
 }
@@ -457,6 +512,15 @@ template std::optional<uint32_t> GetConv(ConfigOption Option);
 template std::optional<uint64_t> GetConv(ConfigOption Option);
 
 void Set(ConfigOption Option, std::string_view Data) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (PearConfigActive) {
+    // This finite profile admits fourteen source-supplied scalar settings only.
+    // A foreign mutation is an invariant refusal, never an allocator fallback.
+    PEAR_FEX_REQUIRE(!PearConfigArena.Sealed && Data.size()==1 && (Data[0]=='0' || Data[0]=='1') &&
+                     (Meta->OptionExists(Option) || Meta->GetOptionMap().size()<Pear::Arena::MAX_ENTRIES),
+                     "Unsupported finite config mutation");
+  }
+#endif
   Meta->Set(Option, Data);
 }
 

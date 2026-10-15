@@ -19,6 +19,10 @@ $end_info$
 
 #include <cstdint>
 #include <span>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <optional>
+#include <FEXCore/Utils/PearFEXLinks.h>
+#endif
 
 namespace FEXCore::CPU {
 union Relocation;
@@ -59,6 +63,11 @@ namespace CPU {
       size_t Size;
       // Offset of BlockBegin from the start of the CodeBuffer it lives in
       uint64_t HostCodeOffset;
+#ifdef PEAR_FEX_MEMORY_OWNER
+      // Pending pointers refer only to private NX emission and are not cacheable.
+      bool PearPendingEmission {};
+      bool PearOwnerPublished {};
+#endif
     };
 
     // Header that can live at the start of a JIT block.
@@ -118,6 +127,13 @@ namespace CPU {
     virtual CompiledCode CompileCode(uint64_t Entry, uint64_t Size, bool SingleInst, const FEXCore::IR::IRListView* IR,
                                      FEXCore::Core::DebugData* DebugData, bool CheckTF) = 0;
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+    // Begin is called outside invalidation/list/lookup/thread-creation locks.
+    // Finish runs only after the caller reacquires/revalidates its source lease.
+    virtual bool BeginPreparedPublication(CompiledCode&) { return false; }
+    virtual bool FinishPreparedPublication(CompiledCode&, bool SourceStillValid) { return false; }
+    virtual void DiscardPreparedPublication() {}
+#endif
     virtual CompiledCode LoadCachedCode(std::span<const uint8_t> HostBytes) {
       return {};
     }
@@ -132,6 +148,27 @@ namespace CPU {
     virtual void ClearRelocations() {}
 
     bool IsAddressInCodeBuffer(uintptr_t Address) const;
+#ifdef PEAR_FEX_MEMORY_OWNER
+    // Numeric metadata only: callers retain this exact source generation before
+    // reading an instruction/tail under an independently admitted active lease.
+    struct PearManagedWindow {
+      fextl::shared_ptr<CodeBuffer> Owner;
+      FEXCore::Utils::PearFEXMemory::Allocation Facts;
+      uintptr_t Begin;
+      size_t Size;
+      size_t Offset;
+    };
+    // Private original ARM64 fixture in this backend's actual empty generation.
+    // No IR translation, guest dispatch or caller-provided code bytes.
+    FEXCore::Utils::PearFEXMemory::Result PreparePearFiniteCode();
+    std::optional<PearManagedWindow> FindPearManagedWindow(uintptr_t PC) const;
+    // Actual current published source buffer, including one with no direct links.
+    std::optional<PearManagedWindow> FindPearPublishedBarrierTarget() const;
+    // The thin target constructor is friend-only. No caller-supplied tuple or
+    // pointer can substitute for this backend's actual retained CodeBuffer.
+    std::optional<FEXCore::Utils::PearFEXMemory::RetainedManagedTarget> FindPearRetainedTarget(uintptr_t PC) const;
+    std::optional<FEXCore::Utils::PearFEXMemory::Links::ReservedBarrierTarget> FindPearReservedBarrierTarget() const;
+#endif
 
     // Updates the CodeBuffer if needed and returns a reference to the old one.
     // The returned reference should be kept alive carefully to avoid early deletion of resources.

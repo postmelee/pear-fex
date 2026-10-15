@@ -59,11 +59,11 @@ public:
 
   FEXCore::CPUID::FunctionResults RunFunctionName(uint32_t Function, uint32_t Leaf, uint32_t CPU) const {
     if (Function == 0x8000'0002U) {
-      return Function_8000_0002h(Leaf, CPU % PerCPUData.size());
+      return Function_8000_0002h(Leaf, CPU % Cores);
     } else if (Function == 0x8000'0003U) {
-      return Function_8000_0003h(Leaf, CPU % PerCPUData.size());
+      return Function_8000_0003h(Leaf, CPU % Cores);
     } else {
-      return Function_8000_0004h(Leaf, CPU % PerCPUData.size());
+      return Function_8000_0004h(Leaf, CPU % Cores);
     }
   }
 
@@ -165,6 +165,7 @@ private:
     bool IsBig {};
   };
   fextl::vector<CPUData> PerCPUData {};
+  const CPUData& DataForCPU(uint32_t CPU) const;
 
   // Functions
   FEXCore::CPUID::FunctionResults Function_0h(uint32_t Leaf) const;

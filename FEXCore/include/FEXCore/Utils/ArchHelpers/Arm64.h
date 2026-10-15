@@ -5,6 +5,10 @@
 
 #include <stdint.h>
 #include <optional>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <array>
+#include <span>
+#endif
 
 namespace FEXCore::Core {
 struct InternalThreadState;
@@ -34,4 +38,19 @@ enum class UnalignedHandlerType {
 [[nodiscard]]
 FEX_DEFAULT_VISIBILITY std::optional<int32_t> HandleUnalignedAccess(
   FEXCore::Core::InternalThreadState* Thread, UnalignedHandlerType HandleType, uintptr_t ProgramCounter, uint64_t* GPRs, bool IsJIT = true);
+#ifdef PEAR_FEX_MEMORY_OWNER
+// NX-only finite decoding; this is not actual interrupted-context admission.
+enum class UnalignedPatchKind { Unsupported, DataEmulationRequired, AlreadyPatched, Candidate };
+struct PreparedUnalignedPatch {
+  std::array<uint32_t, 13> Expected {};
+  std::array<uint32_t, 13> Next {};
+  std::array<uint8_t, 2> StoreOrder {};
+  uint8_t StoreCount {};
+  int32_t ResumeDelta {};
+  UnalignedPatchKind Kind {UnalignedPatchKind::Unsupported};
+};
+static_assert(sizeof(PreparedUnalignedPatch) <= 128, "Finite source preparation record; part of aggregate NX accounting");
+FEX_DEFAULT_VISIBILITY PreparedUnalignedPatch PrepareUnalignedPatchSnapshot(
+  UnalignedHandlerType, std::span<const uint32_t, 13> Snapshot);
+#endif
 } // namespace FEXCore::ArchHelpers::Arm64

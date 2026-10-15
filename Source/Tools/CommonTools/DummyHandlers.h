@@ -6,6 +6,9 @@
 #include <FEXCore/Utils/AllocatorHooks.h>
 
 #include <FEXCore/fextl/memory.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearFEXMemory.h>
+#endif
 
 namespace FEX::DummyHandlers {
 
@@ -41,4 +44,8 @@ private:
 
 fextl::unique_ptr<FEXCore::HLE::SyscallHandler> CreateSyscallHandler();
 fextl::unique_ptr<FEX::DummyHandlers::DummySignalDelegator> CreateSignalDelegator();
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<FEXCore::HLE::SyscallHandler> CreatePearSyscallHandler(FEXCore::Utils::PearFEXMemory::Result&);
+fextl::unique_ptr<DummySignalDelegator> CreatePearSignalDelegator(FEXCore::Utils::PearFEXMemory::Result&);
+#endif
 } // namespace FEX::DummyHandlers

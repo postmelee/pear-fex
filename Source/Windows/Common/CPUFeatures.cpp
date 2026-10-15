@@ -10,6 +10,7 @@
 
 #include "CPUFeatures.h"
 
+#ifndef PEAR_FEX_DARWIN
 namespace {
 
 HKEY OpenProcessorKey(uint32_t Idx) {
@@ -29,8 +30,10 @@ uint64_t ReadRegU64(HKEY Key, const char* Name) {
 }
 
 } // namespace
+#endif
 
 namespace FEX::Windows {
+#ifndef PEAR_FEX_DARWIN
 #define GetSysReg(name, reg)                         \
   static uint64_t Get_##name() {                     \
     uint64_t Result {};                              \
@@ -55,8 +58,30 @@ public:
     FillFeatureFlags();
   }
 };
+#endif
 
 FEXCore::HostFeatures CPUFeatures::FetchHostFeatures(bool IsWine, FEXCore::HostFeatures::HostTypeEnum HostType, uint32_t ProcessPID) {
+#ifdef PEAR_FEX_DARWIN
+  // Conservative Darwin policy: do not read Linux CP registers or invent MIDRs.
+  // The builder binds this cache-line value to an actual native sysctl receipt.
+#ifndef PEAR_FEX_DARWIN_DCACHE_LOG2
+#error The Darwin build requires a verified host cache-line configuration
+#endif
+  static_assert(PEAR_FEX_DARWIN_DCACHE_LOG2 >= 2 && PEAR_FEX_DARWIN_DCACHE_LOG2 <= 8);
+  SYSTEM_INFO SystemInfo {};
+  GetSystemInfo(&SystemInfo);
+  if (!IsWine || !SystemInfo.dwNumberOfProcessors || SystemInfo.dwNumberOfProcessors > 1024) {
+    ERROR_AND_DIE_FMT("Invalid Darwin Wine processor-count provider");
+  }
+  FEXCore::HostFeatures HostFeatures {};
+  HostFeatures.HostCPUCount = SystemInfo.dwNumberOfProcessors;
+  HostFeatures.DCacheLineLog2 = PEAR_FEX_DARWIN_DCACHE_LOG2;
+  HostFeatures.HostType = HostType;
+  HostFeatures.ProcessPID = ProcessPID;
+  // All optional ISA/FP, cache-maintenance, SVE, TPIDRRO and AVX acceleration
+  // remain disabled. Upstream guest feature masking/fallback code is retained.
+  return HostFeatures;
+#else
   HKEY Key = OpenProcessorKey(0);
   if (!Key) {
     ERROR_AND_DIE_FMT("Couldn't detect CPU features");
@@ -91,6 +116,7 @@ FEXCore::HostFeatures CPUFeatures::FetchHostFeatures(bool IsWine, FEXCore::HostF
     HostFeatures.SupportsAVX = false;
   }
   return HostFeatures;
+#endif
 }
 
 CPUFeatures::CPUFeatures(FEXCore::Context::Context& CTX) {

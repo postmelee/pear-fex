@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#endif
 
 #include "Common/VectorRegType.h"
 #include "Interface/Context/Context.h"
@@ -37,19 +40,146 @@ static void SleepThread(FEXCore::Context::ContextImpl* CTX, FEXCore::Core::CpuSt
 constexpr size_t MAX_DISPATCHER_CODE_SIZE = FEXCore::Utils::FEX_PAGE_SIZE * 4;
 
 Dispatcher::Dispatcher(FEXCore::Context::ContextImpl* ctx)
+#ifdef PEAR_FEX_MEMORY_OWNER
+  : Arm64Emitter(ctx, nullptr, 0)
+#else
   : Arm64Emitter(ctx, FEXCore::Allocator::VirtualAlloc(MAX_DISPATCHER_CODE_SIZE, true), MAX_DISPATCHER_CODE_SIZE)
+#endif
   , CTX {ctx} {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  // CreatePear performs observed owner construction and returns the original
+  // native error. This shell cannot expose an unpublished generated pointer.
+#else
   EmitDispatcher();
-
   FEXCore::Allocator::VirtualName("FEXMem_Misc", reinterpret_cast<void*>(GetBufferBase()), MAX_DISPATCHER_CODE_SIZE);
+#endif
 }
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+FEXCore::Utils::PearFEXMemory::Result Dispatcher::InitializePear() {
+  namespace Memory = FEXCore::Utils::PearFEXMemory;
+  if (!Memory::Retirement::AdmissionOpen()) return Memory::Retirement::FirstFailureSnapshot().Outcome;
+  if (!Memory::CurrentExecutor()) return {PEAR_FEX_UNAVAILABLE, 0, 0};
+  auto Allocation = Memory::Reserve(MAX_DISPATCHER_CODE_SIZE, PEAR_FEX_CLASS_DISPATCHER, PEAR_SOURCE_CODE_ROLE);
+  if (!Allocation) return {Allocation.Status, Allocation.ErrorDomain, Allocation.ErrorCode};
+  const auto Empty = PearToken.Snapshot();
+  if (!PearToken.CompareUpdate(Empty, Allocation))
+    return Memory::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY, 0, 0});
+  Memory::WriteGuard Emission {Allocation, 0, MAX_DISPATCHER_CODE_SIZE};
+  if (!Emission) {
+    const auto Original = Emission.Status();
+    Memory::Retirement::PoisonSourceAdmission(Original);
+    return Original;
+  }
+  SetBuffer(Emission.Data(), MAX_DISPATCHER_CODE_SIZE);
+  // Original finite ARM64 tail-transfer site, separate from guest dispatch.
+  // x0 is the actual Frame; x2 is this source's fixed native target. x1 is
+  // caller-saved. SP, LR, x18, callee-saved GPRs and all SIMD state are untouched.
+  // BR preserves the native wrapper's LR: a refused callback returns directly
+  // to native code. A successful callback explicitly invokes the resume leaf.
+  PearFiniteEntryPC=GetCursorAddress<uintptr_t>();
+  ARMEmitter::ForwardLabel FiniteResume;
+  adr(ARMEmitter::XReg::x1,&FiniteResume);
+  br(ARMEmitter::XReg::x2);
+  // Reuse the already admitted finite owner offsets 0 and 4096 exactly.
+  // Zero padding is never invoked; actual guest dispatcher emission follows.
+  while (GetCursorAddress<uintptr_t>()-PearFiniteEntryPC<4096) dc32(0);
+  Bind(&FiniteResume);
+  PearFiniteResumePC=GetCursorAddress<uintptr_t>();
+  mov(ARMEmitter::WReg::w0,42);
+  ret();
+  EmitDispatcher();
+  if (PearLabelFailure) {
+    const Memory::Result Original {PEAR_FEX_UNAVAILABLE,0,0};
+    const auto BeforeAbort=PearToken.Snapshot();
+    const auto Aborted=Emission.Abort();
+    if (!PearToken.CompareUpdate(BeforeAbort,Allocation))
+      Memory::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY,0,0});
+    if (!Aborted) Memory::Retirement::PoisonSourceAdmission(Aborted);
+    return Original;
+  }
+  // Buffer/label bounds are checked before stores in the selected emitter.
+  // An upstream emitter assertion still retains its original failure path.
+  const auto BeforePublish = PearToken.Snapshot();
+  const auto Published = Emission.Publish();
+  if (!Published) {
+    const auto Aborted = Emission.Abort();
+    if (!PearToken.CompareUpdate(BeforePublish, Allocation))
+      Memory::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY, 0, 0});
+    if (!Aborted) Memory::Retirement::PoisonSourceAdmission(Aborted);
+    return Published;
+  }
+  if (!PearToken.CompareUpdate(BeforePublish, Allocation))
+    return Memory::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY, 0, 0});
+  RegisterDispatcherSymbols();
+  return Published;
+}
+fextl::unique_ptr<Dispatcher> Dispatcher::CreatePear(FEXCore::Context::ContextImpl* CTX, FEXCore::Utils::PearFEXMemory::Result& Outcome) {
+  auto* Storage=FEXCore::Allocator::AllocatePearMetadataStorage(alignof(Dispatcher),sizeof(Dispatcher));
+  if (!Storage) {
+    Outcome={PEAR_FEX_UNAVAILABLE,0,0};
+    FEXCore::Utils::PearFEXMemory::Retirement::PoisonSourceAdmission(Outcome); return {};
+  }
+  // Construct only the actual selected shell; InitializePear still returns the
+  // original observed owner/VM outcome and uses the unchanged owned deleter.
+  auto Candidate=fextl::unique_ptr<Dispatcher> {::new (Storage) Dispatcher(CTX)};
+  Outcome = Candidate->InitializePear();
+  return Outcome ? std::move(Candidate) : fextl::unique_ptr<Dispatcher> {};
+}
+#endif
+
+#ifdef PEAR_FEX_MEMORY_OWNER
+FEXCore::Utils::PearFEXMemory::Result Dispatcher::ExecutePearFiniteTransfer(FEXCore::Core::CpuStateFrame* Frame) {
+  namespace M=FEXCore::Utils::PearFEXMemory;
+  auto Life=M::AcquireCurrentSourceLifetime(CTX);
+  if (!Life || !Life.ActualThread() || Frame!=Life.ActualThread()->CurrentFrame ||
+      Frame->Thread!=Life.ActualThread() || CTX->Dispatcher.get()!=this) return {PEAR_FEX_UNAVAILABLE,0,0};
+  const auto Facts=GetPearSnapshot();
+  const auto Base=reinterpret_cast<uintptr_t>(Facts.Base);
+  if (!Facts || Facts.Token.expected_state!=PEAR_FEX_PUBLISHED_RX || !Base || PearFiniteEntryPC<Base ||
+      PearFiniteEntryPC-Base>Facts.Token.extent_size || 16>Facts.Token.extent_size-(PearFiniteEntryPC-Base) ||
+      PearFiniteEntryPC!=Base || PearFiniteResumePC!=Base+4096) return {PEAR_FEX_UNAVAILABLE,0,0};
+  const auto Entered=M::Enter(Facts,PearFiniteEntryPC-Base);
+  if (!Entered) return Entered;
+  using Native=void (*)(FEXCore::Core::CpuStateFrame*,uintptr_t,uintptr_t,M::Result*);
+  using Transfer=void (*)(FEXCore::Core::CpuStateFrame*,uintptr_t,Native,M::Result*);
+  M::Result Outcome;
+  reinterpret_cast<Transfer>(PearFiniteEntryPC)(Frame,0,&FEXCore::Context::ContextImpl::PearFiniteNativeTransfer,&Outcome);
+  // Only an actual remaining ACTIVE lease can be exited. A failed transition
+  // retains its genuine pin/source state for checked outer cleanup.
+  if (M::HasManagedActive(Facts)) {
+    const auto Exit=M::Exit(Facts); if (!Exit) return Outcome ? Exit : Outcome;
+  }
+  return Outcome;
+}
+#endif
+
 Dispatcher::~Dispatcher() {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  const auto Facts = PearToken.Snapshot();
+  if (!Facts.Token.allocation_id) return;
+  const auto Detached = FEXCore::Utils::PearFEXMemory::Retirement::EnqueueDetached(Facts);
+  if (!Detached) LogMan::Msg::EFmt("Pear dispatcher retirement enqueue refused: status {}, domain {}, code {}",
+                                  Detached.Status, Detached.ErrorDomain, Detached.ErrorCode);
+#else
   auto BufferSize = GetBufferSize();
   if (BufferSize) {
     FEXCore::Allocator::VirtualFree(GetBufferBase(), BufferSize);
   }
+#endif
 }
+
+#ifdef PEAR_FEX_MEMORY_OWNER
+void Dispatcher::RegisterDispatcherSymbols() {
+  if (CTX->Config.BlockJITNaming()) {
+    fextl::string Name = fextl::fmt::format("Dispatch_{}", FHU::Syscalls::gettid());
+    CTX->Symbols.RegisterNamedRegion(reinterpret_cast<void*>(DispatchPtr), End - reinterpret_cast<uint64_t>(DispatchPtr), Name);
+  }
+  if (CTX->Config.GlobalJITNaming()) {
+    CTX->Symbols.RegisterJITSpace(reinterpret_cast<void*>(DispatchPtr), End - reinterpret_cast<uint64_t>(DispatchPtr));
+  }
+}
+#endif
 
 void Dispatcher::EmitDispatcher() {
   // Don't modify TMP3 since it contains our RIP once the block doesn't exist
@@ -296,12 +426,21 @@ void Dispatcher::EmitDispatcher() {
       mov(ARMEmitter::XReg::x0, STATE);
       mov(ARMEmitter::XReg::x1, ARMEmitter::XReg::lr);
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+      ARMEmitter::ForwardLabel NativeResume;
+      adr(ARMEmitter::XReg::x2,&NativeResume);
+      ldr(ARMEmitter::XReg::x3,STATE_PTR(CpuStateFrame,Pointers.ExitFunctionLink));
+      blr(ARMEmitter::Reg::r3);
+      Bind(&NativeResume);
+      PearExitLinkResumePC=GetCursorAddress<uintptr_t>();
+#else
       ldr(ARMEmitter::XReg::x2, STATE_PTR(CpuStateFrame, Pointers.ExitFunctionLink));
       if (!CTX->Config.DisableVixlIndirectCalls) [[unlikely]] {
         GenerateIndirectRuntimeCall<uintptr_t, void*, void*>(ARMEmitter::Reg::r2);
       } else {
         blr(ARMEmitter::Reg::r2);
       }
+#endif
 
       if (!TMP_ABIARGS) {
         mov(TMP1, ARMEmitter::XReg::x0);
@@ -328,6 +467,16 @@ void Dispatcher::EmitDispatcher() {
       mov(ARMEmitter::XReg::x1, STATE);
       // x2 contains guest RIP
       mov(ARMEmitter::XReg::x3, 0);
+#ifdef PEAR_FEX_MEMORY_OWNER
+      // The native ABI receives the actual generated return-PC label explicitly;
+      // no compiler return-address intrinsic or caller-controlled PC is used.
+      ARMEmitter::ForwardLabel l_PearResume;
+      adr(ARMEmitter::XReg::x4, &l_PearResume);
+      ldr(ARMEmitter::XReg::x5, &l_CompileBlock);
+      blr(ARMEmitter::XReg::x5); // { CTX, Frame, RIP, MaxInst, ResumePC }
+      (void)Bind(&l_PearResume);
+      PearCompileResumePC = GetCursorAddress<uintptr_t>();
+#else
       ldr(ARMEmitter::XReg::x4, &l_CompileBlock);
 
       if (!CTX->Config.DisableVixlIndirectCalls) [[unlikely]] {
@@ -335,6 +484,7 @@ void Dispatcher::EmitDispatcher() {
       } else {
         blr(ARMEmitter::Reg::r4); // { CTX, Frame, RIP, MaxInst }
       }
+#endif
 
       // Result is now in x0
       if (!TMP_ABIARGS) {
@@ -361,6 +511,15 @@ void Dispatcher::EmitDispatcher() {
       ldr(ARMEmitter::XReg::x0, &l_CTX);
       mov(ARMEmitter::XReg::x1, STATE);
       // x2 contains guest RIP
+#ifdef PEAR_FEX_MEMORY_OWNER
+      ARMEmitter::ForwardLabel l_PearResume;
+      mov(ARMEmitter::XReg::x3, 1);
+      adr(ARMEmitter::XReg::x4, &l_PearResume);
+      ldr(ARMEmitter::XReg::x5, &l_CompileSingleStep);
+      blr(ARMEmitter::XReg::x5); // { CTX, Frame, RIP, MaxInst=1, ResumePC }
+      (void)Bind(&l_PearResume);
+      PearSingleStepResumePC = GetCursorAddress<uintptr_t>();
+#else
       ldr(ARMEmitter::XReg::x4, &l_CompileSingleStep);
 
       if (!CTX->Config.DisableVixlIndirectCalls) [[unlikely]] {
@@ -368,6 +527,7 @@ void Dispatcher::EmitDispatcher() {
       } else {
         blr(ARMEmitter::Reg::r4); // { CTX, Frame, RIP }
       }
+#endif
 
       // Result is now in x0
       if (!TMP_ABIARGS) {
@@ -656,17 +816,25 @@ void Dispatcher::EmitDispatcher() {
   (void)Bind(&l_Sleep);
   dc64(reinterpret_cast<uint64_t>(SleepThread));
   (void)Bind(&l_CompileBlock);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::MemberFunctionToPointerCast PMFCompileBlock(&FEXCore::Context::ContextImpl::CompilePearFromDispatcher);
+#else
   FEXCore::Utils::MemberFunctionToPointerCast PMFCompileBlock(&FEXCore::Context::ContextImpl::CompileBlock);
+#endif
   dc64(PMFCompileBlock.GetConvertedPointer());
   (void)Bind(&l_CompileSingleStep);
 
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::MemberFunctionToPointerCast PMFCompileSingleStep(&FEXCore::Context::ContextImpl::CompilePearFromDispatcher);
+#else
   FEXCore::Utils::MemberFunctionToPointerCast PMFCompileSingleStep(&FEXCore::Context::ContextImpl::CompileSingleStep);
+#endif
   dc64(PMFCompileSingleStep.GetConvertedPointer());
 
   Start = reinterpret_cast<uint64_t>(DispatchPtr);
   End = GetCursorAddress<uint64_t>();
+#ifndef PEAR_FEX_MEMORY_OWNER
   ClearICache(reinterpret_cast<void*>(DispatchPtr), End - reinterpret_cast<uint64_t>(DispatchPtr));
-
   if (CTX->Config.BlockJITNaming()) {
     fextl::string Name = fextl::fmt::format("Dispatch_{}", FHU::Syscalls::gettid());
     CTX->Symbols.RegisterNamedRegion(reinterpret_cast<void*>(DispatchPtr), End - reinterpret_cast<uint64_t>(DispatchPtr), Name);
@@ -674,6 +842,8 @@ void Dispatcher::EmitDispatcher() {
   if (CTX->Config.GlobalJITNaming()) {
     CTX->Symbols.RegisterJITSpace(reinterpret_cast<void*>(DispatchPtr), End - reinterpret_cast<uint64_t>(DispatchPtr));
   }
+
+#endif
 
 #ifdef VIXL_DISASSEMBLER
   if (Disassemble() & FEXCore::Config::Disassemble::DISPATCHER) {
@@ -2758,7 +2928,12 @@ SignalDelegatorConfig Dispatcher::MakeSignalDelegatorConfig() const {
 }
 
 fextl::unique_ptr<Dispatcher> Dispatcher::Create(FEXCore::Context::ContextImpl* CTX) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  FEXCore::Utils::PearFEXMemory::Result Outcome;
+  return CreatePear(CTX, Outcome);
+#else
   return fextl::make_unique<Dispatcher>(CTX);
+#endif
 }
 
 } // namespace FEXCore::CPU

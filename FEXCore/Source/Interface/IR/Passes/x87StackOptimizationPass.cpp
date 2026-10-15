@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <FEXCore/Utils/PearDataMemory.h>
+#endif
 #include "FEXCore/Utils/LogManager.h"
 #include "Interface/Core/Interpreter/Fallbacks/FallbackOpHandler.h"
 #include "Interface/IR/IR.h"
@@ -1237,4 +1240,9 @@ void X87StackOptimization::Run(IREmitter* Emit) {
 fextl::unique_ptr<Pass> CreateX87StackOptimizationPass(const HostFeatures& Features, OpSize GPROpSize) {
   return fextl::make_unique<X87StackOptimization>(Features, GPROpSize);
 }
+#ifdef PEAR_FEX_MEMORY_OWNER
+fextl::unique_ptr<Pass> CreatePearX87StackOptimizationPass(const HostFeatures& Features,OpSize GPROpSize) {
+  return FEXCore::Allocator::TryMakePearObject<X87StackOptimization>(Features,GPROpSize);
+}
+#endif
 } // namespace FEXCore::IR

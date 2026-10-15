@@ -11,6 +11,9 @@
 #else
 #define NTDDI_VERSION 0x0A000005
 #include <memoryapi.h>
+#ifdef PEAR_FEX_MEMORY_OWNER
+#include <errhandlingapi.h>
+#endif
 #endif
 
 #include <new>
@@ -47,6 +50,9 @@ FEX_DEFAULT_VISIBILITY void ClearHooks();
 
 #ifdef _WIN32
 inline void* VirtualAlloc(void* Base, size_t Size, bool Execute = false, bool Commit = true) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (Execute) return nullptr;
+#endif
   // Allocate top-down to avoid polluting the lower VA space, as even on 64-bit some programs (i.e. LuaJIT) require allocations below 4GB.
   DWORD Flags = (Commit ? MEM_COMMIT : 0) | MEM_RESERVE | MEM_TOP_DOWN;
 #ifdef ARCHITECTURE_arm64ec
@@ -63,11 +69,24 @@ inline void* VirtualAlloc(void* Base, size_t Size, bool Execute = false, bool Co
 }
 
 inline void* VirtualAlloc(size_t Size, bool Execute = false, bool Commit = true) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (Execute) return nullptr;
+#endif
   return VirtualAlloc(nullptr, Size, Execute, Commit);
 }
 
 inline void VirtualFree(void* Ptr, size_t Size) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (!::VirtualFree(Ptr, 0, MEM_RELEASE)) {
+    const DWORD Error = ::GetLastError();
+    // Keep the original Win32 error before logging; do not return to a caller
+    // that would discard the still-owned allocation or retry its release.
+    LogMan::Throw::MFmt("Pear VirtualFree failed: Win32 error {}, address {}, requested bytes {}",
+                       fmt::make_format_args(Error, Ptr, Size));
+  }
+#else
   ::VirtualFree(Ptr, 0, MEM_RELEASE);
+#endif
 }
 
 inline void VirtualDontNeed(void* Ptr, size_t Size, bool Recommit = true) {
@@ -81,6 +100,9 @@ inline void VirtualDontNeed(void* Ptr, size_t Size, bool Recommit = true) {
 }
 
 inline bool VirtualProtect(void* Ptr, size_t Size, ProtectOptions options) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if ((options & ProtectOptions::Exec) == ProtectOptions::Exec) return false;
+#endif
   DWORD prot {PAGE_NOACCESS};
 
   if (options == ProtectOptions::None) {
@@ -114,10 +136,16 @@ FEX_DEFAULT_VISIBILITY extern void VirtualName(const char* Name, void* Ptr, size
 // All commit parameters are ignored here, they are unnecessary as Linux supports overcommit
 
 inline void* VirtualAlloc(size_t Size, bool Execute = false, bool Commit = true) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (Execute) return nullptr;
+#endif
   return FEXCore::Allocator::mmap(nullptr, Size, PROT_READ | PROT_WRITE | (Execute ? PROT_EXEC : 0), MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
 inline void* VirtualAlloc(void* Base, size_t Size, bool Execute = false, bool Commit = true) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if (Execute) return nullptr;
+#endif
   return FEXCore::Allocator::mmap(Base, Size, PROT_READ | PROT_WRITE | (Execute ? PROT_EXEC : 0), MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
@@ -128,6 +156,9 @@ inline void VirtualDontNeed(void* Ptr, size_t Size, bool Recommit = true) {
   ::madvise(reinterpret_cast<void*>(Ptr), Size, MADV_DONTNEED);
 }
 inline bool VirtualProtect(void* Ptr, size_t Size, ProtectOptions options) {
+#ifdef PEAR_FEX_MEMORY_OWNER
+  if ((options & ProtectOptions::Exec) == ProtectOptions::Exec) return false;
+#endif
   int prot {PROT_NONE};
   if ((options & ProtectOptions::Read) == ProtectOptions::Read) {
     prot |= PROT_READ;
