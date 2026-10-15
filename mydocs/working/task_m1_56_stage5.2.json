@@ -1,0 +1,166 @@
+{
+  "changed_files_before_report": [
+    {
+      "path": "Pear/README.md",
+      "sha256": "c47d116d0230301706845b387b72df9ff315d93db9f1c37fae56deb73f5d6dd0",
+      "size_bytes": 8993
+    },
+    {
+      "path": "Readme.md",
+      "sha256": "28da0558fd3caef2b104b0e98ad2e6bc8dd78155e4aaa030072bed855466a139",
+      "size_bytes": 2376
+    }
+  ],
+  "checks": {
+    "fresh_fixture_operations": 7,
+    "fresh_independent_release_groups": 3,
+    "frozen_runtime_paths": 307,
+    "game_copied": false,
+    "game_executed": false,
+    "game_input_files": 69,
+    "game_output_empty": true,
+    "game_source_producers": 92,
+    "operations_resource_checked": 15,
+    "original_protected_paths": 29,
+    "retained_native_and_frames_operations": 8,
+    "selection_metadata_recovery": "passed"
+  },
+  "evidence": {
+    "bindings_review": {
+      "name": "bindings-review-v5.json",
+      "sha256": "20f39a18c4b85d342d5f25ae4d4b466898822eaec3906e9738a4b6398f50d091",
+      "size_bytes": 70664
+    },
+    "bootstrap_release": {
+      "name": "native_bootstrap-release.json",
+      "sha256": "6a30494cba1c22f7fa9658831d41a2cfbb80b96b14fa6d07a29ba2aee834dad5",
+      "size_bytes": 8032
+    },
+    "builder_path_review": {
+      "name": "stage5-builder-path-review.json",
+      "sha256": "ffb7518d98a7120ee5de4476fadb24bbdf02df98fc050f670b5d1a67662d838b",
+      "size_bytes": 9224
+    },
+    "development_lock": {
+      "name": "task56-development-v1.json",
+      "sha256": "932ea9eb3e9218e13bf514b6dc6b1736f7e714d10ce3008af0b538a9d74dc08f",
+      "size_bytes": 1508
+    },
+    "documentation": {
+      "name": "verification-with-source-audit.json",
+      "sha256": "92ab2ab7fffb8cd5cc4fbe8e8bfd030b82517334c56706118e34b9b97563a887",
+      "size_bytes": 4954
+    },
+    "fixture_release": {
+      "name": "fixtures-release.json",
+      "sha256": "36113f58d9bfe663f1d383c41d596e56dc33787c6c2823191444086ec453246a",
+      "size_bytes": 13857
+    },
+    "fixture_selection": {
+      "name": "stage5-fixture-selection-v5-receipt.json",
+      "sha256": "814bcaffa4acd2d8dc266ee0f4737b5f68af7f6b7d660e6aae5216b1029a0dd6",
+      "size_bytes": 4873
+    },
+    "frame_request_retention": {
+      "name": "frames-candidate3-request-retention.json",
+      "sha256": "0fc68cf05ace8d8e77d60a8b51b0219d44cbfb7bf8251a2fbaf461be25f43dba",
+      "size_bytes": 2858
+    },
+    "game_preparation": {
+      "name": "preparation.json",
+      "sha256": "c64a92f224ba22f8183c86b212526811d2245ed8d3313946720e56d476e08280",
+      "size_bytes": 6128
+    },
+    "game_release_review": {
+      "name": "game-release-review.json",
+      "sha256": "92b9be191de5e1022485f12a77349b67568ab471d76879c2332fc9637e56b602",
+      "size_bytes": 3647
+    },
+    "game_selection_recovery": {
+      "name": "stage5-game-selection-recovery-v5.json",
+      "sha256": "f8c4cfa6290f23e903d019045765e78a762a4a0566165f390224664f82badcd8",
+      "size_bytes": 9004
+    },
+    "native_frames_release": {
+      "name": "native_and_frames-release.json",
+      "sha256": "dca623a27fd62646036521180ea28059025821d807d8a87a5bfb810e8dae67be",
+      "size_bytes": 13523
+    },
+    "portable_unchanged_source": {
+      "name": "result.json",
+      "sha256": "d56b6101aa707aea9beffae55648d8b4c574386d3fadfeba02ca2dbd8f7a8443",
+      "size_bytes": 420764
+    },
+    "prerequisite_packet": {
+      "name": "packet-preparation.json",
+      "sha256": "94993d946554cfb0f1fef44977bfc15c76e4c415abeaaaf1a48f59d77383ffcb",
+      "size_bytes": 10102
+    },
+    "protected": {
+      "name": "stage5-protected-final.json",
+      "sha256": "9d77e62c5f7221aa72e538c3ecd67fd0104a0a9c4cc35fed1fbc5b362ef50f28",
+      "size_bytes": 685
+    },
+    "recovery_bounded_reuse": {
+      "name": "recovery-review.json",
+      "sha256": "cbad197544116cd54e6c94b02841bfd952bd2933dd74733ec8c537700a4efd9e",
+      "size_bytes": 5980
+    },
+    "release_invocations": {
+      "name": "stage5-v5-release-invocations.json",
+      "sha256": "d09934bad8713913593b69d7ffe98d9a816c0560ed945cd5f4fb9f161c26eda4",
+      "size_bytes": 2862
+    },
+    "role_swap_review": {
+      "name": "role-swap-review.json",
+      "sha256": "d7d15fd89b436d9bbb787ff76f0cc36b4a8303ec4c8729e5d2f3135ed1c32d5a",
+      "size_bytes": 6343
+    },
+    "selection_review": {
+      "name": "selection-review-v5.json",
+      "sha256": "9be7e2e74c006c91079925cacc238cb02dee0fa26f50ca07721afc4f76715535",
+      "size_bytes": 1635
+    },
+    "seven_execution": {
+      "name": "receipt.json",
+      "sha256": "2020f4f5e4fdbb8cfd90736812ec3ced24ff597c0522bfa20b117ce977b411be",
+      "size_bytes": 33052
+    },
+    "seven_review": {
+      "name": "seven-v5-review.json",
+      "sha256": "5e7a51d7b0db7de041f934e81af6d94b5c38e69a49a91bbd1e4c373919923f81",
+      "size_bytes": 15391
+    },
+    "source_audit_correction": {
+      "name": "receipt.json",
+      "sha256": "7b59a712b06a99ba5d1a6e8103da0d6234ea58ca81489a2853bb3e1d4f82f075",
+      "size_bytes": 3614
+    },
+    "v4_failure": {
+      "name": "receipt.json",
+      "sha256": "dd5bcda889d20084b9546d1043bf2cb33309654aec717331b4fef2346d736052",
+      "size_bytes": 19344
+    },
+    "v4_preloader_release": {
+      "name": "stage5-v4-preloader-resource-observation.json",
+      "sha256": "eb8b2aa0984d3b4d6b5e294f0001884a310fe820c75c4d3be9e26d59550fa947",
+      "size_bytes": 2896
+    }
+  },
+  "limits": [
+    "No runtime execution/result-oracle source change after Stage5.1; Wine/DXMT source-audit tools receive the declared metadata correction.",
+    "Component documentation checkpoint is not a rebuilt component pin.",
+    "Selection metadata recovery is not a full candidate restore.",
+    "Final source-owner cutover remains Stage6."
+  ],
+  "owner": "fex",
+  "schema_version": 1,
+  "scope": "actual_isolated_development_selection",
+  "selected_tool_commits": {
+    "fex": "9c9b602c07b57a08500862abfdf62e1bac351640",
+    "pear_execution_source": "0453474ba59b5a853d58d9556d849c175ad4677a",
+    "runtime": "6f0202b457f0e585c5c7621a63d203e77d07386d"
+  },
+  "source_base": "a8ba1cbd0148b46817842f3b7307689d4b2acbd7",
+  "stage": "5.2"
+}

@@ -38,24 +38,33 @@ saves, signing material and private diagnostic logs are also excluded.
 
 ## Verification and build status
 
-From this repository root, with Python 3 and Git:
+From this repository root, with Python 3 and Git. Bind `RUNTIME_SOURCE_ROOT` and
+`WINE_SOURCE_ROOT` to explicit canonical development checkouts before commands
+that consume them. Their current tool/test revisions are distinct from the
+historical component build roots:
 
 ```sh
 python3 -B Pear/Tools/check_source.py
-PYTHONPATH=../pear-runtime python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v
+PYTHONPATH="$RUNTIME_SOURCE_ROOT" python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v
 ```
 
 To validate shared provider bytes, also supply explicit checkouts:
 
 ```sh
-python3 -B Pear/Tools/check_source.py --runtime-root ../pear-runtime --wine-root ../pear-wine
+python3 -B Pear/Tools/check_source.py --runtime-root "$RUNTIME_SOURCE_ROOT" --wine-root "$WINE_SOURCE_ROOT"
 ```
 
 [Test ownership](Provenance/test-ownership.json) records exact original test
-identities, one canonical destination per file, dependencies and pending Stage 4
-adoption/run status. It also distinguishes already imported synthetic tests
-from adopted CPU source controls and paired runtime tests whose remaining
-execution/adoption status is recorded per file.
+identities, canonical destinations, dependencies and per-file execution limits.
+The selected component-control exports and explicit source-preparation adapters
+are present; unperformed compilation/native controls remain unperformed. Runtime
+owns the [accepted 196-method reconciliation](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/paired-memory-methods.json).
+A source disposition or new hash does not qualify a changed implementation.
+The Stage 4 metadata amendment is published privately at
+`a8ba1cbd0148b46817842f3b7307689d4b2acbd7`; [its report](../mydocs/working/task_m1_56_stage4.md)
+retains the exact limits. The runtime development entrypoints are recorded at
+`6f0202b457f0e585c5c7621a63d203e77d07386d`; final source-owner cutover remains
+a separate handoff from active runtime use.
 
 The source check verifies the imported checkpoint, file modes, ancestry and
 tracked private-selector exclusion. Omitting provider roots reports those
@@ -65,19 +74,42 @@ missing observations; they do not execute FEX or prove native thread liveness.
 The checkpoint manifest intentionally fails after implementation changes until
 an approved new source identity is recorded. It is not a perpetual runtime lock.
 
-Portable developer reconstruction is owned by `pear-runtime` Task #56 Stage 3.
-Until that recipe is delivered, there is no supported standalone Pear candidate
-build command in this fork. The bounded recipe will use explicitly pinned
-objects, archives, generated configuration and tools, rebuild the current
-Core/Module/memory units, and relink into a fresh output. Shared headers and
-the selected private configuration are required inputs. It will not establish
-a clean rebuild of all historical lower layers. The original upstream build
-instructions describe upstream FEX, not this Pear candidate.
+The [runtime-owned FEX recipe](https://github.com/postmelee/pear-runtime/blob/c8887f9edaba57dffe7772cc26fd19aa9571d451/recipes/fex/README.md)
+was exercised in Stage 3. It compiles the selected Core/Module/memory units,
+replaces the declared archive member and links a fresh DLL using exact retained
+objects, generated configuration and tools. Shared provider headers and the
+selected private configuration remain explicit inputs. The upstream instructions
+above still describe upstream FEX; this bounded candidate is not a complete clean
+rebuild of its historical lower layers.
 
-No new build, host execution, no-Rosetta process coverage, gameplay, Steam,
-input/audio/save or ordinary-user distribution qualification is claimed by
-this source import. Cross-component acceptance still requires the seven
-runtime fixtures and the corresponding owner checks.
+From the pinned `pear-runtime` checkout, with reviewed canonical local bindings:
+
+```sh
+python3 -B -m pear_runtime.recipes.fex \
+  --recipe recipes/fex/selected-v1.json \
+  --bindings "$FEX_BINDINGS" \
+  --private-manifest "$FEX_PRIVATE_MANIFEST" \
+  --output "$FRESH_FEX_OUTPUT"
+```
+
+The selected build commit remains `c62ed75aa6a33809ddb76c7f40aabbe4f4fbdda6`.
+The later CPU fixture-source export is `9c9b602c07b57a08500862abfdf62e1bac351640`. Those revisions have different
+roles; the later test commit does not relabel the old built DLL. Runtime builder
+`c8887f9edaba57dffe7772cc26fd19aa9571d451` and seven-fixture checkpoint `c13c7030ec3b780df12373cb9e0460bbcb5b0652` are separate pins as well.
+Use the [revision and recovery guide](https://github.com/postmelee/pear-runtime/blob/codex/task56/docs/development.md) for exact source acquisition and
+input binding. Original receipts are immutable.
+
+Candidate3 assembly and the fifteen Stage 4 controls passed: four native
+controls, three bootstrap controls, seven D36 cases and eighteen-frame
+presentation. After the Stage 5.1 runtime checkpoint, all seven D36 cases passed
+again through Pear's separate development selector. Metadata-only game
+preparation, selection, inspection and recovery also passed; no game was copied
+or launched. Independent release evidence is retained for every fresh operation.
+Accepted CPU/ordering and other candidate2 reuse retains the original exact
+source/reference/operation identities; the AVX case stays unsupported/exit 77.
+These results do not establish gameplay, Steam integration, complete no-Rosetta
+coverage or ordinary-user distribution. Final source cutover is a separate
+owner gate.
 
 ## CPU fixture sources
 
@@ -94,9 +126,9 @@ there is no fallback to a historical Pear worktree. From this FEX root, use a
 canonical absolute runtime path and a fresh output whose parent already exists:
 
 ```sh
-PYTHONPATH=.:../pear-runtime python3 -B -m pear_runtime.recipes.cpu_sources \
-  --fex-root "$PWD" --runtime-root /absolute/path/to/pear-runtime \
-  --output /absolute/path/to/new-cpu-sources
+PYTHONPATH="$PWD:$RUNTIME_SOURCE_ROOT" python3 -B -m pear_runtime.recipes.cpu_sources \
+  --fex-root "$PWD" --runtime-root "$RUNTIME_SOURCE_ROOT" \
+  --output "$FRESH_CPU_SOURCE_OUTPUT"
 ```
 
 This revalidates the pinned 2,270-file ASM census, generates 12 single-case
