@@ -51,6 +51,11 @@ To validate shared provider bytes, also supply explicit checkouts:
 python3 -B Pear/Tools/check_source.py --runtime-root ../pear-runtime --wine-root ../pear-wine
 ```
 
+[Test ownership](Provenance/test-ownership.json) records exact original test
+identities, one canonical destination per file, dependencies and pending Stage 4
+adoption/run status. It also distinguishes already imported synthetic tests
+from component controls and paired runtime tests that have not moved or run.
+
 The source check verifies the imported checkpoint, file modes, ancestry and
 tracked private-selector exclusion. Omitting provider roots reports those
 checks as unperformed. The Python tests exercise synthetic construction,

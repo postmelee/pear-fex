@@ -1,0 +1,4865 @@
+{
+  "schema_version": 1,
+  "kind": "fex_test_ownership",
+  "date": "2026-10-16",
+  "task": 56,
+  "stage": "2 metadata completion",
+  "scope": "Exact per-file source identity and single canonical destination; pending rows are not copied, adopted, built or executed.",
+  "history_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+  "component_source_commit": "52fd8a95955ad33cc589bcd8c5837b84cb21705e",
+  "rules": [
+    "One canonical destination per source; runtime can consume FEX-owned source/expectations through an explicit pinned root.",
+    "Observed includes/imports are direct static dependencies only; transitive compiler/SDK/library/generated-input closure must be verified before Stage4 execution.",
+    "Current source, compiler/configuration and oracle compatibility must be reviewed before reusing old evidence.",
+    "Do not reapply historical generators/patches over editable fork source.",
+    "No legacy test source or artifact is released by this metadata mapping."
+  ],
+  "source_lifetime_and_retirement": {
+    "component_sources": [
+      {
+        "owner": "pear-fex",
+        "path": "FEXCore/Source/Utils/PearFEXRetirement.cpp",
+        "sha256": "af78eadf5bb4275b466c5e84dfbfda42e701c61f0fe81a4cdcb58960fd53aac6",
+        "size_bytes": 3644,
+        "role": "source under test"
+      },
+      {
+        "owner": "pear-fex",
+        "path": "FEXCore/include/FEXCore/Utils/PearSourceGuard.h",
+        "sha256": "f39c5b7957091b0ba2cf49a492eec3ac6259501a511147614bc30276468fd674",
+        "size_bytes": 2331,
+        "role": "source under test"
+      },
+      {
+        "owner": "pear-fex",
+        "path": "Source/Windows/Common/PearFEXMemory.cpp",
+        "sha256": "380ca354c1d424fb8f94278f834e81e339a8008a5d1c43b89e16d3376edf3f7f",
+        "size_bytes": 108871,
+        "role": "source under test"
+      }
+    ],
+    "component_controls": [
+      "pear:tests/fex/memory/owner_preparation.cpp",
+      "pear:tests/fex/guest_map_lifetime.cpp",
+      "pear:tests/steam/test_slot_lifetime_observation.py"
+    ],
+    "paired_runtime_controls": [
+      "pear:tests/fex/ec_memory_lifecycle.h",
+      "pear:tests/fex/ec_concurrent_lifetime.h",
+      "pear:tests/fex/test_memory_atomic_resume.py",
+      "pear:tests/fex/test_memory_protocol.py"
+    ],
+    "gap": "No separate standalone retirement unit-test file was found in the reviewed original tests/fex inventory. The listed component substitutions/diagnostics do not replace paired source-lifetime and retirement controls."
+  },
+  "files": [
+    {
+      "id": "pear:tests/fex/configuration_lifetime.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/configuration_lifetime.cpp",
+        "sha256": "21ac15711a4bf149222930d8e9aa286ad541b05b25dbbb57c555d19f88e36809",
+        "size_bytes": 2632
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/configuration_lifetime.cpp",
+        "exists": false
+      },
+      "role": "selected configuration allocation/lifetime without FEX engine initialization",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Config/Config.cpp",
+          "sha256": "3dfaf99dbdc0165ab8c6dead751bf5c0ba17a7dc566fe1663b7e3684d588acf4",
+          "size_bytes": 23567,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/Config/PearConfigAllocator.h",
+          "sha256": "fe9b0d5fdca9c198738fcec9f86cb09a50a60257d2ce2bb1a88f83bc8d50ad77",
+          "size_bytes": 2886,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Source/Windows/Common/DarwinConfigPolicy.cpp",
+          "sha256": "6a0d801be1f77abe01a2605a9b04a13ae156f85dd4554d30ca48d1af52d26dd3",
+          "size_bytes": 2000,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Source/Windows/Common/DarwinConfigPolicy.h",
+          "sha256": "24a09f91b100112da8076fa5099929e80e0ad44e1882e4feb795fb49986904d3",
+          "size_bytes": 2032,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "External/rpmalloc",
+          "role": "pinned allocator dependency",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <FEXCore/Config/Config.h>",
+        "#include \"Common/DarwinConfigPolicy.h\"",
+        "#include <rpmalloc/rpmalloc.h>",
+        "#include <windows.h>",
+        "#include <cstdio>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Test source is FEX-owned; any Windows provider execution is scheduled and qualified by pear-runtime."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/pmr_lifetime.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/pmr_lifetime.cpp",
+        "sha256": "893587f5d5fa11f083eed2059e4732cc748018964612f7e2b317e32849ef9840",
+        "size_bytes": 3235
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/pmr_lifetime.cpp",
+        "exists": false
+      },
+      "role": "exact PMR resource body with substituted allocation/list providers",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+          "sha256": "e441ca2dacaaeb28d03b81ea8e51a16067670499ff28390395279bb925910eeb",
+          "size_bytes": 5725,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/TestFixtures/run_pmr_lifetime.py",
+          "role": "source-bound extraction adapter",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <algorithm>",
+        "#include <cstdint>",
+        "#include <cstdio>",
+        "#include <cstdlib>",
+        "#include <cstring>",
+        "#include <list>",
+        "#include <memory>",
+        "#include <memory_resource>",
+        "#include <type_traits>",
+        "#include <unordered_map>",
+        "#include \"resource_under_test.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "resource_under_test.inc must be derived from the identified current source; generated include is not a second editable authority.",
+        "Host substitutions do not establish GuestToHostMap or Wine execution."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/empty_object_storage.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/empty_object_storage.cpp",
+        "sha256": "9095e524df2f1cfb32736b9e5585e119f19332a42a004ef29dcb2d41bf16d82d",
+        "size_bytes": 2637
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/empty_object_storage.cpp",
+        "exists": false
+      },
+      "role": "bounded metadata storage and foreign-thread refusal control",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Utils/PearEmptyObjectStorage.cpp",
+          "sha256": "4094c7633ea0da4ee032fe223eeea35e8f1fbd68029632833ad9f41ac26091c9",
+          "size_bytes": 3171,
+          "role": "source under test"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <atomic>",
+        "#include <cassert>",
+        "#include <cstddef>",
+        "#include <cstdint>",
+        "#include <cstdlib>",
+        "#include <cstdio>",
+        "#include <thread>",
+        "#include \"empty_object_storage_under_test.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Requires a reviewed current-source extractor for empty_object_storage_under_test.inc; portable extractor not yet adopted.",
+        "The recorded 12288-byte backing expectation must be checked against the selected compile configuration."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/checked_data_memory.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/checked_data_memory.cpp",
+        "sha256": "6be44cf170529bc9c66c4f6544f4ac5c54314d4128c35213f6fd47e3c4d7cd19",
+        "size_bytes": 3516
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/checked_data_memory.cpp",
+        "exists": false
+      },
+      "role": "actual allocation helper bodies with substituted NT providers",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Source/Windows/Common/WinAPI/Alloc.cpp",
+          "sha256": "319e789426f98f4a607e8f6ab7b063f824b36661ae3c3f663c36503b84463681",
+          "size_bytes": 8402,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+          "sha256": "532f1b06365a3d65f719c6f1ce0df3d5431e3d51bed0fdddb3270fdfbca4b65d",
+          "size_bytes": 16776,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <FEXCore/Utils/PearFEXMemory.h>",
+        "#include <cstdint>",
+        "#include <cstdio>",
+        "#include \"checked_data_memory_under_test.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "checked_data_memory_under_test.inc requires current-source extraction; no real Wine provider executes in this unit control."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/finite_construction.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/finite_construction.cpp",
+        "sha256": "ebc55a081a3fc4a6a321d3e3ee0da4716e5b7ad7e4d2a48d8cb6c45c374c0a0d",
+        "size_bytes": 2008
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/finite_construction.cpp",
+        "exists": false
+      },
+      "role": "source storage allocator, label capacity and CPU-brand storage helpers",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+          "sha256": "8fec80eef79c9662ef76dd72054ed3d97b11c3c2c9baf2566547b5aafd680657",
+          "size_bytes": 10518,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "CodeEmitter/CodeEmitter/Emitter.h",
+          "sha256": "080edca22cba5563e40188fd5cbf97c8d7c7cfee5fbc23713b453a74359c0243",
+          "size_bytes": 31147,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/CPUID.cpp",
+          "sha256": "7b3d3d9f381a4ba49a7e4c23ccb923e8cdcc188f748b4712a4eae08a53c2dba5",
+          "size_bytes": 59753,
+          "role": "source under test"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <cassert>",
+        "#include <cstddef>",
+        "#include <cstdint>",
+        "#include <cstdlib>",
+        "#include <cstring>",
+        "#include <memory>",
+        "#include <algorithm>",
+        "#include <cstdio>",
+        "#include \"finite_construction_under_test.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "finite_construction_under_test.inc extraction is pending.",
+        "Earlier fixed-label expectations predate the later CPU supplement; Stage4 must review their applicability, not claim an unchanged run."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_map_lifetime.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_map_lifetime.cpp",
+        "sha256": "9c46e8cc670092d0c947b905a274fbb7d1def95a704bf7dc71b18706cfe55724",
+        "size_bytes": 3650
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/guest_map_lifetime.cpp",
+        "exists": false
+      },
+      "role": "selected GuestToHostMap lifetime fixture without engine initialization",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/fextl/memory.h",
+          "sha256": "c8fade6eb37b9526e0a6e516cb2f5e39c9ad1d18bb88f398a6d605506c6d2553",
+          "size_bytes": 1370,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+          "sha256": "e441ca2dacaaeb28d03b81ea8e51a16067670499ff28390395279bb925910eeb",
+          "size_bytes": 5725,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+          "sha256": "01e8616f208521ca01091487bc5ff213773829cf2513dfa9d16066f97b001a7d",
+          "size_bytes": 22116,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/LookupCache.cpp",
+          "sha256": "ac5cabe4a257920eb79f91c16ad8b9c539470690b2329f3316749f5ac57cdab4",
+          "size_bytes": 6599,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "External/rpmalloc",
+          "role": "allocator dependency",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <FEXCore/fextl/memory.h>",
+        "#include \"Interface/Core/LookupCache.h\"",
+        "#include <rpmalloc/rpmalloc.h>",
+        "#include <windows.h>",
+        "#include <cstdio>",
+        "#include <cstring>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Fixture source is FEX-owned; it uses real Wine VM and FEX/rpmalloc allocation, so execution requires the common runtime harness."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/pmr_layout.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/pmr_layout.cpp",
+        "sha256": "c3352090e261c59beb90bb2255503e09e49b2ebbf017dfff155547b4725dcce2",
+        "size_bytes": 954
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/pmr_layout.cpp",
+        "exists": false
+      },
+      "role": "data-only selected FEX/libc++ PMR type layout",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/fextl/memory.h",
+          "sha256": "c8fade6eb37b9526e0a6e516cb2f5e39c9ad1d18bb88f398a6d605506c6d2553",
+          "size_bytes": 1370,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+          "sha256": "01e8616f208521ca01091487bc5ff213773829cf2513dfa9d16066f97b001a7d",
+          "size_bytes": 22116,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <cstdint>",
+        "#include <FEXCore/fextl/memory.h>",
+        "#include \"Interface/Core/LookupCache.h\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Compiler/libc++ ABI and build definitions must be pinned before interpreting layout."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/integration_layout.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/integration_layout.cpp",
+        "sha256": "2db3edcd6ce6f6299e4339f8cb1f2d3e37db663d586f8c3a9f4bcdaf2dc52974",
+        "size_bytes": 1050
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/integration_layout.cpp",
+        "exists": false
+      },
+      "role": "compiler-sized FEX context/thread/backend/dispatcher/lifetime types",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Context/Context.h",
+          "sha256": "dd0d6dfb9fcfc82048616bbc00c16bcd711482511395dd2da5a90680adebdb3b",
+          "size_bytes": 24603,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/CPUBackend.h",
+          "sha256": "f29a11861d88df3e5e99ed4cdd1bc782c2adfd35c016cf11f5291015728cb59e",
+          "size_bytes": 7255,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+          "sha256": "69d9a9bb0e7de4e801871a0b73602ab33f9a7c09c64590d4d4d8e4328f1ee3e7",
+          "size_bytes": 25425,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.h",
+          "sha256": "4703030c454aa3b20d461ce9b41dda7778491c187661d77b7bc28958c06529f4",
+          "size_bytes": 8087,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+          "sha256": "01e8616f208521ca01091487bc5ff213773829cf2513dfa9d16066f97b001a7d",
+          "size_bytes": 22116,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.h",
+          "sha256": "39e638d9ce84ce69db1977aaf97e2a307b50e0655a5d7c016f7b83833f651e79",
+          "size_bytes": 6897,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/Debug/InternalThreadState.h",
+          "sha256": "08ab6d391701355f4356c508f3bb8e5abd0a6e52360808d3c7f518935d2dc142",
+          "size_bytes": 4125,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"Interface/Context/Context.h\"",
+        "#include \"Interface/Core/CPUBackend.h\"",
+        "#include \"Interface/Core/JIT/JITClass.h\"",
+        "#include \"Interface/Core/Dispatcher/Dispatcher.h\"",
+        "#include \"Interface/Core/LookupCache.h\"",
+        "#include \"Interface/Core/SharedCodeBufferManager.h\"",
+        "#include <FEXCore/Debug/InternalThreadState.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "No constructor or runtime execution; layout evidence is specific to the selected compiler and definitions."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/owner_preparation.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/owner_preparation.cpp",
+        "sha256": "a4c766ce8c743291938753845833287f0f1323699e866ec893fb953d56713ec5",
+        "size_bytes": 4353
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Memory/owner_preparation.cpp",
+        "exists": false
+      },
+      "role": "pre-engine source lifetime admission with substituted bridge/provider calls",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "sha256": "380ca354c1d424fb8f94278f834e81e339a8008a5d1c43b89e16d3376edf3f7f",
+          "size_bytes": 108871,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <atomic>",
+        "#include <cassert>",
+        "#include <cstdint>",
+        "#include <cstdio>",
+        "#include \"wine/pear_fex_memory.h\"",
+        "#include \"owner_preparation_under_test.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Requires source-bound owner_preparation_under_test.inc; provider responses are substitutes and do not prove native retirement."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/run_pmr_lifetime.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/run_pmr_lifetime.py",
+        "sha256": "10956159a796f1d4bd8cb2e7c1da6a797ee51c7e015ac341c5e4bc8c474f0994",
+        "size_bytes": 6283
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tools/TestFixtures/run_pmr_lifetime.py",
+        "exists": false
+      },
+      "role": "historical PMR extraction/control driver requiring migration",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/Memory/pmr_lifetime.cpp",
+          "role": "fixture",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+          "sha256": "e441ca2dacaaeb28d03b81ea8e51a16067670499ff28390395279bb925910eeb",
+          "size_bytes": 5725,
+          "role": "source under test"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import hashlib",
+        "import json",
+        "import os",
+        "import platform",
+        "import shutil",
+        "import subprocess"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Do not execute unchanged: it pins an older source and applies historical 0003r candidate.patch.",
+        "Replace patch application with an explicit current fork source binding; preserve baseline comparison as separately identified historical evidence."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/emitter_labels.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/emitter_labels.cpp",
+        "sha256": "553a482d35a29be0c04e28d74c98e8cf97ee3853e486190f610dc0c1c2ac32e4",
+        "size_bytes": 2110
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/emitter_labels.cpp",
+        "exists": false
+      },
+      "role": "actual emitter fixups in NX data with test allocator adapters",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "CodeEmitter/CodeEmitter/Emitter.h",
+          "sha256": "080edca22cba5563e40188fd5cbf97c8d7c7cfee5fbc23713b453a74359c0243",
+          "size_bytes": 31147,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "External/fmt/include",
+          "role": "header-only formatting dependency",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <CodeEmitter/Emitter.h>",
+        "#include <cassert>",
+        "#include <cstdio>",
+        "#include <cstdlib>",
+        "#include <cstring>",
+        "#include <string_view>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Controls private label growth and refusal when a private label enters a direct buffer; generated code is not executed."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/emitter_check.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/emitter_check.py",
+        "sha256": "33645cecd4dde7c8c8d4603674ec1d005c48b9aebbc74928db187b3a70e50e64",
+        "size_bytes": 2367
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tools/TestFixtures/emitter_check.py",
+        "exists": false
+      },
+      "role": "component emitter control driver requiring portable input binding",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/emitter_labels.cpp",
+          "role": "fixture",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "CodeEmitter/CodeEmitter/Emitter.h",
+          "sha256": "080edca22cba5563e40188fd5cbf97c8d7c7cfee5fbc23713b453a74359c0243",
+          "size_bytes": 31147,
+          "role": "source under test"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse,sys",
+        "import subprocess,json,hashlib"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Replace old runtime/fex/patches/cpu/series.json identity and host command assumptions with fork/source/tool bindings."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/corpus.json",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/corpus.json",
+        "sha256": "c6ad9b39b475d1dbd7f0fbe377c50022a11d32d7b08e967e684b2250d1d593f9",
+        "size_bytes": 34111
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/corpus.json",
+        "exists": false
+      },
+      "role": "CPU semantic source selection, expectations or declared adaptation record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "unittests/ASM",
+          "role": "canonical upstream case sources",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "tests/cpu",
+          "role": "external ABI/SEH/ordering boundary sources and qualification consumers",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/sources.json",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/sources.json",
+        "sha256": "69727b6125bbea096c1d635e7b2cdb5e4c794c2df9fa1964568763645e190839",
+        "size_bytes": 4638
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/sources.json",
+        "exists": false
+      },
+      "role": "CPU semantic source selection, expectations or declared adaptation record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "unittests/ASM",
+          "role": "canonical upstream case sources",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "tests/cpu",
+          "role": "external ABI/SEH/ordering boundary sources and qualification consumers",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/adaptations.json",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/adaptations.json",
+        "sha256": "17bf454588ee9544cad95d8b78fd8d65ac5bc96579eae88d1d191b03695167ed",
+        "size_bytes": 698
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/adaptations.json",
+        "exists": false
+      },
+      "role": "CPU semantic source selection, expectations or declared adaptation record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "unittests/ASM",
+          "role": "canonical upstream case sources",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "tests/cpu",
+          "role": "external ABI/SEH/ordering boundary sources and qualification consumers",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/corpus.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/corpus.py",
+        "sha256": "021759a850a166560e620fdb6d84d21baee0b5a80633fc485c71ef073d826cc7",
+        "size_bytes": 12141
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tools/CPU/corpus.py",
+        "exists": false
+      },
+      "role": "pure corpus inventory or source generation; no host qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "generate.py is GPL-3.0-or-later adapted from Madeira; retain upstream author/revision and notices. No Apple exception is assumed."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "semantic corpus",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/sources.json",
+          "role": "upstream selection/provenance",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/adaptations.json",
+          "role": "declared PE adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import collections",
+        "import hashlib",
+        "import os",
+        "import re",
+        "import sys",
+        "from tools.wine.common import Error, need, read_relative, decode_json, encoded, load_json"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/generate.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/generate.py",
+        "sha256": "c97130ad8b1123a222adf95fdfc2f8daabc2b283b58f9fcc170acbb6052d4574",
+        "size_bytes": 7277
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tools/CPU/generate.py",
+        "exists": false
+      },
+      "role": "pure corpus inventory or source generation; no host qualification",
+      "license": {
+        "spdx_markers": [
+          "GPL-3.0-or-later",
+          "GPL-3.0-or-later',"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false,
+        "additional_record": "generate.py is GPL-3.0-or-later adapted from Madeira; retain upstream author/revision and notices. No Apple exception is assumed."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "semantic corpus",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/sources.json",
+          "role": "upstream selection/provenance",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/adaptations.json",
+          "role": "declared PE adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/runner.c",
+          "role": "per-case capture driver",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "pear_runtime",
+          "role": "bounded JSON/input helpers and explicit roots",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import re",
+        "import sys",
+        "from tools.cpu.corpus import REPO, assess, digest",
+        "from tools.cpu.adapt import effective_case, adapt_body, rules",
+        "from tools.wine.common import need, read_relative, load_json, encoded"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/adapt.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/adapt.py",
+        "sha256": "230de8c7ebca1f5302ebac83855d0e5ae1024447820ffa8059484ce338c17b45",
+        "size_bytes": 1866
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tools/CPU/adapt.py",
+        "exists": false
+      },
+      "role": "pure corpus inventory or source generation; no host qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false,
+        "additional_record": "generate.py is GPL-3.0-or-later adapted from Madeira; retain upstream author/revision and notices. No Apple exception is assumed."
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "semantic corpus",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/sources.json",
+          "role": "upstream selection/provenance",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/adaptations.json",
+          "role": "declared PE adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import json",
+        "from pathlib import Path"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_corpus.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_corpus.py",
+        "sha256": "896b7a023a2e5019c7ec2fb81d4384ef3034fa48e3a3255b0b1349d7dba53fe5",
+        "size_bytes": 8048
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/test_corpus.py",
+        "exists": false
+      },
+      "role": "synthetic corpus completeness/refusal tests",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/corpus.py",
+          "role": "inventory validator",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "from pathlib import Path",
+        "import tempfile",
+        "import unittest",
+        "from tools.cpu import corpus as c"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Pure metadata controls do not qualify guest instructions."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/runner.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/runner.c",
+        "sha256": "d4e4c3b6710f7e5d09f352be20e57d55bb47e02f758ee34eb28468b78103f1ef",
+        "size_bytes": 2541
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/runner.c",
+        "exists": false
+      },
+      "role": "per-case x64 CPU capture fixture source",
+      "license": {
+        "spdx_markers": [
+          "GPL-3.0-or-later"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "case.h/assembly producer",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>",
+        "#include <cpuid.h>",
+        "#include \"case.h\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "GPL-3.0-or-later adaptation from Madeira by Will Faust at recorded revision; execution and result acceptance are runtime-owned."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/LICENSES/FEX-MIT.txt",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/LICENSES/FEX-MIT.txt",
+        "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+        "size_bytes": 1094
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/LICENSES/FEX-MIT.txt",
+        "exists": false
+      },
+      "role": "unchanged original CPU corpus/generator attribution record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license."
+      },
+      "dependencies": [],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": []
+    },
+    {
+      "id": "pear:tests/cpu/LICENSES/Madeira-GPL-3.0.txt",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/LICENSES/Madeira-GPL-3.0.txt",
+        "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+        "size_bytes": 35150
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/LICENSES/Madeira-GPL-3.0.txt",
+        "exists": false
+      },
+      "role": "unchanged original CPU corpus/generator attribution record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license."
+      },
+      "dependencies": [],
+      "observed_includes_or_imports": [
+        "from the Corresponding Source as a System Library, need not be"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": []
+    },
+    {
+      "id": "pear:tests/cpu/LICENSES/Madeira-EXCEPTION.md",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/LICENSES/Madeira-EXCEPTION.md",
+        "sha256": "534f059c2e9fe5de1acde82b920651b77ea3b4253f86837a3d6a81f54a5bdbbc",
+        "size_bytes": 3840
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/CPU/LICENSES/Madeira-EXCEPTION.md",
+        "exists": false
+      },
+      "role": "unchanged original CPU corpus/generator attribution record",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false,
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license."
+      },
+      "dependencies": [],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "The Madeira exception text states it is a draft and not in effect; this mapping grants no additional permission."
+      ]
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/TwoByte/0F_B6.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/TwoByte/0F_B6.asm",
+        "sha256": "c084de325e2a765749bcb51c44e2630fe07571b5adeb660e423103a00b79a6f4",
+        "size_bytes": 628
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/TwoByte/0F_B6.asm",
+        "exists": true,
+        "sha256": "c084de325e2a765749bcb51c44e2630fe07571b5adeb660e423103a00b79a6f4"
+      },
+      "role": "selected CPU semantic case zero-extension",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/FEX_bugs/add_sub_carry.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/FEX_bugs/add_sub_carry.asm",
+        "sha256": "6ffa07896982c0de459445a2f71548d538402a6a36dedf0f0d8780e1b9673991",
+        "size_bytes": 568
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/FEX_bugs/add_sub_carry.asm",
+        "exists": true,
+        "sha256": "6ffa07896982c0de459445a2f71548d538402a6a36dedf0f0d8780e1b9673991"
+      },
+      "role": "selected CPU semantic case carry-widths",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/FEX_bugs/xor_flags.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/FEX_bugs/xor_flags.asm",
+        "sha256": "58e8ff13cec36cfb70f4e9a07daf7323bb309a368ff08b97683f84aabfd63cbc",
+        "size_bytes": 321
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/FEX_bugs/xor_flags.asm",
+        "exists": true,
+        "sha256": "58e8ff13cec36cfb70f4e9a07daf7323bb309a368ff08b97683f84aabfd63cbc"
+      },
+      "role": "selected CPU semantic case xor-flags",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/FEX_bugs/ShiftZeroFlagsUpdate.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/FEX_bugs/ShiftZeroFlagsUpdate.asm",
+        "sha256": "9e7e59da59556c93a0346ff860270b46db99b3ecca9a6440049ef9ee9e7e8971",
+        "size_bytes": 813
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/FEX_bugs/ShiftZeroFlagsUpdate.asm",
+        "exists": true,
+        "sha256": "9e7e59da59556c93a0346ff860270b46db99b3ecca9a6440049ef9ee9e7e8971"
+      },
+      "role": "selected CPU semantic case zero-shift-flags",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/FEX_bugs/cmpxchg_eax.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/FEX_bugs/cmpxchg_eax.asm",
+        "sha256": "619ed6b1aa8a9e4a7440fd22682fc388e4f70503d50f43e71deef96e0db2fbc7",
+        "size_bytes": 188
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/FEX_bugs/cmpxchg_eax.asm",
+        "exists": true,
+        "sha256": "619ed6b1aa8a9e4a7440fd22682fc388e4f70503d50f43e71deef96e0db2fbc7"
+      },
+      "role": "selected CPU semantic case cmpxchg-eax",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/TwoByte/0F_C0.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/TwoByte/0F_C0.asm",
+        "sha256": "f761d450902c927361f98cf69d067fd1d9287cabd2d191a7bfa225b801a6159b",
+        "size_bytes": 951
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/TwoByte/0F_C0.asm",
+        "exists": true,
+        "sha256": "f761d450902c927361f98cf69d067fd1d9287cabd2d191a7bfa225b801a6159b"
+      },
+      "role": "selected CPU semantic case xadd-widths",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/TwoByte/0F_58.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/TwoByte/0F_58.asm",
+        "sha256": "8263c2c7a3421a2552ec07b1d1127cbd24749da00d7ca81e1703908ab3db5efe",
+        "size_bytes": 587
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/TwoByte/0F_58.asm",
+        "exists": true,
+        "sha256": "8263c2c7a3421a2552ec07b1d1127cbd24749da00d7ca81e1703908ab3db5efe"
+      },
+      "role": "selected CPU semantic case packed-float-add",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/REPNE/F2_58.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/REPNE/F2_58.asm",
+        "sha256": "9088b6264e9f714ef7057cc6197941f2320350e6270aafd1cd9fedf1014b1407",
+        "size_bytes": 1275
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/REPNE/F2_58.asm",
+        "exists": true,
+        "sha256": "9088b6264e9f714ef7057cc6197941f2320350e6270aafd1cd9fedf1014b1407"
+      },
+      "role": "selected CPU semantic case scalar-double-add",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/REP/F3_2C.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/REP/F3_2C.asm",
+        "sha256": "429cc030a0d2bad143c9fa09f07722e345b0cbc1364a0d13833f3fdf79dd1c35",
+        "size_bytes": 1107
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/REP/F3_2C.asm",
+        "exists": true,
+        "sha256": "429cc030a0d2bad143c9fa09f07722e345b0cbc1364a0d13833f3fdf79dd1c35"
+      },
+      "role": "selected CPU semantic case float-to-integer",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/MemoryData.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/MemoryData.asm",
+        "sha256": "66bdad4663d1134b4fd2b64f49ca8e213695eb4c027a214215c5f5b2b7c038ad",
+        "size_bytes": 272
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/MemoryData.asm",
+        "exists": true,
+        "sha256": "66bdad4663d1134b4fd2b64f49ca8e213695eb4c027a214215c5f5b2b7c038ad"
+      },
+      "role": "selected CPU semantic case configured-memory",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/Displacement_Encoding.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/Displacement_Encoding.asm",
+        "sha256": "f5c5f90702fb1fe1c239bc7361ce31ddb536ac4fd3c65f225390ad0cfae0de27",
+        "size_bytes": 1189
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/Displacement_Encoding.asm",
+        "exists": true,
+        "sha256": "f5c5f90702fb1fe1c239bc7361ce31ddb536ac4fd3c65f225390ad0cfae0de27"
+      },
+      "role": "selected CPU semantic case absolute-displacement",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "fex-upstream:unittests/ASM/SSELanePreservation/addsd.asm",
+      "source": {
+        "repository": "https://github.com/FEX-Emu/FEX",
+        "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+        "path": "unittests/ASM/SSELanePreservation/addsd.asm",
+        "sha256": "4abf97393a4734dce505abd8e7e65ada4e20df13e362f1ba70440fd8d8f818a3",
+        "size_bytes": 974
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "unittests/ASM/SSELanePreservation/addsd.asm",
+        "exists": true,
+        "sha256": "4abf97393a4734dce505abd8e7e65ada4e20df13e362f1ba70440fd8d8f818a3"
+      },
+      "role": "selected CPU semantic case avx-lane-preservation",
+      "license": {
+        "spdx_markers": [],
+        "basis": "pinned upstream FEX MIT LICENSE and tests/cpu/sources.json review",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tests/CPU/corpus.json",
+          "role": "CONFIG expectations/features/masks",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/CPU/generate.py",
+          "role": "per-case capture adaptation",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "role": "explicit MinGW/toolchain and isolated paired runtime execution; no component-local run establishes Wine/FEX qualification"
+        }
+      ],
+      "status": "upstream_source_already_present_exact; stage4_harness_adoption_and_execution_pending",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "pear:tools/steam/thread_create_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/thread_create_observation.py",
+        "sha256": "817bbf8d021a049430b3bef517c033d007cc06f7662d89836a401795f128a9ff",
+        "size_bytes": 2539
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/thread_create_observation.py",
+        "exists": true,
+        "sha256": "cfbd2e406759cfd0fd2cc65850c911c2c9c2dc3747ef706d358b0d43db702479"
+      },
+      "role": "imported component diagnostic reader",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics.validation import need",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import re",
+        "from tools.dxmt.translated_inputs import need"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)"
+    },
+    {
+      "id": "pear:tools/steam/attach_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/attach_observation.py",
+        "sha256": "c43c17b25ddd35feb589ae3ec8871da91a3c3b563cca5aec625a43e949152c9a",
+        "size_bytes": 4709
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/attach_observation.py",
+        "exists": true,
+        "sha256": "f6006cd17e765ab8a2c6d70d25a3ae4654974702a9d629338f6cab60669c63ac"
+      },
+      "role": "imported component diagnostic reader",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics.validation import need",
+          "status": "present"
+        },
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import thread_create_observation as create",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import re",
+        "from tools.dxmt.translated_inputs import need",
+        "from tools.steam import thread_create_observation as create"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)"
+    },
+    {
+      "id": "pear:tools/steam/binding_census_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/binding_census_observation.py",
+        "sha256": "c9da546422484d3aaa2bf9470eb30f323340ca5d34299850561d8eaafc6bc494",
+        "size_bytes": 3549
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/binding_census_observation.py",
+        "exists": true,
+        "sha256": "813cc4f000f091e79e8288967b216b8fa3c64d8c45463730ae97f1cebea32b85"
+      },
+      "role": "imported component diagnostic reader",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics.validation import need",
+          "status": "present"
+        },
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import attach_observation as attach",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import re",
+        "from tools.dxmt.translated_inputs import need",
+        "from tools.steam import attach_observation as attach"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)"
+    },
+    {
+      "id": "pear:tools/steam/slot_lifetime_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/slot_lifetime_observation.py",
+        "sha256": "edc026b9fbbd33ad949c29149ea00536920434eaa16584240afc869998061c44",
+        "size_bytes": 4161
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/slot_lifetime_observation.py",
+        "exists": true,
+        "sha256": "cdb5b186bb1659fad54502fc772ef37403822620756d2b87fdcc37922c7897b4"
+      },
+      "role": "imported component diagnostic reader",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics.validation import need",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import re",
+        "from tools.dxmt.translated_inputs import need"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)"
+    },
+    {
+      "id": "pear:tests/steam/test_thread_create_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_thread_create_observation.py",
+        "sha256": "fb9a11f5583d92632c5ae91337671d9f24a63948f62995fd567b21595090ed7b",
+        "size_bytes": 2714
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_thread_create_observation.py",
+        "exists": true,
+        "sha256": "1ec40e8accf750eea04c8490289e8da0d195b826b0c123c84f9c0737d7757cf7"
+      },
+      "role": "imported synthetic diagnostic test",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import thread_create_observation as observation",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import unittest",
+        "from tools.steam import thread_create_observation as observation"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)",
+      "test_methods": 8
+    },
+    {
+      "id": "pear:tests/steam/test_attach_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_attach_observation.py",
+        "sha256": "b8040c70b8bcbdbfd434a112b415367e656c4677b11148ce3c7cd7cfaa143585",
+        "size_bytes": 4948
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_attach_observation.py",
+        "exists": true,
+        "sha256": "4fbfcbc35debe6a896eeb2d485d654bf24a7328f739a56195b90d6315be9d6c2"
+      },
+      "role": "imported synthetic diagnostic test",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import attach_observation as observe",
+          "status": "present"
+        },
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Tests.test_thread_create_observation import record as primary",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import unittest",
+        "from tools.steam import attach_observation as observe",
+        "from tests.steam.test_thread_create_observation import record as primary"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)",
+      "test_methods": 10
+    },
+    {
+      "id": "pear:tests/steam/test_binding_census.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_binding_census.py",
+        "sha256": "c70c080611c2b3f03fa828a46ccff6b487a122b91b003c823caa7029452fd1e6",
+        "size_bytes": 3476
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_binding_census.py",
+        "exists": true,
+        "sha256": "ed3eb19f882d0756d12c2df0dbe3b9975c9b1275bb5741ce79e2884b8388e98f"
+      },
+      "role": "imported synthetic diagnostic test",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import binding_census_observation as observe",
+          "status": "present"
+        },
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Tests.test_attach_observation import primary,companion",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import unittest",
+        "from tools.steam import binding_census_observation as observe",
+        "from tests.steam.test_attach_observation import primary,companion"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)",
+      "test_methods": 8
+    },
+    {
+      "id": "pear:tests/steam/test_slot_lifetime_observation.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_slot_lifetime_observation.py",
+        "sha256": "ba077c58e4c4ebd7839560d6ab019338ec74c582ffae7aea377420ebf159df9e",
+        "size_bytes": 3473
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_slot_lifetime_observation.py",
+        "exists": true,
+        "sha256": "8751a2d45267921c63e7b6e797e2152f3db5dad88c85c7b24d8811cb887d8b5a"
+      },
+      "role": "imported synthetic diagnostic test",
+      "license": {
+        "spdx_markers": [
+          "GPL-3.0-or-later"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "import": "from Pear.Diagnostics import slot_lifetime_observation as s",
+          "status": "present"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import unittest",
+        "from tools.steam import slot_lifetime_observation as s"
+      ],
+      "status": "adopted_stage2; synthetic_unit_test_run_passed",
+      "execution_in_this_amendment": false,
+      "notes": [],
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "execution_record": "Pear/Provenance/import-verification.json (45 total tests across five files; no runtime qualification)",
+      "test_methods": 12
+    },
+    {
+      "id": "pear-fex:Pear/Tests/test_source_checkpoint.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear-fex",
+        "commit": "a46bb2586dbaaf312657376f77d5653dfd61bad4",
+        "path": "Pear/Tests/test_source_checkpoint.py",
+        "sha256": "7fcc0738dd129a792ba4c6ed927b3fe27fc3395eb22e89a647a828c47ee81989",
+        "size_bytes": 2333
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_source_checkpoint.py",
+        "exists": true
+      },
+      "role": "new exact-source refusal controls",
+      "license": {
+        "spdx_markers": [
+          "GPL-3.0-or-later"
+        ],
+        "basis": "existing explicit per-file notice",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Tools/check_source.py",
+          "sha256": "321d46f2a429e340eaa904edd8795567a56653ca7dbfee48418bd5e76f377dff",
+          "size_bytes": 4204,
+          "role": "verifier under test"
+        }
+      ],
+      "status": "adopted_stage2; seven_tests_passed",
+      "execution_in_this_amendment": false
+    },
+    {
+      "id": "pear:tests/steam/attach_diagnostic_probe.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/attach_diagnostic_probe.cpp",
+        "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+        "size_bytes": 6143
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/attach_diagnostic_probe.cpp",
+        "exists": false
+      },
+      "role": "generic diagnostic source/emitter control",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearThreadCreateObservation.h",
+          "sha256": "4e845abacb95bd4c85aee18cecbf22671ce89416c998083b63039ba4d153c041",
+          "size_bytes": 1478,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearAttachObservation.h",
+          "sha256": "8d084762e3b6d58d195b91c191cce0ad4154cc41f5762671aeb6aae10ce0a854",
+          "size_bytes": 2178,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearBindingCensus.h",
+          "sha256": "1efaebc7bf521a2af1b3de5e77ebb8e74d7f65192cf564a87bfdc990b032502c",
+          "size_bytes": 1854,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearBindingCensusEmit.h",
+          "sha256": "af906beb8ad6e4f70b465dca1140ebcdf100f9b8614f20ac4d1c9d846846d9d9",
+          "size_bytes": 1760,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearThreadCreateRuntime.inc",
+          "sha256": "d6bfa37d532b5e0765c01801585845e45c3a970c1b3b07ce661bff2525313354",
+          "size_bytes": 3776,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <atomic>",
+        "#include <cassert>",
+        "#include <cerrno>",
+        "#include <cstdint>",
+        "#include <cstdio>",
+        "#include <cstring>",
+        "#include <string>",
+        "#include <thread>",
+        "#include <vector>",
+        "#include \"PearThreadCreateObservation.h\"",
+        "#include \"PearThreadCreateRuntime.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Existing synthetic C++ control not imported or compiled in Stage2."
+      ]
+    },
+    {
+      "id": "pear:tests/steam/slot_lifetime_probe.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/slot_lifetime_probe.cpp",
+        "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+        "size_bytes": 3614
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/slot_lifetime_probe.cpp",
+        "exists": false
+      },
+      "role": "generic diagnostic source/emitter control",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearSlotLifetime.h",
+          "sha256": "da0a68d651adbafbebc03f196b6da2533ad1231814a03bab4d8729b10cf9f43d",
+          "size_bytes": 2061,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearSlotLifetimeRuntime.inc",
+          "sha256": "a389e934d0bba22b98a3e0d1b32290e6afedc4a9dae715cc707c9a1f2e0932e9",
+          "size_bytes": 2559,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearSlotLifetimeMemory.inc",
+          "sha256": "87a7c0731e08f043600a048334df4187bb4a8aba0fca7652de1b9a83b6bbabd6",
+          "size_bytes": 1495,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <atomic>",
+        "#include <cassert>",
+        "#include <cerrno>",
+        "#include <cstdio>",
+        "#include <cstring>",
+        "#include <string>",
+        "#include <vector>",
+        "#include \"PearSlotLifetime.h\"",
+        "#include \"PearSlotLifetimeRuntime.inc\"",
+        "#include \"PearSlotLifetimeMemory.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Existing synthetic C++ control not imported or compiled in Stage2."
+      ]
+    },
+    {
+      "id": "pear:tests/steam/attach_branch_probe.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/attach_branch_probe.cpp",
+        "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+        "size_bytes": 4277
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/attach_branch_probe.cpp",
+        "exists": false
+      },
+      "role": "generic diagnostic source/emitter control",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Diagnostics/include/PearAttachObservation.h",
+          "sha256": "8d084762e3b6d58d195b91c191cce0ad4154cc41f5762671aeb6aae10ce0a854",
+          "size_bytes": 2178,
+          "role": "source under test"
+        },
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "explicit_local_toolchain",
+          "role": "native ARM64 C++ compiler, SDK and standard library; exact identities/argv must be bound before a Stage4 run"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <atomic>",
+        "#include <cassert>",
+        "#include <cstdint>",
+        "#include <iostream>",
+        "#include <limits>",
+        "#include <sstream>",
+        "#include <string>",
+        "#include <wine/pear_fex_memory.h>",
+        "#include \"PearAttachObservation.h\"",
+        "#include \"attach_branch_fixture.inc\"",
+        "#include \"original-attach-functions.inc\"",
+        "#include \"attach_branch_fixture.inc\"",
+        "#include \"observed-attach-functions.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Existing synthetic C++ control not imported or compiled in Stage2.",
+        "Requires attach_branch_fixture.inc and original/prepared attach function extracts from source-bound historical/current inputs; extraction review pending."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/ec_memory_lifecycle.h",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/ec_memory_lifecycle.h",
+        "sha256": "c71a5128f1e360d448df66864d1222496a810875a625126c82ffb045a5601d27",
+        "size_bytes": 7231
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/ec_memory_lifecycle.h",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/ec_concurrent_lifetime.h",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/ec_concurrent_lifetime.h",
+        "sha256": "e5f53abed4eec357b3d1b0985303f8b9941aef5fe8805f175b57a3ca0efc6b71",
+        "size_bytes": 4754
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/ec_concurrent_lifetime.h",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/test_memory_protocol.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/test_memory_protocol.py",
+        "sha256": "df79e686d05b8768addce037c397ed4d78bdb5dadc30c53b53a0397cf640d8cd",
+        "size_bytes": 5720
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/test_memory_protocol.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import importlib.util",
+        "import unittest"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/test_memory_atomic_resume.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/test_memory_atomic_resume.py",
+        "sha256": "879ddb2d4a67b1a7b0b12abdd5283dcac9a2d56f34d963727fde737ef87cc50b",
+        "size_bytes": 15494
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/test_memory_atomic_resume.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import unittest",
+        "from tools.fex import memory_resume_checks as checks"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/test_memory_fex_pair.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/test_memory_fex_pair.py",
+        "sha256": "492c50a35a5fa12ee387f2b551e37ec8ab4a4de1bbbf0f8295daab5934ae1be4",
+        "size_bytes": 54855
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/test_memory_fex_pair.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import hashlib",
+        "import json",
+        "import os",
+        "import runpy",
+        "import subprocess",
+        "from pathlib import Path",
+        "import shutil",
+        "import struct",
+        "import sys",
+        "import tempfile",
+        "import unittest",
+        "from unittest.mock import patch",
+        "from tools.fex import memory_fex_check as evidence, memory_fex_build as constructor"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/test_memory_check.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/test_memory_check.py",
+        "sha256": "538ff17d89ae23fed36678d4a4816684c1d2a48f2eb01a7644135b43d5ff42c2",
+        "size_bytes": 15596
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/test_memory_check.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from copy import deepcopy",
+        "from pathlib import Path",
+        "from types import SimpleNamespace",
+        "from collections import Counter",
+        "import sys",
+        "import tempfile",
+        "import unittest",
+        "from unittest.mock import patch",
+        "from tools.fex import memory_check as checks, memory_run as runner",
+        "from tools.fex.common import Error"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_api.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_api.c",
+        "sha256": "d7d822004ec64cbd1fca703b1195abd40a55ac1d3825743178b7d7f1ed8a81ed",
+        "size_bytes": 3387
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/guest_api.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <stdint.h>",
+        "#include <stddef.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_thread.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_thread.c",
+        "sha256": "82d3df3728da1b156b0b0c1ce01cdecb841e16358c1414937ffb6744309eef2f",
+        "size_bytes": 1457
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/guest_thread.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_exception.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_exception.c",
+        "sha256": "5cd3d261ca38786c60e445eef07661a718f4a0c7b2b1e42a5f26bb1bbeae7e7a",
+        "size_bytes": 2192
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/guest_exception.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_context.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_context.c",
+        "sha256": "a7a47ea0fb4290297911c75df3f2e62566df7a2c41614cc8bafa33cb43b1f58f",
+        "size_bytes": 1371
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/guest_context.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/guest_invalidation.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_invalidation.c",
+        "sha256": "2a61be720bf218f9bc4f2b684a7594eac849d3597b112fd5b46f44a198bf445f",
+        "size_bytes": 2047
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/guest_invalidation.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/abi.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/abi.c",
+        "sha256": "8f745bce9240eb5e4fb64c641f12eebde16caae1f352e4c43a064273cea4c384",
+        "size_bytes": 2388
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/abi.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/seh.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/seh.c",
+        "sha256": "df38f07c5b81b0b06f9f66d63cd934aa73cb295574ec6e87b1dc315cbcf1a1d6",
+        "size_bytes": 1718
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/seh.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/ordering.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/ordering.c",
+        "sha256": "2bde8b2f86558e644c483a419da9c1a4c48c7c2f8cf39c267520a2d404c6f662",
+        "size_bytes": 6110
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/ordering.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/ordering.asm",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/ordering.asm",
+        "sha256": "1297602b4fb41c90764265842ffcff3404a9943ccb2dd96ae90eda711efad404",
+        "size_bytes": 607
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/ordering.asm",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_qualification.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_qualification.py",
+        "sha256": "b1dfcf06c95e608057f7b6d3df9f8bdcefd21b76736f7be624373f9fb5b91e2c",
+        "size_bytes": 2722
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/test_qualification.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import unittest",
+        "from tools.cpu.qualify import CONFIGURATION,same_configuration,normalized_inventory"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_execution_evidence.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_execution_evidence.py",
+        "sha256": "7e2e8868b917ed03154516c4b0c1d7f1a5592eeb35912cec37d04ba4c87bff96",
+        "size_bytes": 3721
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/test_execution_evidence.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import json",
+        "import tempfile",
+        "import unittest",
+        "from pathlib import Path",
+        "from tools.cpu.compare import observe_pear",
+        "from tools.cpu.results import digest"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_correction_evidence.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_correction_evidence.py",
+        "sha256": "cc863ad570ee36c21c1a0936bed49eab4c2a4fe64f22228c6a03fc20046c8d3a",
+        "size_bytes": 3153
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/test_correction_evidence.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import json",
+        "import tempfile",
+        "import unittest",
+        "from pathlib import Path",
+        "from unittest.mock import patch",
+        "from tools.cpu import fex_build",
+        "from tools.cpu.corpus import digest",
+        "from tools.wine.common import encoded"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_ordering_results.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_ordering_results.py",
+        "sha256": "6abe691371214eb81652e6c59ecd00cf1395128abec075a3861358cb3d65a323",
+        "size_bytes": 3565
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/test_ordering_results.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import unittest",
+        "from tools.cpu.ordering import assess, policy_records, retirements"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/cpu/test_harness.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/test_harness.py",
+        "sha256": "fd3f6d8684669d8cbfb66d63494ccb9844fe262f3088de619ec4c97a96b34dac",
+        "size_bytes": 6957
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/cpu/test_harness.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import copy",
+        "import unittest",
+        "import tempfile",
+        "import struct",
+        "from pathlib import Path",
+        "from tools.cpu.results import assess_records, canonical, digest, decode, admit_build",
+        "from tools.cpu.generate import reservations, assembly",
+        "from tools.cpu.adapt import effective_case, rules, adapt_body"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/bitmap_selection_probe.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/bitmap_selection_probe.c",
+        "sha256": "38f8530837ecfa2b1270bff3c6ab8febe75965899de496fdc1e214dd0d3da97d",
+        "size_bytes": 3646
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/bitmap_selection_probe.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"wine/pear_fex_memory.h\"",
+        "#include <windows.h>",
+        "#include <stdio.h>",
+        "#include <stdint.h>",
+        "#include <inttypes.h>",
+        "#include <string.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/fixture_suite.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/fixture_suite.c",
+        "sha256": "846279777765506f70e83b7e1edc029d06804fc509b2883a370f59cf1cc263d6",
+        "size_bytes": 32780
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/fixture_suite.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"fixture_suite.h\"",
+        "#include <inttypes.h>",
+        "#include <stdio.h>",
+        "#include <string.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/fixture_suite.h",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/fixture_suite.h",
+        "sha256": "b884f768bcc8af7f94b2356960a76279cc761c69c969baed0dd4b06291db344b",
+        "size_bytes": 874
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/fixture_suite.h",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"wine/pear_fex_memory.h\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/metadata_budget.cpp",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/metadata_budget.cpp",
+        "sha256": "f266db335251b0bb91b4677962da1627017396935aa99cc442e29cf7c206c40e",
+        "size_bytes": 1851
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/metadata_budget.cpp",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <cassert>",
+        "#include <cstdint>",
+        "#include <cstdio>",
+        "#include \"wine/pear_fex_memory.h\"",
+        "#include \"selected_metadata_budget.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/metadata_observation.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/metadata_observation.c",
+        "sha256": "b30311e24f2d4ebbb17199c56376c9480dcd67fd6c115aea46fd40b0a6de7117",
+        "size_bytes": 4530
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/metadata_observation.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"pear_fex_memory_private.h\"",
+        "#include <assert.h>",
+        "#include <errno.h>",
+        "#include <string.h>",
+        "#include <unistd.h>",
+        "#include <stdio.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/metadata_probe.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/metadata_probe.c",
+        "sha256": "d7cbf5cfec2712640b579364d20bb54391ad98a818d93e74fbafa56728c325c2",
+        "size_bytes": 3305
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/metadata_probe.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"wine/pear_fex_memory.h\"",
+        "#include <windows.h>",
+        "#include <stdio.h>",
+        "#include <stdint.h>",
+        "#include <inttypes.h>",
+        "#include <string.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/native_cooperative.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/native_cooperative.c",
+        "sha256": "2b51d0f38cb58ca2caf9f462101fc1e2b9511293ce2276d61a5524127066bfe4",
+        "size_bytes": 18876
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/native_cooperative.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"native_owner.c\"",
+        "#include \"fixture_suite.c\"",
+        "#include <sched.h>",
+        "#include <time.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/native_owner.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/native_owner.c",
+        "sha256": "9650cd2a1c1a48319cb03c03db2557c1e4addca7edff01f0b91765c61aa1fab9",
+        "size_bytes": 9167
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/native_owner.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"fixture_suite.h\"",
+        "#include \"pear_fex_memory_private.h\"",
+        "#include <errno.h>",
+        "#include <fcntl.h>",
+        "#include <inttypes.h>",
+        "#include <libproc.h>",
+        "#include <mach/mach.h>",
+        "#include <mach/mach_vm.h>",
+        "#include <mach-o/loader.h>",
+        "#include <poll.h>",
+        "#include <pthread.h>",
+        "#include <stdio.h>",
+        "#include <stdatomic.h>",
+        "#include <stdlib.h>",
+        "#include <string.h>",
+        "#include <sys/stat.h>",
+        "#include <sys/sysctl.h>",
+        "#include <unistd.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/owner_launch.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/owner_launch.c",
+        "sha256": "dc9ca145c945f7eb232a7e8b0e47abb11faeb886699bdf57c6022590c0b56874",
+        "size_bytes": 5668
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/owner_launch.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <dlfcn.h>",
+        "#include <errno.h>",
+        "#include <inttypes.h>",
+        "#include <libproc.h>",
+        "#include <mach/mach.h>",
+        "#include <mach-o/loader.h>",
+        "#include <spawn.h>",
+        "#include <stdio.h>",
+        "#include <stdlib.h>",
+        "#include <string.h>",
+        "#include <sys/stat.h>",
+        "#include <sys/sysctl.h>",
+        "#include <unistd.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/protocol.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/protocol.py",
+        "sha256": "a56f018d6d017a150e2ada1b2172be792f54b26d0ba23abe803f7b4c92e0d91b",
+        "size_bytes": 5518
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/protocol.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from __future__ import annotations",
+        "import struct"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/view_capacity.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/view_capacity.c",
+        "sha256": "81e71789c1de997881ec81246ca6c778833a0ea13ec8137dae70fa4a5412d712",
+        "size_bytes": 1638
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/view_capacity.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <assert.h>",
+        "#include <stdint.h>",
+        "#include <stdio.h>",
+        "#include \"selected_view_counter.inc\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/virtual_free_provider.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/virtual_free_provider.c",
+        "sha256": "dccc6f8f56f2a8c3338524992b1fd110f37f4ccb4839dfac3f8cd89015046b1e",
+        "size_bytes": 2488
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/virtual_free_provider.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include <windows.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/wine_debug_quiet.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/wine_debug_quiet.c",
+        "sha256": "0ca488b2ad2fe639cc49ddbfda0988c1f229c7c9e073d8a3570d214d76b53c43",
+        "size_bytes": 659
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/wine_debug_quiet.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"wine/debug.h\""
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tests/fex/memory/wine_owner.c",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/wine_owner.c",
+        "sha256": "596e8a83e7f61ca4f795e3be02d32c827f7079ff204629058bf0a76f9a30637f",
+        "size_bytes": 6885
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tests/fex/memory/wine_owner.c",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [],
+        "basis": "no inline SPDX marker; retain legacy bytes and resolve existing adoption terms before import",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "#include \"fixture_suite.h\"",
+        "#include <windows.h>",
+        "#include <stdio.h>",
+        "#include <stdint.h>"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/qualify.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/qualify.py",
+        "sha256": "0ba02adf596b57326896448942265b05e09f67c6f210770a560e62a8cabda342",
+        "size_bytes": 6936
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/qualify.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import sys",
+        "from tools.cpu.results import read,require,digest,canonical",
+        "from tools.cpu.corpus import REPO",
+        "from tools.cpu.compare import compare as compare_isa",
+        "from tools.cpu.ordering import compare as compare_ordering",
+        "from tools.fex import memory_wine_runtime as signing"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/results.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/results.py",
+        "sha256": "a91775ac7b5c3b67479e60ef976544320c07374a68f9435edeb9184b6a5098d8",
+        "size_bytes": 6243
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/results.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "import hashlib",
+        "import json",
+        "import re",
+        "from pathlib import Path",
+        "from tools.cpu.adapt import effective_case, rules"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/compare.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/compare.py",
+        "sha256": "2989c8b72d988d8f5998679658099a4189ca212fe7ce488d0640c82a3cbb9c05",
+        "size_bytes": 8010
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/compare.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import json",
+        "import sys",
+        "from tools.cpu.results import read,decode,digest,require,admit_build,assess_records,case_result,boundary_result",
+        "from tools.cpu.corpus import REPO",
+        "from tools.fex import memory_wine_runtime as signing"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/runtime.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/runtime.py",
+        "sha256": "83e7fa2b79470c426e089fec39b4886abfdba65d0315e6540929fe9fa713b665",
+        "size_bytes": 6299
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/runtime.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import copy",
+        "import fcntl",
+        "import json",
+        "import plistlib",
+        "import shutil",
+        "import subprocess",
+        "import sys",
+        "from tools.cpu.corpus import REPO, digest",
+        "from tools.cpu.results import admit_build, read",
+        "from tools.wine.common import need, encoded",
+        "from tools.fex import reconstruction_check, memory_wine_runtime as signing"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/ordering.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/ordering.py",
+        "sha256": "015ca52073a404faa9ed9a9b247c6abada89df48ef647d2128d729ed585446ee",
+        "size_bytes": 13863
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/ordering.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import json",
+        "import re",
+        "import subprocess",
+        "import sys",
+        "import time",
+        "from tools.cpu.corpus import REPO",
+        "from tools.cpu.results import read, decode, digest, require, canonical"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/run.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/run.py",
+        "sha256": "0e1ebc46a93e674c8542e12036c2017cf002350780d7b24ecac3f68314638a18",
+        "size_bytes": 3427
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/run.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import fcntl",
+        "import json",
+        "import shutil",
+        "import sys",
+        "from tools.cpu.corpus import REPO",
+        "from tools.cpu.results import read,decode,digest,require,admit_build,case_result,boundary_result",
+        "from tools.cpu.pear_run import run",
+        "from tools.cpu.compare import observe_pear"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/pear_run.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/pear_run.py",
+        "sha256": "5e82e0139ad6f58f5ec5bca7298fea2a6a0537a095ac6a13d088bc9bf564a150",
+        "size_bytes": 7509
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/pear_run.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse,fcntl,hashlib,json,os,re,shutil,sys,time,uuid",
+        "from tools.fex.common import REPO,need",
+        "from tools.fex import memory_wine_runtime as signing,memory_wine_run as supervisor",
+        "from tools.fex.integration_run import admission"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/native_run.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/native_run.py",
+        "sha256": "a16ea3604fc706d08c67100beea78735a2098771f8435cb7095f1d762310fe24",
+        "size_bytes": 4082
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/native_run.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import ctypes",
+        "import json",
+        "import os",
+        "import platform",
+        "import subprocess",
+        "import sys",
+        "import time",
+        "from tools.cpu.results import read,decode,digest,require,admit_build,assess_records"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/build.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/build.py",
+        "sha256": "b989d1c627fd875da285bc9d30e54edf10eca3634188d67ae244a7ef69293f6f",
+        "size_bytes": 7046
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/build.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "GPL-3.0-or-later",
+          "MIT', '; Original Pear ABI state probe.',",
+          "MIT', 'BITS 64', 'DEFAULT REL',"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse",
+        "import json",
+        "import platform",
+        "import subprocess",
+        "import sys",
+        "from tools.cpu.generate import generate, REPO",
+        "from tools.cpu.corpus import digest",
+        "from tools.wine.common import need, encoded, load_json"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    },
+    {
+      "id": "pear:tools/cpu/fex_build.py",
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/fex_build.py",
+        "sha256": "1f09869cc15226340fc7609e012113dbbc3e00bfd2ad423d02ca1ef78e9f08af",
+        "size_bytes": 9205
+      },
+      "canonical_destination": {
+        "repository": "pear-runtime",
+        "path": "tools/cpu/fex_build.py",
+        "exists": false
+      },
+      "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
+      "license": {
+        "spdx_markers": [
+          "MIT"
+        ],
+        "basis": "existing explicit per-file marker",
+        "relicense": false
+      },
+      "dependencies": [
+        {
+          "owner": "pear-wine",
+          "path": "include/wine/pear_fex_memory.h",
+          "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+          "role": "authoritative memory/lifecycle ABI"
+        },
+        {
+          "owner": "pear-fex",
+          "path": "Pear/Provenance/source-manifest.json",
+          "role": "selected FEX source/diagnostic identity",
+          "status": "binding_or_adoption_pending_stage4"
+        },
+        {
+          "owner": "pear-runtime",
+          "path": "runtime/contracts",
+          "role": "pairing, private state and execution evidence policy",
+          "status": "binding_or_adoption_pending_stage4"
+        }
+      ],
+      "observed_includes_or_imports": [
+        "from pathlib import Path",
+        "import argparse,fcntl,json,os,shutil,subprocess,sys",
+        "from tools.cpu.runtime import admit_pair",
+        "from tools.cpu.corpus import REPO,digest",
+        "from tools.cpu.results import read",
+        "from tools.wine.common import need,encoded"
+      ],
+      "status": "pending_stage4_adoption_and_run",
+      "execution_in_this_amendment": false,
+      "notes": [
+        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
+        "Source hashing here does not validate historical runtime results or run the original test."
+      ]
+    }
+  ],
+  "verification": {
+    "source_files_hashed": 91,
+    "upstream_selected_cases_exact": 12,
+    "duplicate_source_ids": 0,
+    "duplicate_destinations": 0,
+    "historical_tests_executed": 0,
+    "new_fixture_sources_imported": 0,
+    "stage2_synthetic_test_evidence_reused_only": true
+  },
+  "retention": "Keep original tests, generated fragments, records and dependencies until named consumers accept the portable replacement and their retention conditions are separately met."
+}
