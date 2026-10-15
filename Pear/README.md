@@ -42,7 +42,7 @@ From this repository root, with Python 3 and Git:
 
 ```sh
 python3 -B Pear/Tools/check_source.py
-python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v
+PYTHONPATH=../pear-runtime python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v
 ```
 
 To validate shared provider bytes, also supply explicit checkouts:
@@ -54,7 +54,8 @@ python3 -B Pear/Tools/check_source.py --runtime-root ../pear-runtime --wine-root
 [Test ownership](Provenance/test-ownership.json) records exact original test
 identities, one canonical destination per file, dependencies and pending Stage 4
 adoption/run status. It also distinguishes already imported synthetic tests
-from component controls and paired runtime tests that have not moved or run.
+from adopted CPU source controls and paired runtime tests whose remaining
+execution/adoption status is recorded per file.
 
 The source check verifies the imported checkpoint, file modes, ancestry and
 tracked private-selector exclusion. Omitting provider roots reports those
@@ -77,6 +78,42 @@ No new build, host execution, no-Rosetta process coverage, gameplay, Steam,
 input/audio/save or ordinary-user distribution qualification is claimed by
 this source import. Cross-component acceptance still requires the seven
 runtime fixtures and the corresponding owner checks.
+
+## CPU fixture sources
+
+`Tests/CPU/` owns the selected CPU corpus, adaptations, capture driver and
+retained notices; `Tools/CPU/` owns its source inventory and generator.
+The 12 upstream ASM cases remain at their original `unittests/ASM/` paths.
+`pear-runtime` owns the nine ABI/boundary/ordering C/ASM sources and the original
+ABI/SEH assembly generator. [CPU import provenance](Provenance/cpu-source-import.json)
+records every source identity and the exact ownership split.
+
+The CPU tools require the sibling runtime Python package for its canonical
+bounded byte/JSON readers and errors. Supply it explicitly with `PYTHONPATH`;
+there is no fallback to a historical Pear worktree. From this FEX root, use a
+canonical absolute runtime path and a fresh output whose parent already exists:
+
+```sh
+PYTHONPATH=.:../pear-runtime python3 -B -m pear_runtime.recipes.cpu_sources \
+  --fex-root "$PWD" --runtime-root /absolute/path/to/pear-runtime \
+  --output /absolute/path/to/new-cpu-sources
+```
+
+This revalidates the pinned 2,270-file ASM census, generates 12 single-case
+ASM/header inputs plus ABI/SEH assembly, and copies the nine runtime fixture
+sources. The imported original corpus/refusal tests remain runnable through
+the component test command above. Task #56 compared all 50 generated/copied
+artifacts byte-for-byte with the retained fixture build; no compiler or guest
+execution is performed by this command.
+
+The runtime recipe `recipes/cpu/sources-v1.json` records the historical compiler
+arguments and exact source inputs. The original hosted tool/header/library
+closure was not fully captured. Compiling new PEs requires an explicitly admitted
+toolchain and output comparison; changed bytes require renewed native Windows
+reference evidence. Modify canonical sources and the reviewed versioned recipe
+for future experiments, rather than treating the imported hashes as permanent
+implementation restrictions. Runtime contract snapshots are derived inputs,
+not another editable corpus authority.
 
 ## Notices
 

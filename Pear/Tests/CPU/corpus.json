@@ -1,0 +1,1127 @@
+{
+  "boundaries": [
+    {
+      "categories": [
+        "callback"
+      ],
+      "expected": "Expected exit 42 after native file/time/event operations and exactly-once callback/context assertions; validate the same PE on native Windows.",
+      "id": "api-callback",
+      "source": {
+        "path": "tests/fex/guest_api.c",
+        "sha256": "d7d822004ec64cbd1fca703b1195abd40a55ac1d3825743178b7d7f1ed8a81ed"
+      },
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "tls"
+      ],
+      "expected": "Expected exit 42; coordinator and one guest worker retain distinct TLS and return through normal thread cleanup.",
+      "id": "tls-thread",
+      "source": {
+        "path": "tests/fex/guest_thread.c",
+        "sha256": "82d3df3728da1b156b0b0c1ce01cdecb841e16358c1414937ffb6744309eef2f"
+      },
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "fault",
+        "guard",
+        "callback"
+      ],
+      "expected": "Expected exit 42; one handled UD2 updates RIP/RAX, one data guard is cleared, nested native call returns correctly.",
+      "id": "guest-fault-guard",
+      "source": {
+        "path": "tests/fex/guest_exception.c",
+        "sha256": "5cd3d261ca38786c60e445eef07661a718f4a0c7b2b1e42a5f26bb1bbeae7e7a"
+      },
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "code_change",
+        "memory"
+      ],
+      "expected": "Expected exit 42; coordinator and worker change 41 to 42, failed removal preserves executable metadata.",
+      "id": "code-invalidation",
+      "source": {
+        "path": "tests/fex/guest_invalidation.c",
+        "sha256": "2a61be720bf218f9bc4f2b684a7594eac849d3597b112fd5b46f44a198bf445f"
+      },
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "abi"
+      ],
+      "expected": "Expected exit 42; running worker R12 is observed as 17, changed to 42 and resumed with normal join.",
+      "id": "suspend-context",
+      "source": {
+        "path": "tests/fex/guest_context.c",
+        "sha256": "a7a47ea0fb4290297911c75df3f2e62566df7a2c41614cc8bafa33cb43b1f58f"
+      },
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "abi"
+      ],
+      "expected": "Exact stack alignment, nonvolatile GPRs and XMM6-XMM15 survive a native call and guest callback; capture input/output state and compare the same PE on native Windows.",
+      "id": "abi-state",
+      "source": null,
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "seh",
+        "fault"
+      ],
+      "expected": "A guest frame with a declared handler receives an intentional exception, preserves nonvolatile state and executes the expected handler/finally path; compare native Windows before Pear.",
+      "id": "seh-unwind",
+      "source": null,
+      "stage": 2,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "atomic",
+        "ordering"
+      ],
+      "expected": "Two workers use aligned locked RMW operations; final count equals the declared combined iteration count, with no lost update; record each actual thread policy.",
+      "id": "locked-rmw",
+      "source": null,
+      "stage": 3,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "ordering"
+      ],
+      "expected": "Two workers perform plain assembly stores data then flag and loads flag then data; flag=1 with old data is forbidden under the declared x86 contract. Epoch handshakes remain outside the measured sequence.",
+      "id": "message-passing",
+      "source": null,
+      "stage": 3,
+      "status": "unperformed"
+    },
+    {
+      "categories": [
+        "ordering"
+      ],
+      "expected": "Two workers store own location then load the other; (0,0) is allowed without a fence. The locked/fenced variant forbids (0,0); missing worker/iteration records cannot pass.",
+      "id": "store-buffer",
+      "source": null,
+      "stage": 3,
+      "status": "unperformed"
+    }
+  ],
+  "cases": [
+    {
+      "categories": [
+        "partial_register"
+      ],
+      "config_sha256": "7c152c6cfdd839a812044451d101acd884ffd115e4bd8720d99165d872a0ba7d",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "R10",
+            "value": "0x00000000000000ff"
+          },
+          {
+            "lane": 0,
+            "register": "R11",
+            "value": "0x00000000000000ff"
+          },
+          {
+            "lane": 0,
+            "register": "R12",
+            "value": "0x41424344454600ff"
+          },
+          {
+            "lane": 0,
+            "register": "R13",
+            "value": "0x00000000000000ff"
+          },
+          {
+            "lane": 0,
+            "register": "R14",
+            "value": "0x00000000000000ff"
+          },
+          {
+            "lane": 0,
+            "register": "R15",
+            "value": "0x41424344454600ff"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "zero-extension",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/TwoByte/0F_B6.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "c084de325e2a765749bcb51c44e2630fe07571b5adeb660e423103a00b79a6f4"
+    },
+    {
+      "categories": [
+        "partial_register",
+        "flags"
+      ],
+      "config_sha256": "9ca2af83a178ce1a66365317bf88c752120482513d78c8c76691f80841cfa7b0",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0xaeadacac9a9a41e5"
+          },
+          {
+            "lane": 0,
+            "register": "RBX",
+            "value": "0x6162636520238df8"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "carry-widths",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/FEX_bugs/add_sub_carry.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "6ffa07896982c0de459445a2f71548d538402a6a36dedf0f0d8780e1b9673991"
+    },
+    {
+      "categories": [
+        "flags"
+      ],
+      "config_sha256": "612e40d3d6c469636c3b6c74ee26d4516de5e7b2598489aa03a04ffa2503c8ab",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x0000000000004600"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "xor-flags",
+      "masks": [
+        {
+          "bits": "0xffffffffffffefff",
+          "reason": "LAHF AF bit (RAX bit 12) is undefined after XOR; frozen before execution."
+        }
+      ],
+      "path": "unittests/ASM/FEX_bugs/xor_flags.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "58e8ff13cec36cfb70f4e9a07daf7323bb309a368ff08b97683f84aabfd63cbc"
+    },
+    {
+      "categories": [
+        "flags",
+        "partial_register"
+      ],
+      "config_sha256": "0ebef2bc0aa9feb2e053a4e94e62fe6857c2c01b0a228af8124ab000acb310a7",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "R12",
+            "value": "0x0000000000000202"
+          },
+          {
+            "lane": 0,
+            "register": "R13",
+            "value": "0x0000000000000202"
+          },
+          {
+            "lane": 0,
+            "register": "R14",
+            "value": "0x0000000000000202"
+          },
+          {
+            "lane": 0,
+            "register": "R15",
+            "value": "0x0000000000000202"
+          },
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x0000000082345679"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "zero-shift-flags",
+      "masks": [
+        {
+          "bits": "0x00000000000008d5",
+          "reason": "Compare CF/PF/AF/ZF/SF/OF; exclude OS-controlled IF and reserved flags."
+        },
+        {
+          "bits": "0x00000000000008d5",
+          "reason": "Compare CF/PF/AF/ZF/SF/OF; exclude OS-controlled IF and reserved flags."
+        },
+        {
+          "bits": "0x00000000000008d5",
+          "reason": "Compare CF/PF/AF/ZF/SF/OF; exclude OS-controlled IF and reserved flags."
+        },
+        {
+          "bits": "0x00000000000008d5",
+          "reason": "Compare CF/PF/AF/ZF/SF/OF; exclude OS-controlled IF and reserved flags."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/FEX_bugs/ShiftZeroFlagsUpdate.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "9e7e59da59556c93a0346ff860270b46db99b3ecca9a6440049ef9ee9e7e8971"
+    },
+    {
+      "categories": [
+        "partial_register",
+        "atomic"
+      ],
+      "config_sha256": "6d1ccab24d955e9ea8cdce5c95683126e3c6a8ff348505440f22b346f9028457",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x00000000ccddff00"
+          },
+          {
+            "lane": 0,
+            "register": "RBX",
+            "value": "0x8899aabbccddff00"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "cmpxchg-eax",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/FEX_bugs/cmpxchg_eax.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "619ed6b1aa8a9e4a7440fd22682fc388e4f70503d50f43e71deef96e0db2fbc7"
+    },
+    {
+      "categories": [
+        "atomic",
+        "memory"
+      ],
+      "config_sha256": "5d50b2349ce9ee3cbc93a923c5f3e7ef6ae2cdd162f17498a5b31abaf9a872d6",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "R12",
+            "value": "0x7172737475767779"
+          },
+          {
+            "lane": 0,
+            "register": "R13",
+            "value": "0x0000000065666769"
+          },
+          {
+            "lane": 0,
+            "register": "R14",
+            "value": "0x0000000000005759"
+          },
+          {
+            "lane": 0,
+            "register": "R15",
+            "value": "0x0000000000000049"
+          },
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x4142434445464749"
+          },
+          {
+            "lane": 0,
+            "register": "RBX",
+            "value": "0x5152535455565759"
+          },
+          {
+            "lane": 0,
+            "register": "RCX",
+            "value": "0x6162636465666769"
+          },
+          {
+            "lane": 0,
+            "register": "RDX",
+            "value": "0x7172737475767779"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "xadd-widths",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/TwoByte/0F_C0.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "f761d450902c927361f98cf69d067fd1d9287cabd2d191a7bfa225b801a6159b"
+    },
+    {
+      "categories": [
+        "simd",
+        "float"
+      ],
+      "config_sha256": "bae1abb709927a2fd4006388e73bee261637bd50c1ef301328174085a5da47cd",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "XMM0",
+            "value": "0x4100000040c00000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM0",
+            "value": "0x4140000041200000"
+          },
+          {
+            "lane": 0,
+            "register": "XMM1",
+            "value": "0x4100000040c00000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM1",
+            "value": "0x4140000041200000"
+          },
+          {
+            "lane": 0,
+            "register": "XMM2",
+            "value": "0x40c0000040a00000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM2",
+            "value": "0x4100000040e00000"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "packed-float-add",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/TwoByte/0F_58.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "8263c2c7a3421a2552ec07b1d1127cbd24749da00d7ca81e1703908ab3db5efe"
+    },
+    {
+      "categories": [
+        "simd",
+        "float"
+      ],
+      "config_sha256": "94732996eee9008952c45d4338eac7ae448aecd1d42a3979bb07f94746148fec",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "XMM0",
+            "value": "0x4014000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM0",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "XMM1",
+            "value": "0x4010000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM1",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "XMM2",
+            "value": "0x4039000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM2",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "XMM3",
+            "value": "0x4030000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM3",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "XMM4",
+            "value": "0x403a000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM4",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "XMM5",
+            "value": "0x403d000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM5",
+            "value": "0x5152535455565758"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "scalar-double-add",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/REPNE/F2_58.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "9088b6264e9f714ef7057cc6197941f2320350e6270aafd1cd9fedf1014b1407"
+    },
+    {
+      "categories": [
+        "float",
+        "partial_register"
+      ],
+      "config_sha256": "eec20b434ed6eb8b2e80b8bc277fd408ade94be69b56faa2c2049e90b55db60f",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x0000000000000001"
+          },
+          {
+            "lane": 0,
+            "register": "RBP",
+            "value": "0x00000000fffffffe"
+          },
+          {
+            "lane": 0,
+            "register": "RBX",
+            "value": "0x0000000000000002"
+          },
+          {
+            "lane": 0,
+            "register": "RCX",
+            "value": "0x0000000000000003"
+          },
+          {
+            "lane": 0,
+            "register": "RDX",
+            "value": "0x0000000000000004"
+          },
+          {
+            "lane": 0,
+            "register": "RSI",
+            "value": "0xfffffffffffffffc"
+          }
+        ],
+        "features": [],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "float-to-integer",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/REP/F3_2C.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "429cc030a0d2bad143c9fa09f07722e345b0cbc1364a0d13833f3fdf79dd1c35"
+    },
+    {
+      "categories": [
+        "memory"
+      ],
+      "config_sha256": "624c38e0142ec46f53ea0a63f442ecc996f86317e08042295f5162ad6548543b",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x00000000ddccbbaa"
+          }
+        ],
+        "features": [],
+        "initial_memory": [
+          {
+            "address": 268435456,
+            "bytes": "aabbccdd"
+          }
+        ],
+        "regions": [
+          {
+            "address": 268435456,
+            "size": 4096
+          }
+        ]
+      },
+      "id": "configured-memory",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/MemoryData.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "66bdad4663d1134b4fd2b64f49ca8e213695eb4c027a214215c5f5b2b7c038ad"
+    },
+    {
+      "categories": [
+        "memory"
+      ],
+      "config_sha256": "a175de7c275561dafbf7f45cea95bccb1b35f5d0e97a05655a94275c35350602",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "RAX",
+            "value": "0x4142434445464748"
+          },
+          {
+            "lane": 0,
+            "register": "RBX",
+            "value": "0x5152535455565758"
+          },
+          {
+            "lane": 0,
+            "register": "RCX",
+            "value": "0x5152535455565758"
+          }
+        ],
+        "features": [],
+        "initial_memory": [
+          {
+            "address": 2147479552,
+            "bytes": "4847464544434241"
+          }
+        ],
+        "regions": [
+          {
+            "address": 2147479552,
+            "size": 4096
+          }
+        ]
+      },
+      "id": "absolute-displacement",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/Displacement_Encoding.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "f5c5f90702fb1fe1c239bc7361ce31ddb536ac4fd3c65f225390ad0cfae0de27"
+    },
+    {
+      "categories": [
+        "simd",
+        "float"
+      ],
+      "config_sha256": "109faa8e17fbeecd30c2527c90ee925c51bdd2957f1b01b797c595e00197aa5d",
+      "contract": {
+        "environment": {},
+        "expectations": [
+          {
+            "lane": 0,
+            "register": "XMM0",
+            "value": "0x4000000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM0",
+            "value": "0x7d7ccd8836d09fc2"
+          },
+          {
+            "lane": 2,
+            "register": "XMM0",
+            "value": "0xccdbcfc31f3ff0f3"
+          },
+          {
+            "lane": 3,
+            "register": "XMM0",
+            "value": "0x108390defebac4be"
+          },
+          {
+            "lane": 0,
+            "register": "XMM1",
+            "value": "0x4000000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM1",
+            "value": "0x4549bd7eb46a1278"
+          },
+          {
+            "lane": 2,
+            "register": "XMM1",
+            "value": "0x0000000000000000"
+          },
+          {
+            "lane": 3,
+            "register": "XMM1",
+            "value": "0x0000000000000000"
+          },
+          {
+            "lane": 0,
+            "register": "XMM2",
+            "value": "0x3ff0000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM2",
+            "value": "0x4549bd7eb46a1278"
+          },
+          {
+            "lane": 2,
+            "register": "XMM2",
+            "value": "0xf793ef673dac6e4c"
+          },
+          {
+            "lane": 3,
+            "register": "XMM2",
+            "value": "0xbb7b5b3d85d34271"
+          },
+          {
+            "lane": 0,
+            "register": "XMM3",
+            "value": "0x3ff0000000000000"
+          },
+          {
+            "lane": 1,
+            "register": "XMM3",
+            "value": "0x4549bd7eb46a1278"
+          },
+          {
+            "lane": 2,
+            "register": "XMM3",
+            "value": "0xf793ef673dac6e4c"
+          },
+          {
+            "lane": 3,
+            "register": "XMM3",
+            "value": "0xbb7b5b3d85d34271"
+          }
+        ],
+        "features": [
+          "AVX"
+        ],
+        "initial_memory": [],
+        "regions": []
+      },
+      "id": "avx-lane-preservation",
+      "masks": [
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        },
+        {
+          "bits": "0xffffffffffffffff",
+          "reason": "All bits defined by the selected instruction result."
+        }
+      ],
+      "path": "unittests/ASM/SSELanePreservation/addsd.asm",
+      "reference": "native_windows_x64_same_pe_unavailable",
+      "requirement": "required_if_exposed",
+      "setup": {
+        "entry": "zero_gprs_vectors_preserve_native_abi_owned_stack",
+        "mxcsr": 8064,
+        "scratch_address": 3758096384,
+        "scratch_size": 65536,
+        "termination": "capture_at_hlt_without_flag_changes",
+        "x87_control": 895
+      },
+      "sha256": "4abf97393a4734dce505abd8e7e65ada4e20df13e362f1ba70440fd8d8f818a3"
+    }
+  ],
+  "scope": "cpu_corpus_contract",
+  "sources_sha256": "69727b6125bbea096c1d635e7b2cdb5e4c794c2df9fa1964568763645e190839",
+  "unsupported": {
+    "addresses": "Required fixed guest mappings must succeed. Round/coalesce Windows reservations without silently relocating absolute operands. Scratch is guest data, not native executable memory.",
+    "config": "Match/Ignore differential-state masks, MM/x87 and non-production Env overrides are not supported by the first selected harness contract; census names exclusions.",
+    "features": "AVX lane case requires actual guest exposure plus native AVX/OSXSAVE availability; no 128-bit-only pass. Other unselected ISA features remain unqualified, not proven absent from the game.",
+    "fp": "Finite normal-value SSE conversion/arithmetic cases; arbitrary NaN payloads, x87 extended precision and all rounding/DAZ/FTZ modes remain unqualified.",
+    "i386": "Execution unperformed; module construction in #5 is not helper qualification. Required Steam helpers remain #11 dependency.",
+    "ordering": "Unperformed until actual per-thread-policy and multiworker cases execute. A single-thread xadd/cmpxchg result does not prove ordering."
+  },
+  "version": 1
+}

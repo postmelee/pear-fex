@@ -818,7 +818,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/corpus.json",
-        "exists": false
+        "exists": true
       },
       "role": "CPU semantic source selection, expectations or declared adaptation record",
       "license": {
@@ -842,12 +842,20 @@
         }
       ],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
         "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
-        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
-      ]
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/corpus.json",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "c6ad9b39b475d1dbd7f0fbe377c50022a11d32d7b08e967e684b2250d1d593f9",
+        "size_bytes": 34111
+      }
     },
     {
       "id": "pear:tests/cpu/sources.json",
@@ -861,7 +869,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/sources.json",
-        "exists": false
+        "exists": true
       },
       "role": "CPU semantic source selection, expectations or declared adaptation record",
       "license": {
@@ -885,12 +893,20 @@
         }
       ],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
         "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
-        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
-      ]
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/sources.json",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "69727b6125bbea096c1d635e7b2cdb5e4c794c2df9fa1964568763645e190839",
+        "size_bytes": 4638
+      }
     },
     {
       "id": "pear:tests/cpu/adaptations.json",
@@ -904,7 +920,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/adaptations.json",
-        "exists": false
+        "exists": true
       },
       "role": "CPU semantic source selection, expectations or declared adaptation record",
       "license": {
@@ -928,12 +944,20 @@
         }
       ],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
         "Single FEX-owned canonical corpus record; runtime consumes it rather than maintaining an independent copy.",
-        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly."
-      ]
+        "Current record includes cross-component boundary paths; portable adoption must bind those to the runtime root explicitly.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/adaptations.json",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "17bf454588ee9544cad95d8b78fd8d65ac5bc96579eae88d1d191b03695167ed",
+        "size_bytes": 698
+      }
     },
     {
       "id": "pear:tools/cpu/corpus.py",
@@ -947,7 +971,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tools/CPU/corpus.py",
-        "exists": false
+        "exists": true
       },
       "role": "pure corpus inventory or source generation; no host qualification",
       "license": {
@@ -986,11 +1010,19 @@
         "import sys",
         "from tools.wine.common import Error, need, read_relative, decode_json, encoded, load_json"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
-      ]
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tools/CPU/corpus.py",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "f45e771a1c8ca8b4f515074b728ad6aedf1f4c745639fc83413f181f74689e50",
+        "size_bytes": 12797
+      }
     },
     {
       "id": "pear:tools/cpu/generate.py",
@@ -1004,7 +1036,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tools/CPU/generate.py",
-        "exists": false
+        "exists": true
       },
       "role": "pure corpus inventory or source generation; no host qualification",
       "license": {
@@ -1057,11 +1089,19 @@
         "from tools.cpu.adapt import effective_case, adapt_body, rules",
         "from tools.wine.common import need, read_relative, load_json, encoded"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
-      ]
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tools/CPU/generate.py",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "c69cad8091ba13800fc4f0bec6a95070ad51137c055125413d1ad41e03c6e462",
+        "size_bytes": 8055
+      }
     },
     {
       "id": "pear:tools/cpu/adapt.py",
@@ -1075,7 +1115,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tools/CPU/adapt.py",
-        "exists": false
+        "exists": true
       },
       "role": "pure corpus inventory or source generation; no host qualification",
       "license": {
@@ -1111,11 +1151,19 @@
         "import json",
         "from pathlib import Path"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout."
-      ]
+        "Original imports and REPO-relative assumptions require Stage4 adaptation; do not execute unchanged from the split checkout.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tools/CPU/adapt.py",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "e874f4749497b74081b64a856ae98288d037f47d58412b09503b95a97b513cdd",
+        "size_bytes": 2195
+      }
     },
     {
       "id": "pear:tests/cpu/test_corpus.py",
@@ -1129,7 +1177,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/test_corpus.py",
-        "exists": false
+        "exists": true
       },
       "role": "synthetic corpus completeness/refusal tests",
       "license": {
@@ -1152,11 +1200,19 @@
         "import unittest",
         "from tools.cpu import corpus as c"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Pure metadata controls do not qualify guest instructions."
-      ]
+        "Pure metadata controls do not qualify guest instructions.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/test_corpus.py",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "add7bbfd4f6802017c5f59d9f22343f0c32d2df34719bef16ae2eb5434ec40be",
+        "size_bytes": 8216
+      }
     },
     {
       "id": "pear:tests/cpu/runner.c",
@@ -1170,7 +1226,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/runner.c",
-        "exists": false
+        "exists": true
       },
       "role": "per-case x64 CPU capture fixture source",
       "license": {
@@ -1198,11 +1254,19 @@
         "#include <cpuid.h>",
         "#include \"case.h\""
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "GPL-3.0-or-later adaptation from Madeira by Will Faust at recorded revision; execution and result acceptance are runtime-owned."
-      ]
+        "GPL-3.0-or-later adaptation from Madeira by Will Faust at recorded revision; execution and result acceptance are runtime-owned.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/runner.c",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "d4e4c3b6710f7e5d09f352be20e57d55bb47e02f758ee34eb28468b78103f1ef",
+        "size_bytes": 2541
+      }
     },
     {
       "id": "pear:tests/cpu/LICENSES/FEX-MIT.txt",
@@ -1216,7 +1280,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/LICENSES/FEX-MIT.txt",
-        "exists": false
+        "exists": true
       },
       "role": "unchanged original CPU corpus/generator attribution record",
       "license": {
@@ -1227,9 +1291,18 @@
       },
       "dependencies": [],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
-      "notes": []
+      "notes": [
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/LICENSES/FEX-MIT.txt",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+        "size_bytes": 1094
+      }
     },
     {
       "id": "pear:tests/cpu/LICENSES/Madeira-GPL-3.0.txt",
@@ -1243,7 +1316,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/LICENSES/Madeira-GPL-3.0.txt",
-        "exists": false
+        "exists": true
       },
       "role": "unchanged original CPU corpus/generator attribution record",
       "license": {
@@ -1256,9 +1329,18 @@
       "observed_includes_or_imports": [
         "from the Corresponding Source as a System Library, need not be"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
-      "notes": []
+      "notes": [
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/LICENSES/Madeira-GPL-3.0.txt",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+        "size_bytes": 35150
+      }
     },
     {
       "id": "pear:tests/cpu/LICENSES/Madeira-EXCEPTION.md",
@@ -1272,7 +1354,7 @@
       "canonical_destination": {
         "repository": "pear-fex",
         "path": "Pear/Tests/CPU/LICENSES/Madeira-EXCEPTION.md",
-        "exists": false
+        "exists": true
       },
       "role": "unchanged original CPU corpus/generator attribution record",
       "license": {
@@ -1283,11 +1365,19 @@
       },
       "dependencies": [],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_source_and_portable_controls_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "The Madeira exception text states it is a draft and not in effect; this mapping grants no additional permission."
-      ]
+        "The Madeira exception text states it is a draft and not in effect; this mapping grants no additional permission.",
+        "Editable source imported in Task56 Stage4; actual source generation and portable refusal controls verified. This adoption does not establish native CPU or game qualification."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "Pear/Tests/CPU/LICENSES/Madeira-EXCEPTION.md",
+        "provenance": "Pear/Provenance/cpu-source-import.json",
+        "sha256": "534f059c2e9fe5de1acde82b920651b77ea3b4253f86837a3d6a81f54a5bdbbc",
+        "size_bytes": 3840
+      }
     },
     {
       "id": "fex-upstream:unittests/ASM/TwoByte/0F_B6.asm",
@@ -2737,7 +2827,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/fex/guest_api.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -2771,12 +2861,19 @@
         "#include <stdint.h>",
         "#include <stddef.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/fex/guest_api.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "d7d822004ec64cbd1fca703b1195abd40a55ac1d3825743178b7d7f1ed8a81ed",
+        "size_bytes": 3387
+      }
     },
     {
       "id": "pear:tests/fex/guest_thread.c",
@@ -2790,7 +2887,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/fex/guest_thread.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -2824,12 +2921,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/fex/guest_thread.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "82d3df3728da1b156b0b0c1ce01cdecb841e16358c1414937ffb6744309eef2f",
+        "size_bytes": 1457
+      }
     },
     {
       "id": "pear:tests/fex/guest_exception.c",
@@ -2843,7 +2947,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/fex/guest_exception.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -2877,12 +2981,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/fex/guest_exception.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "5cd3d261ca38786c60e445eef07661a718f4a0c7b2b1e42a5f26bb1bbeae7e7a",
+        "size_bytes": 2192
+      }
     },
     {
       "id": "pear:tests/fex/guest_context.c",
@@ -2896,7 +3007,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/fex/guest_context.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -2930,12 +3041,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/fex/guest_context.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "a7a47ea0fb4290297911c75df3f2e62566df7a2c41614cc8bafa33cb43b1f58f",
+        "size_bytes": 1371
+      }
     },
     {
       "id": "pear:tests/fex/guest_invalidation.c",
@@ -2949,7 +3067,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/fex/guest_invalidation.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -2983,12 +3101,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/fex/guest_invalidation.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "2a61be720bf218f9bc4f2b684a7594eac849d3597b112fd5b46f44a198bf445f",
+        "size_bytes": 2047
+      }
     },
     {
       "id": "pear:tests/cpu/abi.c",
@@ -3002,7 +3127,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/cpu/abi.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -3036,12 +3161,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/cpu/abi.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "8f745bce9240eb5e4fb64c641f12eebde16caae1f352e4c43a064273cea4c384",
+        "size_bytes": 2388
+      }
     },
     {
       "id": "pear:tests/cpu/seh.c",
@@ -3055,7 +3187,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/cpu/seh.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -3089,12 +3221,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/cpu/seh.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "df38f07c5b81b0b06f9f66d63cd934aa73cb295574ec6e87b1dc315cbcf1a1d6",
+        "size_bytes": 1718
+      }
     },
     {
       "id": "pear:tests/cpu/ordering.c",
@@ -3108,7 +3247,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/cpu/ordering.c",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -3142,12 +3281,19 @@
         "#include <windows.h>",
         "#include <stdint.h>"
       ],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/cpu/ordering.c",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "2bde8b2f86558e644c483a419da9c1a4c48c7c2f8cf39c267520a2d404c6f662",
+        "size_bytes": 6110
+      }
     },
     {
       "id": "pear:tests/cpu/ordering.asm",
@@ -3161,7 +3307,7 @@
       "canonical_destination": {
         "repository": "pear-runtime",
         "path": "tests/cpu/ordering.asm",
-        "exists": false
+        "exists": true
       },
       "role": "paired owner/ABI/guest execution, transcript admission or CPU qualification",
       "license": {
@@ -3192,12 +3338,19 @@
         }
       ],
       "observed_includes_or_imports": [],
-      "status": "pending_stage4_adoption_and_run",
+      "status": "adopted_exact_runtime_fixture_source_stage4",
       "execution_in_this_amendment": false,
       "notes": [
-        "Excluded from FEX import; this is the single proposed runtime destination, pending runtime-owner Stage4 adoption.",
-        "Source hashing here does not validate historical runtime results or run the original test."
-      ]
+        "Source hashing here does not validate historical runtime results or run the original test.",
+        "Runtime owns the byte-exact editable boundary/ordering source. Retained PE/reference and fresh candidate execution remain separate evidence."
+      ],
+      "adoption": {
+        "native_execution": false,
+        "path": "tests/cpu/ordering.asm",
+        "provenance": "pear-runtime/provenance/cpu-source-import.json",
+        "sha256": "1297602b4fb41c90764265842ffcff3404a9943ccb2dd96ae90eda711efad404",
+        "size_bytes": 607
+      }
     },
     {
       "id": "pear:tests/cpu/test_qualification.py",
@@ -4861,5 +5014,12 @@
     "new_fixture_sources_imported": 0,
     "stage2_synthetic_test_evidence_reused_only": true
   },
-  "retention": "Keep original tests, generated fragments, records and dependencies until named consumers accept the portable replacement and their retention conditions are separately met."
+  "retention": "Keep original tests, generated fragments, records and dependencies until named consumers accept the portable replacement and their retention conditions are separately met.",
+  "cpu_source_adoption": {
+    "fex_source_files": 11,
+    "native_execution_claim": false,
+    "provenance": "Pear/Provenance/cpu-source-import.json",
+    "runtime_boundary_source_files": 9,
+    "source_generation_verified": true
+  }
 }

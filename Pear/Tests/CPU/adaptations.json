@@ -1,0 +1,17 @@
+{
+  "cases": {
+    "absolute-displacement": {
+      "additional_expectation": {
+        "lane": 0,
+        "register": "R8",
+        "value": "0x000000007ffffff8"
+      },
+      "effective_data_page": 268496896,
+      "original_data_page": 2147479552,
+      "reason": "The Pear image arena occupies 0x7fff0000, so the original Linux fixed data page conflicts with the PE loader before instruction execution. Keep all upstream register expectations; relocate only data accesses and retain the original upper disp32 LEA boundary in R8.",
+      "source_sha256": "f5c5f90702fb1fe1c239bc7361ce31ddb536ac4fd3c65f225390ad0cfae0de27"
+    }
+  },
+  "scope": "windows_pe_fixture_adaptation",
+  "version": 1
+}

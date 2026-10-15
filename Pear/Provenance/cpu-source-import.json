@@ -1,0 +1,328 @@
+{
+  "boundary_provider": {
+    "paths": [
+      "tests/fex/guest_api.c",
+      "tests/fex/guest_thread.c",
+      "tests/fex/guest_exception.c",
+      "tests/fex/guest_context.c",
+      "tests/fex/guest_invalidation.c",
+      "tests/cpu/abi.c",
+      "tests/cpu/seh.c",
+      "tests/cpu/ordering.c",
+      "tests/cpu/ordering.asm"
+    ],
+    "repository": "pear-runtime"
+  },
+  "canonical_data_owner": "pear-fex/Pear/Tests/CPU; runtime fixture controls may retain only a pinned derived snapshot. Existing consumers remain frozen until their separately reviewed rebind.",
+  "files": [
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices.",
+        "basis": "Original Pear metadata covered by the recorded Pear GPL-3.0-or-later adoption; upstream source selections and copied expectations retain their recorded notices.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/corpus.json",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "c6ad9b39b475d1dbd7f0fbe377c50022a11d32d7b08e967e684b2250d1d593f9",
+        "size_bytes": 34111
+      },
+      "path": "Pear/Tests/CPU/corpus.json",
+      "sha256": "c6ad9b39b475d1dbd7f0fbe377c50022a11d32d7b08e967e684b2250d1d593f9",
+      "size_bytes": 34111
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices.",
+        "basis": "Original Pear metadata covered by the recorded Pear GPL-3.0-or-later adoption; upstream source selections and copied expectations retain their recorded notices.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/sources.json",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "69727b6125bbea096c1d635e7b2cdb5e4c794c2df9fa1964568763645e190839",
+        "size_bytes": 4638
+      },
+      "path": "Pear/Tests/CPU/sources.json",
+      "sha256": "69727b6125bbea096c1d635e7b2cdb5e4c794c2df9fa1964568763645e190839",
+      "size_bytes": 4638
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "JSON has no inline source license; retain source/selection attribution and associated upstream/Madeira notices.",
+        "basis": "Original Pear metadata covered by the recorded Pear GPL-3.0-or-later adoption; upstream source selections and copied expectations retain their recorded notices.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/adaptations.json",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "17bf454588ee9544cad95d8b78fd8d65ac5bc96579eae88d1d191b03695167ed",
+        "size_bytes": 698
+      },
+      "path": "Pear/Tests/CPU/adaptations.json",
+      "sha256": "17bf454588ee9544cad95d8b78fd8d65ac5bc96579eae88d1d191b03695167ed",
+      "size_bytes": 698
+    },
+    {
+      "adaptation": "Original pure corpus bodies retained; imports bind shared strict runtime readers/errors; separate explicit contract and boundary roots; fresh-output CLI replaces historical task root.",
+      "license": {
+        "additional_record": "Namespace/root adaptations and notices only; original corpus validation assertions retained.",
+        "basis": "Original Pear source covered by adoption commit bcd27806da5c9885cfcf40e639ae02b2c400e3c1; GPL-3.0-or-later and copyright notices added to the adapted file.",
+        "destination_spdx": "GPL-3.0-or-later",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tools/cpu/corpus.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "021759a850a166560e620fdb6d84d21baee0b5a80633fc485c71ef073d826cc7",
+        "size_bytes": 12141
+      },
+      "path": "Pear/Tools/CPU/corpus.py",
+      "sha256": "f45e771a1c8ca8b4f515074b728ad6aedf1f4c745639fc83413f181f74689e50",
+      "size_bytes": 12797
+    },
+    {
+      "adaptation": "Original assembly/reservation/header logic and file payload format retained; explicit source/contract/runtime-boundary roots and shared strict readers replace old imports/paths. Generator receipt reflects the new producer hash.",
+      "license": {
+        "additional_record": "generate.py is GPL-3.0-or-later adapted from Madeira; retain upstream author/revision and notices. No Apple exception is assumed.",
+        "basis": "existing explicit per-file marker",
+        "relicense": false,
+        "spdx_markers": [
+          "GPL-3.0-or-later"
+        ]
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tools/cpu/generate.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "c97130ad8b1123a222adf95fdfc2f8daabc2b283b58f9fcc170acbb6052d4574",
+        "size_bytes": 7277
+      },
+      "path": "Pear/Tools/CPU/generate.py",
+      "sha256": "c69cad8091ba13800fc4f0bec6a95070ad51137c055125413d1ad41e03c6e462",
+      "size_bytes": 8055
+    },
+    {
+      "adaptation": "Original adaptation checks/outcomes retained; optional explicit contract data and canonical contract root replace old implicit repository path; shared strict JSON reader rejects malformed input.",
+      "license": {
+        "basis": "existing explicit per-file marker",
+        "relicense": false,
+        "spdx_markers": [
+          "MIT"
+        ]
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tools/cpu/adapt.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "230de8c7ebca1f5302ebac83855d0e5ae1024447820ffa8059484ce338c17b45",
+        "size_bytes": 1866
+      },
+      "path": "Pear/Tools/CPU/adapt.py",
+      "sha256": "e874f4749497b74081b64a856ae98288d037f47d58412b09503b95a97b513cdd",
+      "size_bytes": 2195
+    },
+    {
+      "adaptation": "All14 original test methods/assertions retained; canonical import, explicit split roots and Pear GPL adoption/copyright notices only.",
+      "license": {
+        "basis": "Original Pear source covered by adoption commit bcd27806da5c9885cfcf40e639ae02b2c400e3c1; GPL-3.0-or-later and copyright notices added to the adapted file.",
+        "destination_spdx": "GPL-3.0-or-later",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/test_corpus.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "896b7a023a2e5019c7ec2fb81d4384ef3034fa48e3a3255b0b1349d7dba53fe5",
+        "size_bytes": 8048
+      },
+      "path": "Pear/Tests/CPU/test_corpus.py",
+      "sha256": "add7bbfd4f6802017c5f59d9f22343f0c32d2df34719bef16ae2eb5434ec40be",
+      "size_bytes": 8216
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "basis": "existing explicit per-file marker",
+        "relicense": false,
+        "spdx_markers": [
+          "GPL-3.0-or-later"
+        ]
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/runner.c",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "d4e4c3b6710f7e5d09f352be20e57d55bb47e02f758ee34eb28468b78103f1ef",
+        "size_bytes": 2541
+      },
+      "path": "Pear/Tests/CPU/runner.c",
+      "sha256": "d4e4c3b6710f7e5d09f352be20e57d55bb47e02f758ee34eb28468b78103f1ef",
+      "size_bytes": 2541
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license.",
+        "basis": "Complete unchanged original notice or license text; its text states the applicable terms.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/LICENSES/FEX-MIT.txt",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+        "size_bytes": 1094
+      },
+      "path": "Pear/Tests/CPU/LICENSES/FEX-MIT.txt",
+      "sha256": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+      "size_bytes": 1094
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license.",
+        "basis": "Complete unchanged original notice or license text; its text states the applicable terms.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/LICENSES/Madeira-GPL-3.0.txt",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+        "size_bytes": 35150
+      },
+      "path": "Pear/Tests/CPU/LICENSES/Madeira-GPL-3.0.txt",
+      "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+      "size_bytes": 35150
+    },
+    {
+      "adaptation": "exact bytes; original notices retained",
+      "license": {
+        "additional_record": "Preserve the complete original legal/attribution text; do not derive a new destination-wide license.",
+        "basis": "Complete unchanged original notice or license text; its text states the applicable terms.",
+        "relicense": false,
+        "spdx_markers": []
+      },
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/LICENSES/Madeira-EXCEPTION.md",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "534f059c2e9fe5de1acde82b920651b77ea3b4253f86837a3d6a81f54a5bdbbc",
+        "size_bytes": 3840
+      },
+      "path": "Pear/Tests/CPU/LICENSES/Madeira-EXCEPTION.md",
+      "sha256": "534f059c2e9fe5de1acde82b920651b77ea3b4253f86837a3d6a81f54a5bdbbc",
+      "size_bytes": 3840
+    }
+  ],
+  "limits": [
+    "No compiler or native guest execution.",
+    "Retained Windows PEs/reference require exact identities; changed PE bytes need byte-equivalence proof or a fresh Windows reference.",
+    "Original hosted compiler dependencies are not completely inventoried.",
+    "Madeira additional exception is draft/not in effect and not used."
+  ],
+  "new_code_license": "GPL-3.0-or-later unless existing file-specific notice states otherwise",
+  "new_test_files": [
+    {
+      "license": "GPL-3.0-or-later",
+      "mode": "100644",
+      "path": "Pear/Tests/CPU/__init__.py",
+      "role": "test discovery package",
+      "sha256": "66403cb353dc9d4a605134a918e326689199f27e95fb0b0d6b728efb5db41a1f",
+      "size_bytes": 93
+    },
+    {
+      "adaptation": "Original reservation test retains its two exact assertions; original bad-capture loop retained. Duplicate-JSON result-reader assertion remains in runtime tests. Imports/setUp use canonical FEX source. New tests use the same explicit MIT file terms.",
+      "license": "MIT",
+      "mode": "100644",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": true,
+        "path": "tests/cpu/test_harness.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "fd3f6d8684669d8cbfb66d63494ccb9844fe262f3088de619ec4c97a96b34dac",
+        "size_bytes": 6957
+      },
+      "path": "Pear/Tests/CPU/test_generate.py",
+      "role": "Two original generator assertions, split from result-reader tests, plus five explicit-binding controls",
+      "sha256": "7c464d11f7a089bfe6f8ec5a73b918bac6b8c4a0d459ea6d3d773d17735663b0",
+      "size_bytes": 3727
+    }
+  ],
+  "pear_adoption_commit": "bcd27806da5c9885cfcf40e639ae02b2c400e3c1",
+  "runtime_dependency": {
+    "files": [
+      {
+        "mode": "100644",
+        "path": "pear_runtime/assembly/_common.py",
+        "sha256": "c311a2bda40182af833838d8409aedfa3d46cf9520975c2a5d0437921b17f578",
+        "size_bytes": 7639
+      },
+      {
+        "mode": "100644",
+        "path": "pear_runtime/errors.py",
+        "sha256": "0ed4c834e5fad698c25e83c1b80fd4601e37c3c2ffa36e340dedde7d36e418fa",
+        "size_bytes": 427
+      }
+    ],
+    "paths": [
+      "pear_runtime/assembly/_common.py",
+      "pear_runtime/errors.py"
+    ],
+    "repository": "pear-runtime",
+    "role": "canonical strict readers and stable errors"
+  },
+  "schema_version": 1,
+  "scope": "editable_fex_cpu_corpus_sources",
+  "source_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+  "source_cutover": "Final owner acceptance remains a separate Task56 gate.",
+  "source_repository": "https://github.com/postmelee/pear",
+  "verification": {
+    "all_component_portable_tests": 66,
+    "compiler_execution": false,
+    "full_fex_census_files": 2270,
+    "native_execution": false,
+    "new_binding_tests": 5,
+    "original_corpus_tests": 14,
+    "original_generator_tests": 2,
+    "record": "Task56 Stage4 report binds local command/output references after final source verification.",
+    "source_only_generated_files_compared": 50
+  }
+}

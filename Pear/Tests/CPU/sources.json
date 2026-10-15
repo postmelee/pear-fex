@@ -1,0 +1,90 @@
+{
+  "fex": {
+    "files": {
+      "LICENSE": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+      "Scripts/json_asm_config_parse.py": "978f41e90053737ab007a3f6989d8a5fec17a024cbac1c81d31ee3a2d8748e84",
+      "Scripts/json_config_parse.py": "3806bef5557f44e3b95da3e0dedfa2a8f7666faa227ba57eb755315d826f8647",
+      "Source/Tools/CommonTools/HarnessHelpers.h": "ba61535eaa7753b4d83a530f9679172672fa1331c68e595d5ed960be31cb4bcc",
+      "Source/Tools/TestHarnessRunner/CMakeLists.txt": "2082fedb87e9e7491fd1bfde0fb27a977a270d33e5ccc163a99849df1cf99478",
+      "Source/Tools/TestHarnessRunner/TestHarnessRunner.cpp": "2c78eddf34cc4545bf8455abc0b3e9d32c196f19092319601b0d1de1fa5a56f7",
+      "Source/Tools/TestHarnessRunner/TestHarnessRunner/HostRunner.cpp": "25ae25c308be48c5e480bb237d3fe46e22e005e7455a6a034e35cee0c32ba5b2"
+    },
+    "inventory_count": 2270,
+    "inventory_sha256": "40ea3e8d6c2018c53f4c251d86819ffba62aeee9e7e2aaf83744bb66a90fbaea",
+    "repository": "https://github.com/FEX-Emu/FEX",
+    "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa"
+  },
+  "reviews": [
+    {
+      "decision": "adapt",
+      "files": {
+        "LICENSE": "f34a779f56b36d22b20e1b990d23e583a6a7ca071331925fa46156441c77a1ee",
+        "Scripts/json_asm_config_parse.py": "978f41e90053737ab007a3f6989d8a5fec17a024cbac1c81d31ee3a2d8748e84",
+        "Scripts/json_config_parse.py": "3806bef5557f44e3b95da3e0dedfa2a8f7666faa227ba57eb755315d826f8647",
+        "Source/Tools/CommonTools/HarnessHelpers.h": "ba61535eaa7753b4d83a530f9679172672fa1331c68e595d5ed960be31cb4bcc",
+        "Source/Tools/TestHarnessRunner/CMakeLists.txt": "2082fedb87e9e7491fd1bfde0fb27a977a270d33e5ccc163a99849df1cf99478",
+        "Source/Tools/TestHarnessRunner/TestHarnessRunner.cpp": "2c78eddf34cc4545bf8455abc0b3e9d32c196f19092319601b0d1de1fa5a56f7",
+        "Source/Tools/TestHarnessRunner/TestHarnessRunner/HostRunner.cpp": "25ae25c308be48c5e480bb237d3fe46e22e005e7455a6a034e35cee0c32ba5b2"
+      },
+      "reason": "MIT ASM/config contracts. HostRunner uses Linux signals/ucontext and modify_ldt and is excluded from MinGW by CMake. No import of Linux execution plumbing.",
+      "repository": "https://github.com/FEX-Emu/FEX",
+      "revision": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa"
+    },
+    {
+      "decision": "adapt_after_stage2_review",
+      "files": {
+        "LICENSE": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+        "LICENSE-EXCEPTION.md": "534f059c2e9fe5de1acde82b920651b77ea3b4253f86837a3d6a81f54a5bdbbc",
+        "tests/x64/asmconf-x64.c": "57e87075e6a3ef14c132cc8cb4e1c5fbc0d4d8fcfe2c7f09b190a8a9f8e272bb",
+        "tests/x64/gen_asmconf.py": "2751f0e89975db3e53642815df23493f3f208c17a363d990b55a92a32cfd44e6"
+      },
+      "reason": "GPL-3.0-or-later tooling: retain per-case objects/capture tables, reject dropped CONFIG/features/lanes and incomplete resumed success. No Madeira code copied in Stage 1.",
+      "repository": "https://github.com/willfaust/Madeira",
+      "revision": "48f976429c189f8396e23d251d8a82f43c705922"
+    },
+    {
+      "decision": "reference_only",
+      "files": {
+        "LICENSE": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
+        "README.md": "5c07579b4ffff4ac344ece5691a6699c8da4a0e0c80ee0b12f546c334f0dc7a2"
+      },
+      "reason": "Separate HODLL64 ARM64EC and HODLL WoW64 roles. Do not import Linux defaults or infer i386 execution from construction.",
+      "repository": "https://github.com/AndreRH/hangover",
+      "revision": "56e385b7ff490edd281b288f420677093563560b"
+    },
+    {
+      "decision": "retain_pear_selection",
+      "files": {
+        "dlls/ntdll/loader.c": "115e113ba93a15745e2109eb28eee48a220a725bebed706b78d0311c633e1fe9"
+      },
+      "reason": "LGPL Wine load_arm64ec_module uses HODLL64/default libarm64ecfex.dll and arm64ec_process_init. Pear already has source-bound selected-module admission; replacing it provides no needed CPU qualification behavior.",
+      "repository": "https://github.com/AndreRH/wine",
+      "revision": "3ea3a14941b6a122b892c84141ce9662c008081e"
+    }
+  ],
+  "selection_ids": [
+    "abi-state",
+    "absolute-displacement",
+    "api-callback",
+    "avx-lane-preservation",
+    "carry-widths",
+    "cmpxchg-eax",
+    "code-invalidation",
+    "configured-memory",
+    "float-to-integer",
+    "guest-fault-guard",
+    "locked-rmw",
+    "message-passing",
+    "packed-float-add",
+    "scalar-double-add",
+    "seh-unwind",
+    "store-buffer",
+    "suspend-context",
+    "tls-thread",
+    "xadd-widths",
+    "xor-flags",
+    "zero-extension",
+    "zero-shift-flags"
+  ],
+  "version": 1
+}
