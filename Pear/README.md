@@ -3,8 +3,11 @@
 This private downstream checkout carries the accepted Pear FEX layers and the
 owner-approved Task #11 D36 source candidate. The source is editable here;
 historical patch/generator records are frozen provenance, not an alternate
-implementation to regenerate over current edits. Source authority cutover from
-the original task is a separate handoff.
+implementation to regenerate over current edits. The
+[accepted source-owner handoff](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/source-cutover-task56.json)
+records this fork as the future editing authority for the exact imported scope.
+Original source, patch and recovery inputs remain retained under their recorded
+consumer obligations.
 
 The upstream base is FEX commit
 `59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa`. Its full history, original authors,
@@ -63,8 +66,9 @@ A source disposition or new hash does not qualify a changed implementation.
 The Stage 4 metadata amendment is published privately at
 `a8ba1cbd0148b46817842f3b7307689d4b2acbd7`; [its report](../mydocs/working/task_m1_56_stage4.md)
 retains the exact limits. The runtime development entrypoints are recorded at
-`6f0202b457f0e585c5c7621a63d203e77d07386d`; final source-owner cutover remains
-a separate handoff from active runtime use.
+`6f0202b457f0e585c5c7621a63d203e77d07386d`. Source-owner acceptance covers the
+recorded imported range; runtime activation and the historical build/tool pins
+retain their separate identities.
 
 The source check verifies the imported checkpoint, file modes, ancestry and
 tracked private-selector exclusion. Omitting provider roots reports those
@@ -108,8 +112,8 @@ or launched. Independent release evidence is retained for every fresh operation.
 Accepted CPU/ordering and other candidate2 reuse retains the original exact
 source/reference/operation identities; the AVX case stays unsupported/exit 77.
 These results do not establish gameplay, Steam integration, complete no-Rosetta
-coverage or ordinary-user distribution. Final source cutover is a separate
-owner gate.
+coverage or ordinary-user distribution. The accepted source-management handoff
+does not extend those execution claims.
 
 ## CPU fixture sources
 

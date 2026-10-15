@@ -43,5 +43,7 @@ This private downstream fork preserves the upstream history and documentation.
 See [Pear component notes](Pear/README.md) for the selected source checkpoint,
 verification commands, shared dependencies, per-file notices and current build
 and runtime limits. The [common runtime](https://github.com/postmelee/pear-runtime)
-owns the exercised reconstruction and separate diagnostic controls. Component
-repositories currently require collaborator access.
+owns the exercised reconstruction and separate diagnostic controls. The
+[accepted source-owner handoff](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/source-cutover-task56.json)
+records the imported scope and retention limits. Component repositories currently
+require collaborator access.
