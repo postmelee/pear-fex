@@ -1,7 +1,7 @@
 # Task #56 Stage 6 — fex source-authority handoff
 
 GitHub Issue: [#56](https://github.com/postmelee/pear/issues/56)
-Implementation plan: [Pear Task #56](https://github.com/postmelee/pear/blob/codex/task56/mydocs/plans/task_m1_56_impl.md) (local pending-publication Pear branch).
+Implementation plan: [Pear Task #56](https://github.com/postmelee/pear/blob/2bfcc9dff80212ba40b841a2fe6c32033ca0e801/mydocs/plans/task_m1_56_impl.md) (accepted Stage 5.2 checkpoint; public reachability awaits authorized publication of its ancestry).
 Stage: 6
 
 ## Stage Purpose
@@ -37,3 +37,7 @@ Future selected-range changes belong to the canonical component/runtime/Pear own
 ## Approval Request
 
 Continuous in-scope progression was approved. Private component publication is authorized; public Pear publication remains a separate requester decision. This report grants neither game execution nor artifact deletion.
+
+## Final publication-link verification
+
+The Pear guide, lock and implementation-plan links use the exact accepted Stage 5.2 commit, not a local branch that the workflow will never publish. Their Git blobs and referenced anchors were verified before this follow-up commit. Public reachability still requires authorized publication of Pear ancestry. This is a documentation-only continuation of Stage 6; code, build/tool pins and source acceptance are unchanged.
