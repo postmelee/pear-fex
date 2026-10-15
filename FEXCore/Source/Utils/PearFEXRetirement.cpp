@@ -3,13 +3,36 @@
 #include <FEXCore/Utils/PearFEXRetirement.h>
 #include <FEXCore/Utils/LogManager.h>
 
+extern "C" bool PearFailureObservationEnabled();
+extern "C" void PearFailureObservation(uint32_t, uintptr_t, uint32_t, uint32_t, uint32_t, int32_t, uint32_t, uint32_t);
+
 namespace FEXCore::Utils::PearFEXMemory::Retirement {
 namespace {
 DetachedLedger Ledger {};
 }
 bool AdmissionOpen() { return Ledger.AdmissionOpen(); }
-Result PoisonSourceAdmission(Result Outcome) { return Ledger.PoisonSourceAdmission(Outcome); }
-Result EnqueueDetached(const Allocation& Target) { return Ledger.EnqueueDetached(Target); }
+Result PoisonSourceAdmission(Result Outcome) {
+  const bool Observe = PearFailureObservationEnabled();
+  const bool Prior = Observe && Ledger.FirstFailureSnapshot().Present;
+  const auto Returned = Ledger.PoisonSourceAdmission(Outcome);
+  if (Observe) {
+    const auto First = Ledger.FirstFailureSnapshot();
+    PearFailureObservation(1, reinterpret_cast<uintptr_t>(__builtin_return_address(0)), Prior,
+                           Returned.Status, Returned.ErrorDomain, Returned.ErrorCode, First.Outcome.Status, First.HasAllocation);
+  }
+  return Returned;
+}
+Result EnqueueDetached(const Allocation& Target) {
+  const bool Observe = PearFailureObservationEnabled();
+  const bool Prior = Observe && Ledger.FirstFailureSnapshot().Present;
+  const auto Returned = Ledger.EnqueueDetached(Target);
+  if (Observe && !Returned) {
+    const auto First = Ledger.FirstFailureSnapshot();
+    PearFailureObservation(2, reinterpret_cast<uintptr_t>(__builtin_return_address(0)), Prior,
+                           Returned.Status, Returned.ErrorDomain, Returned.ErrorCode, First.Outcome.Status, First.HasAllocation);
+  }
+  return Returned;
+}
 Failure FirstFailureSnapshot() { return Ledger.FirstFailureSnapshot(); }
 Result DrainAtNativeGate() {
   // Source callers must be at the qualified native gate, with no invalidation,
@@ -25,7 +48,14 @@ Result DrainAtNativeGate() {
     // A failed abort/partial writer is retained without inventing clean NONE
     // or RX facts. Its exact original error prevents source Context release.
     const auto Outcome = Taken->Quarantined ? Taken->OriginalFailure : SourceLifecycle::RetireDetachedAtCleanupGate(Observed);
+    const bool Observe = PearFailureObservationEnabled();
+    const bool Prior = Observe && Ledger.FirstFailureSnapshot().Present;
     const auto Completed = Ledger.Complete(*Taken, Outcome, Observed);
+    if (Observe && !Completed) {
+      const auto First = Ledger.FirstFailureSnapshot();
+      PearFailureObservation(3, reinterpret_cast<uintptr_t>(__builtin_return_address(0)), Prior,
+                             Completed.Status, Completed.ErrorDomain, Completed.ErrorCode, First.Outcome.Status, First.HasAllocation);
+    }
     if (!Completed) {
       if (FirstError) FirstError = Completed;
       LogMan::Msg::EFmt("Pear detached retirement retained: status {}, domain {}, code {}",

@@ -672,6 +672,7 @@ uint64_t Arm64JITCore::ExitFunctionLink(FEXCore::Core::CpuStateFrame* Frame, FEX
 }
 
 #else
+extern "C" void PearLinkObservation(uint32_t, uint32_t, uint64_t, uint64_t);
 uint64_t Arm64JITCore::ExitPearFunctionLink(FEXCore::Core::CpuStateFrame* Frame,
     FEXCore::Context::ExitFunctionLinkData* Record, uintptr_t ResumePC) {
   namespace Memory=FEXCore::Utils::PearFEXMemory;
@@ -723,6 +724,7 @@ uint64_t Arm64JITCore::ExitPearFunctionLink(FEXCore::Core::CpuStateFrame* Frame,
   PEAR_FEX_REQUIRE_RESULT(!!Turn, "Pear linker mutation turn refused: status {}, domain {}, code {}",Turn);
   const bool Changed=Revision!=C->GetPearInvalidationRevision();
   if (Changed) Host=0; // Never reuse the lookup captured before a peer invalidation.
+  const bool HadHost=Host!=0;
   if (!Host) Host=C->CompilePearBlock(Frame,Copy.GuestRIP,0);
   PEAR_FEX_REQUIRE(Host && !(Host&3),"Pear linker compiled no admitted target");
   // Upstream permits replacement of a shared mapping when a backend switches
@@ -744,15 +746,19 @@ uint64_t Arm64JITCore::ExitPearFunctionLink(FEXCore::Core::CpuStateFrame* Frame,
   // transaction from stale caller/thunk bytes. Own compilation may also advance
   // this epoch; skipping this optional link remains safe in that case.
   const bool SameSourceEpoch=Window->Facts.Token.write_epoch==Window->Owner->GetPearSnapshot().Token.write_epoch;
+  const bool Contended=Mutation.Contended();
+  uint32_t LinkFacts=(SameMap?1U:0U)|(Changed?2U:0U)|(Contended?4U:0U)|(SameSourceEpoch?8U:0U)|(HadHost?16U:0U);
   if (SameMap && !Changed && !Mutation.Contended() && SameSourceEpoch) {
     uint32_t Marker {}; std::memcpy(&Marker,Caller.data(),sizeof(Marker));
     const auto Encoded=PearJITLinkLayout::Encode(Window->Begin,Layout,Host,Marker);
     PEAR_FEX_REQUIRE(PearJITLinkLayout::UnlinkedSourceMatches(Window->Begin,Layout,Encoded,Thunk,Caller),
                       "Pear linker bytes are not the actual appended pending-thunk/source caller shape");
     const auto Facts=Window->Owner->GetPearSnapshot();
+    LinkFacts|=32U;
     const auto Ticket=PearJITLinks::Prepare(PearJITLinks::SourceDescriptor {Window->Owner,C,Facts,Layout,Encoded,
                                                                                      Thunk,Caller,Copy.GuestRIP,Host});
     if (Ticket) {
+    LinkFacts|=64U;
     // Compile may append into A, but any real guest invalidation since the
     // original snapshot invalidates this source transaction before any store.
     const auto Patched=PearJITLinks::PatchPrepared(*Ticket,Thread,Revision);
@@ -784,6 +790,7 @@ uint64_t Arm64JITCore::ExitPearFunctionLink(FEXCore::Core::CpuStateFrame* Frame,
   const auto Observed=Memory::CopyManagedRXUnderGlobalLease(C->Dispatcher->GetPearSnapshot(),*Target,Thread,
                                                           TargetWindow->Offset,TargetWord);
   PEAR_FEX_REQUIRE_RESULT(!!Observed, "Pear linked target RX observation refused: status {}, domain {}, code {}", Observed.Outcome);
+  PearLinkObservation(1,LinkFacts,Copy.GuestRIP,reinterpret_cast<uintptr_t>(Record));
   return Host;
 }
 #endif
@@ -1256,6 +1263,8 @@ void Arm64JITCore::EmitSuspendInterruptCheck() {
 #endif
 }
 
+#include "PearPhaseJIT.inc"
+
 void Arm64JITCore::EmitEntryPoint(ARMEmitter::BackwardLabel& HeaderLabel, bool CheckTF) {
   // Get the address of the JITCodeHeader and store in to the core state.
   // Two instruction cost, each 1 cycle.
@@ -1478,6 +1487,9 @@ CPUBackend::CompiledCode Arm64JITCore::CompileCode(uint64_t Entry, uint64_t Size
       PendingTargetLabel = nullptr;
 
       BindOrRestart(Target);
+#ifdef PEAR_PHASE_OBSERVE
+      if (BlockIROp->EntryPoint) EmitPearPhase(Entry + BlockIROp->GuestEntryOffset, false);
+#endif
     }
 
     for (auto [CodeNode, IROp] : IR->GetCode(BlockNode)) {

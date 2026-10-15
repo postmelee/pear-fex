@@ -1,3 +1,8 @@
+
+#include <cstdint>
+#ifdef PEAR_PHASE_OBSERVE
+extern "C" bool PearPhaseSelected(uint64_t);
+#endif
 // SPDX-License-Identifier: MIT
 #ifdef PEAR_FEX_MEMORY_OWNER
 #include <FEXCore/Utils/PearDataMemory.h>
@@ -608,6 +613,12 @@ void ConstrainedRAPass::Run(IREmitter* IREmit_) {
         auto [CodeNode, IROp] = CodeLast();
         // End of iteration gunk
 
+        #ifdef PEAR_PHASE_OBSERVE
+        if (IROp->Op == OP_GUESTOPCODE && PearPhaseSelected(IR->GetHeader()->OriginalRIP + IROp->C<IROp_GuestOpcode>()->GuestEntryOffset)) {
+          for (auto& Preferred : PreferredReg) Preferred = PhysicalRegister::Invalid();
+        }
+        #endif
+
         // Record preferred registers for SRA. We also record the Node accessing
         // each register, used below. Since we initialized Class->Available,
         // RegToSSA is otherwise undefined so we can stash our temps there.
@@ -670,6 +681,9 @@ void ConstrainedRAPass::Run(IREmitter* IREmit_) {
       // Since we'd be doing this check anyway for merging, do the check now so
       // we can skip the rest of the logic too.
       if (IROp->Op == OP_GUESTOPCODE || IROp->Op == OP_INLINECONSTANT) {
+#ifdef PEAR_PHASE_OBSERVE
+        if (IROp->Op == OP_GUESTOPCODE && PearPhaseSelected(IR->GetHeader()->OriginalRIP + IROp->C<IROp_GuestOpcode>()->GuestEntryOffset)) LastNode = nullptr;
+#endif
         continue;
       }
 

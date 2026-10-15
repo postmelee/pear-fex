@@ -1,0 +1,776 @@
+{
+  "schema_version": 1,
+  "scope": "Imported exact bytes only; not a declaration that unmarked files are MIT.",
+  "upstream_terms": "LICENSE",
+  "reviewed_import": "Pear Task #56 Stage 1 source checkpoint and Stage 2 exact-byte import decision",
+  "files": [
+    {
+      "path": "CodeEmitter/CodeEmitter/Buffer.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "CodeEmitter/CodeEmitter/Buffer.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "CodeEmitter/CodeEmitter/Emitter.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "CodeEmitter/CodeEmitter/Emitter.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "FEXCore/Source/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Config/Config.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Config/Config.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Context/Context.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Context/Context.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Context/Context.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Context/Context.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/CPUBackend.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/CPUBackend.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/CPUBackend.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/CPUBackend.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/CPUID.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/CPUID.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/CPUID.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/CPUID.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/Core.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/Core.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/JIT/BranchOps.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/JIT/BranchOps.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/LookupCache.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/LookupCache.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/LookupCache.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/PearJITLinkLayout.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/PearJITLinks.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/PearJITMetadata.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/PassManager.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/PassManager.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/PassManager.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/PassManager.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/Passes.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/Passes.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/Passes/RedundantFlagCalculationElimination.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/Passes/RedundantFlagCalculationElimination.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Interface/IR/Passes/x87StackOptimizationPass.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Interface/IR/Passes/x87StackOptimizationPass.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/AllocatorHooks.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Utils/AllocatorHooks.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/Source/Utils/ArchHelpers/Arm64.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64InstructionConstants.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64Preparation.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/PearEmptyObjectStorage.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/Source/Utils/PearFEXRetirement.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Config/Config.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Config/Config.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Config/PearConfigAllocator.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Core/Context.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Core/Context.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Core/HostFeatures.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Core/HostFeatures.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Debug/InternalThreadState.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Debug/InternalThreadState.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/AllocatorHooks.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Utils/AllocatorHooks.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/ArchHelpers/Arm64.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/Utils/ArchHelpers/Arm64.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/PearDataMemory.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXLinks.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXRetirement.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/Utils/PearSourceGuard.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/fextl/memory.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/fextl/memory.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Common/Config.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Common/Config.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Tools/CommonTools/DummyHandlers.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Tools/CommonTools/DummyHandlers.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Tools/CommonTools/DummyHandlers.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Tools/CommonTools/DummyHandlers.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/ARM64EC/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/ARM64EC/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/ARM64EC/Module.S",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/ARM64EC/Module.S",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/ARM64EC/Module.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/ARM64EC/Module.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/Common/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/CPUFeatures.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/CPUFeatures.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/CRT/Misc.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/CRT/Misc.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/CRT/PearCheckedEnvironment.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/DarwinConfigPolicy.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/DarwinConfigPolicy.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/InvalidationTracker.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/InvalidationTracker.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/InvalidationTracker.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/InvalidationTracker.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/OvercommitTracker.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/OvercommitTracker.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/PearFEXMemory.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/Common/WinAPI/Alloc.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/Common/WinAPI/Alloc.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/CheckedCRT.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/CheckedCRT.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/Fixture.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/Fixture.def",
+      "existing_spdx": [],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/PearEmptyInitProof.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/PearEmptyInit/Report.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/UnixLib/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/UnixLib/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/UnixLib/FEXUnixLib.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/UnixLib/FEXUnixLib.h",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/UnixLib/FEXUnixLibDarwin.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/WOW64/CMakeLists.txt",
+      "existing_spdx": [],
+      "upstream_path": "Source/Windows/WOW64/CMakeLists.txt",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Source/Windows/WOW64/Module.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": "Source/Windows/WOW64/Module.cpp",
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Tests/Windows/PearEmptyInit/caller.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; no_relicensing"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearAttachObservation.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearBindingCensus.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearBindingCensusEmit.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearMismatchObservation.h",
+      "existing_spdx": [],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearSlotLifetime.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeMemory.inc",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeRuntime.inc",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearTargetObservation.h",
+      "existing_spdx": [],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearThreadCreateObservation.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearThreadCreateRuntime.inc",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearWriterObservation.h",
+      "existing_spdx": [],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearWriterRing.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearPhaseCopy.cpp",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearPhaseJIT.inc",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearPhaseObservation.h",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    },
+    {
+      "path": "Pear/Diagnostics/include/PearPhaseRuntime.inc",
+      "existing_spdx": [
+        "MIT"
+      ],
+      "upstream_path": null,
+      "handling": "exact_import_bytes_preserved; existing_notices_retained; unmarked_legacy_terms_not_invented"
+    }
+  ]
+}

@@ -1,3 +1,8 @@
+
+#include <cstdint>
+#ifdef PEAR_PHASE_OBSERVE
+extern "C" bool PearPhaseSelected(uint64_t);
+#endif
 // SPDX-License-Identifier: MIT
 /*
 $info$
@@ -42,6 +47,9 @@ DEF_OP(WFET) {
 DEF_OP(GuestOpcode) {
   auto Op = IROp->C<IR::IROp_GuestOpcode>();
   // metadata
+#ifdef PEAR_PHASE_OBSERVE
+  if (PearPhaseSelected(Entry + Op->GuestEntryOffset)) EmitPearPhase(Entry + Op->GuestEntryOffset, true);
+#endif
   DebugData->GuestOpcodes.push_back({Op->GuestEntryOffset, GetCursorAddress<uint8_t*>() - CodeData.BlockBegin});
 }
 

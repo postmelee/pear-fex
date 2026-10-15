@@ -1,0 +1,2040 @@
+{
+  "schema_version": 1,
+  "component": "pear-fex",
+  "upstream": {
+    "repository": "https://github.com/FEX-Emu/FEX",
+    "commit": "59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa",
+    "tree": "7509ab443d32692ac72ee51c0697ccf86d0a66af"
+  },
+  "pear_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+  "authority": "Imported fork source is editable; historical patches/generators are provenance only. Original owner cutover remains a separate handoff.",
+  "verification_scope": "Exact source/hash/mode/graph correspondence; no new build or runtime qualification.",
+  "accepted_source_manifest": "Pear/Provenance/accepted-source.json",
+  "nodes": [
+    {
+      "id": "task11-startup-01",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task8-fex-02"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0005-wake-exit-observation.patch",
+        "sha256": "2df06b7154bfc5e4decc6520a6104c9f373b2f1f6c1a21ecb19ed83da472e055"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0005-wake-exit-observation.json",
+        "sha256": "99d42413c01e749bde88515e4cb981fa6b7a24bbfdf9cc8d652edc9b40ce849d"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "580c5e28943557f7982fd5a6c8f31b1073a0e2a54b73f49ba7bb1cf936051f28",
+          "postimage_sha256": "8ff73533f9e756a1f7383dfec1e1a34dee69efbd105ab61b16328f8a14d1c5d8"
+        },
+        {
+          "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+          "preimage_sha256": "50f95624adb9760254e80e1ac14a0d8f00503327ccaff32831cf5e9db91d219c",
+          "postimage_sha256": "62c0a4392498eb0c190cd3df29ee4f9c5d79cae144a0581cc7865971c5563d7d"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "037fc86f0ec46c5e9d89bbf44c617409dd4d663fbe4b7aea774a7c5e014a3518",
+          "postimage_sha256": "737dd5af47641562d39d11f1e092da51be9118eb824ddab3ce1ecc4adb950812"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "8ef07e19ea8da75fe5af4dd9f2733ebc27c2161667b48112fcf25fd75dfbbca9",
+          "postimage_sha256": "465d0399170a3c46d9e998f32bd61b978d11159260b1e601550bc55fab2c8382"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+          "preimage_sha256": "a7e526ee00b1aad02c753dfb75dcc9380892494db77cb5b28abce53608b48b3e",
+          "postimage_sha256": "892593d5fa6194b67b7c29ffa0a67ce9d5f2774a43621c4c6169805755a52e4d"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-02",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-01"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0006-cached-checkpoint-output.patch",
+        "sha256": "f42090b678a4a3e1cbfd51d4da96c3b216f9ff0a4e4a78523f1bbf1cbc76e2c4"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0006-cached-checkpoint-output.json",
+        "sha256": "27e2d82a59bb2d720aedf515c3ad564f9cc7780484bbae974a83060ab10c821f"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "465d0399170a3c46d9e998f32bd61b978d11159260b1e601550bc55fab2c8382",
+          "postimage_sha256": "9448e130556c784624da4735f8e2a2676873afda2d638c5d43e65bc41c99c308"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-03",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-02"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0007b-entry-failure-phase.patch",
+        "sha256": "6e28c6330c870befc43312940c4625e7bfeb1b978d9bb0180baa8f63fe1484ba"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0007b-entry-failure-phase.json",
+        "sha256": "3d62e0724bf1d1b58ab8517c4c36e1080f4ebd00e17ae934817a71850afd070b"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+          "preimage_sha256": "62c0a4392498eb0c190cd3df29ee4f9c5d79cae144a0581cc7865971c5563d7d",
+          "postimage_sha256": "532f1b06365a3d65f719c6f1ce0df3d5431e3d51bed0fdddb3270fdfbca4b65d"
+        },
+        {
+          "path": "FEXCore/include/FEXCore/Core/Context.h",
+          "preimage_sha256": "f498c2bb216b1b4109338e069a88343de29ea924557c84dc2e33001d6fc1fbc8",
+          "postimage_sha256": "f88ecdb960b1664402e6fa22f9dc2c50c26d332dd23a395b2ccefea4f8098eb0"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "737dd5af47641562d39d11f1e092da51be9118eb824ddab3ce1ecc4adb950812",
+          "postimage_sha256": "d5a1036c2271feaabc6c166f0cd4cc9a268f45d0504451115d9072d0f5205882"
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "8ff73533f9e756a1f7383dfec1e1a34dee69efbd105ab61b16328f8a14d1c5d8",
+          "postimage_sha256": "41d36df1b0e44605c4a07adf5ce268aa389bb308ebd871cef6f291971a6085fb"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "9448e130556c784624da4735f8e2a2676873afda2d638c5d43e65bc41c99c308",
+          "postimage_sha256": "6d8e33d0519ca04a07fc7d0aaddafd133c004e255bf5ec6cd50893f80b5f4886"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-04",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-03"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0008-link-progress.patch",
+        "sha256": "8dd7c05970c64017b9024ed8d58bcc55467b6347afbd78bdb271c9302c921f72"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0008-link-progress.json",
+        "sha256": "461ec3408d7b01a49b086af381bfdc4959e9b123ff1b3b3a4b2a959a4adf9594"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "6d8e33d0519ca04a07fc7d0aaddafd133c004e255bf5ec6cd50893f80b5f4886",
+          "postimage_sha256": "f540f9c49ffbff2fda2dba690c0995300d2c8347a339d8020afe32835a30c92f"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+          "preimage_sha256": "892593d5fa6194b67b7c29ffa0a67ce9d5f2774a43621c4c6169805755a52e4d",
+          "postimage_sha256": "bc840ae2a969be3a54363ff70c8f26acb80d4f973120904425b8cb5bfccada64"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+          "preimage_sha256": "3c5b3a28a6525e4eeb230b00d5616dc56e6dc229de6ab8111f0fdab339f6389d",
+          "postimage_sha256": "6c3690647399a74bb7c9d9e237d44aa2a54b0ebffce0c61142b0a3e165bb5cc1"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-05",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-04"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0009-link-capacity.patch",
+        "sha256": "f2da389dbcec8a689f9e1295f3481b1cd4d7689ef707c42285ff47a5a69914bf"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0009-link-capacity.json",
+        "sha256": "35ec07fcbbc0e4739792542f69e9691db8b3e0155c4884d4e9df676542f736f1"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+          "preimage_sha256": "cd597ac65552115352bd7c52b0d229e85c0215a7a84076fb5fd177e3ed4cb25b",
+          "postimage_sha256": "fad575573808e4fec88cf3cb06fac5cc632280b398379683925227eb7625d5f0"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+          "preimage_sha256": "bc840ae2a969be3a54363ff70c8f26acb80d4f973120904425b8cb5bfccada64",
+          "postimage_sha256": "0f7ade478b4e937b58bc99a67b3867677f5c4caddbfad7454c2718abb798096e"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-06",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-05"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0010-failure-origin.patch",
+        "sha256": "c5876ce7bec4b7569e98f2a0b92428b8f8ba92a786d2ef97cb2e67685cd3cc81"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0010-failure-origin.json",
+        "sha256": "f204460d6f9b6df5e1ccc788c58da9b86a3bd0d99758a099c60bf6ebdc6adc56"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "f540f9c49ffbff2fda2dba690c0995300d2c8347a339d8020afe32835a30c92f",
+          "postimage_sha256": "c73007c65f5ccdf9ca13eae5b9035ba2eb8b38a09cee692c644dd77d6152ab99"
+        },
+        {
+          "path": "FEXCore/Source/Utils/PearFEXRetirement.cpp",
+          "preimage_sha256": "f491f83560a29b0d9233edef257a4f6f9a6ed26c325c745611e4062b82a1c613",
+          "postimage_sha256": "af78eadf5bb4275b466c5e84dfbfda42e701c61f0fe81a4cdcb58960fd53aac6"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-07",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-06"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0011-repair-epoch.patch",
+        "sha256": "a6817427d543f74a42f4030c7f355fcc5430d08cb29cb3d8571b936fc6384a0a"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0011-repair-epoch.json",
+        "sha256": "4be5c450b423f2d3eb09d60ba23d3eeef701eb81f8851ed3d7d0ca1aeb337cc3"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "d5a1036c2271feaabc6c166f0cd4cc9a268f45d0504451115d9072d0f5205882",
+          "postimage_sha256": "e792b7aae2e8492d758637762b910dd823645d50094e302b79c080d2ea0c32ba"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "c73007c65f5ccdf9ca13eae5b9035ba2eb8b38a09cee692c644dd77d6152ab99",
+          "postimage_sha256": "4db9d1dbfe81a5e352193f5b71300ee11576f8bdb640fbdc0b194493f989bfe1"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-08",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-07"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0012-rip-window.patch",
+        "sha256": "2e0528735afda3ed3d81f7b14cbbd35ad9e81eb8d29fad4c42db2d93e7b11816"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0012-rip-window.json",
+        "sha256": "3f6b439a90f05ca0e81bcd0bb4505838f36458483d0ebdb8cb48c26939d22baa"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "e792b7aae2e8492d758637762b910dd823645d50094e302b79c080d2ea0c32ba",
+          "postimage_sha256": "1ead963e6034b93d44a54eadeff807c62056d15df6df6918b3d6fd242fd56043"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-09",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-08"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0013-mutation-bound-observation.patch",
+        "sha256": "7e75ba8b6c58b28a55acbc4253da8cfe578eb0c8528eb5e879f6bbc057eacfcc"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0013-mutation-bound-observation.json",
+        "sha256": "902d179916bf0ff56bacae6bc4418a6078d0addfe0793d4cc9b5fc36132efc2b"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "41d36df1b0e44605c4a07adf5ce268aa389bb308ebd871cef6f291971a6085fb",
+          "postimage_sha256": "ae4a0b85e9e6499fee03de7059d23500031636a4f51185ab7a75cc65dfe9ba53"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "4db9d1dbfe81a5e352193f5b71300ee11576f8bdb640fbdc0b194493f989bfe1",
+          "postimage_sha256": "a849e9213ef7f0846ddc718d51a718e6fa33bd23271d8765ed42719388981e2d"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-10",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-09"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0014-link-capacity-comparison.patch",
+        "sha256": "cc45d1a60525914a5f60ad586478a32540b790d504184020e33a7920570249f1"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0014-link-capacity-comparison.json",
+        "sha256": "eb0b1c360dcfe5932fd4cb7b9f0444075bfc957c68dcfd8daf9ceceede2b03f3"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+          "preimage_sha256": "fad575573808e4fec88cf3cb06fac5cc632280b398379683925227eb7625d5f0",
+          "postimage_sha256": "5ceb118a8076d42a7220b193c6f36d926550ed9813744b1723d0a7f72dceb14f"
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+          "preimage_sha256": "0f7ade478b4e937b58bc99a67b3867677f5c4caddbfad7454c2718abb798096e",
+          "postimage_sha256": "4bff016111f61f43b79df977c2f55139a75fe8dc0689fb0e7f02c46f62678019"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-11",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-10"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0015-source-owner-observation.patch",
+        "sha256": "da716833ae96d008c670a1deb5a69aff20015b2ff9abc45622a1ab2d5ff901a7"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0015-source-owner-observation.json",
+        "sha256": "68994a76bef74111495e978b4b965235187566ef6dd081c4f6c4bb97dcef8b5e"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "ae4a0b85e9e6499fee03de7059d23500031636a4f51185ab7a75cc65dfe9ba53",
+          "postimage_sha256": "0df3d83eed0f047ec699863968db2843ed2ec8b0531b2d039c0e97bf91bc17e5"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "a849e9213ef7f0846ddc718d51a718e6fa33bd23271d8765ed42719388981e2d",
+          "postimage_sha256": "809405fcdb4186ea6579e06f50f1d9f01b715a9dbdcf7ae4ed4735e6ac782d6d"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-12",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-11"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0016-pending-transition-observation.patch",
+        "sha256": "f92a1cd19a2728541fde7a495df35d7d2449d0b74f6c4362a974c85a2c4c6a1a"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0016-pending-transition-observation.json",
+        "sha256": "a852a5c0f595c2c217f40faf5f73aae31638299adfc6a059e757c5b124beeb92"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "0df3d83eed0f047ec699863968db2843ed2ec8b0531b2d039c0e97bf91bc17e5",
+          "postimage_sha256": "aad5a21f34b853138f23f8322368d179f9f2da2c41fffb5d9f1bffa42d713144"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "809405fcdb4186ea6579e06f50f1d9f01b715a9dbdcf7ae4ed4735e6ac782d6d",
+          "postimage_sha256": "4aecbeec811ed4a80e5b8fe2cb0d7454b7c2ddab0db2b61238a0dc1260c5e2d9"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-13",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic_or_observation_support",
+      "depends_on": [
+        "task11-startup-12"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0017-early-source-wait-observation.patch",
+        "sha256": "861d391380254299197ba998e89343ba0b3196332c3502ad32fd8dc6e3d84389"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0017-early-source-wait-observation.json",
+        "sha256": "c0475eafbcbd74754c76de947be991c7af558e646beb35f255782b5e5d741673"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "aad5a21f34b853138f23f8322368d179f9f2da2c41fffb5d9f1bffa42d713144",
+          "postimage_sha256": "a47be4cc4d0f7b03e48d200071512c135664f310787a98e73f5e4319ae3caf42"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "4aecbeec811ed4a80e5b8fe2cb0d7454b7c2ddab0db2b61238a0dc1260c5e2d9",
+          "postimage_sha256": "7469df23dbf236491dfe659c16ff352fe712166c6eb9dd27be9b62a82b4548fc"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-14",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-13"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0018-gate-cooperative-suspend.patch",
+        "sha256": "290ca357abcb8e1bcfcf5e33de9197ebda0e836a9bb1d1bce697bcee1b68671f"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0018-gate-cooperative-suspend.json",
+        "sha256": "07b36e441e964d792bacc21e26ca1327a97e0b742c0a81881dfc88dc53e6964c"
+      },
+      "source_edges": [
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "7469df23dbf236491dfe659c16ff352fe712166c6eb9dd27be9b62a82b4548fc",
+          "postimage_sha256": "a54612a60814cb06bcd82f88c858b4bd80dcb79882f3914669e98dc4e268076c"
+        }
+      ]
+    },
+    {
+      "id": "task11-startup-15",
+      "layer": "task11_selected_startup_to_d24",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "task11-startup-14"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "patch": {
+        "source_id": "pear:runtime/fex/patches/startup/0019-link-capacity-within-budget.patch",
+        "sha256": "290b0683255305a18ee990213dc62b3b213e410dd220360e5e01365463826f46"
+      },
+      "manifest": {
+        "source_id": "pear:runtime/fex/patches/startup/0019-link-capacity-within-budget.json",
+        "sha256": "5a44ad3199ad3265ba2658c8d8003b51e4b60800241fb7fcc8a31b154795b6d2"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+          "preimage_sha256": "5ceb118a8076d42a7220b193c6f36d926550ed9813744b1723d0a7f72dceb14f",
+          "postimage_sha256": "c8128c73685c5341e64b46487c0c6eb517edc7742adb87708cbea47ad1eff338"
+        }
+      ]
+    },
+    {
+      "id": "generated-d25-game-source2",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "task11-startup-15"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d25-game-source2/prepare.json",
+        "sha256": "a1b096a08a913e339e295d590d3963edc893036266b54031132ceda25378bf07"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "1ead963e6034b93d44a54eadeff807c62056d15df6df6918b3d6fd242fd56043",
+          "postimage_sha256": "3d7eb29b60c5f422ab85940a9e5365a80383b034da79473291d26b9048f00993",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+          "preimage_sha256": "ba5308e888336459f3787f342e63ae5b08cc2781c96035fb7f3fd221a3991422",
+          "postimage_sha256": "69d9a9bb0e7de4e801871a0b73602ab33f9a7c09c64590d4d4d8e4328f1ee3e7",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+          "preimage_sha256": "6c3690647399a74bb7c9d9e237d44aa2a54b0ebffce0c61142b0a3e165bb5cc1",
+          "postimage_sha256": "d28372ed5bd82f156aa57491aa255c261ffebdf0f825e12413b595c812071b20",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+          "preimage_sha256": "36b5b8c73e41147d8e27667eea49afd7ffdf43a3afe1768a2fd2b7a55c98f446",
+          "postimage_sha256": "456db664c2ceb3d83f4d90acbf9aa54e05319c7e842bbdef7e5888f3b761e64e",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+          "preimage_sha256": "0dd7128c9bd62c0be131912763235175556e94616fda1182a870a41a405dde54",
+          "postimage_sha256": "c27b5fb49ad6836f45803e7ee029c68339a2aff919b189d1e7729c255bcabb23",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "a54612a60814cb06bcd82f88c858b4bd80dcb79882f3914669e98dc4e268076c",
+          "postimage_sha256": "0d532f156ca090b7cb59d510008eb7d241278c688b691cda3f8270d9c362d98c",
+          "patch": {
+            "source_id": "pear:.build/task11/d25-game-source2/source.patch",
+            "sha256": "96513dc0ea96e7b7e57fcd78a98329d273c098d3131c9a5ac288579737f23e66"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d26-game-source1",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d25-game-source2"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d26-game-source1/prepare.json",
+        "sha256": "7aaf40733976d4635bab020929f2dc2d2763a8c3ab64df344ce5de6d91a6918b"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "1ead963e6034b93d44a54eadeff807c62056d15df6df6918b3d6fd242fd56043",
+          "postimage_sha256": "94a9e4979ef4692ceb8bea2b040af2f2e7ce9a30204b3cf0bc564551537f0749",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+          "preimage_sha256": "ba5308e888336459f3787f342e63ae5b08cc2781c96035fb7f3fd221a3991422",
+          "postimage_sha256": "69d9a9bb0e7de4e801871a0b73602ab33f9a7c09c64590d4d4d8e4328f1ee3e7",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+          "preimage_sha256": "6c3690647399a74bb7c9d9e237d44aa2a54b0ebffce0c61142b0a3e165bb5cc1",
+          "postimage_sha256": "d28372ed5bd82f156aa57491aa255c261ffebdf0f825e12413b595c812071b20",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+          "preimage_sha256": "36b5b8c73e41147d8e27667eea49afd7ffdf43a3afe1768a2fd2b7a55c98f446",
+          "postimage_sha256": "456db664c2ceb3d83f4d90acbf9aa54e05319c7e842bbdef7e5888f3b761e64e",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        },
+        {
+          "path": "FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+          "preimage_sha256": "0dd7128c9bd62c0be131912763235175556e94616fda1182a870a41a405dde54",
+          "postimage_sha256": "c27b5fb49ad6836f45803e7ee029c68339a2aff919b189d1e7729c255bcabb23",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "a54612a60814cb06bcd82f88c858b4bd80dcb79882f3914669e98dc4e268076c",
+          "postimage_sha256": "b70a0b42b92cf77d84817d42901532e1b5c3fbda4cff0cf6339decb63ff0e467",
+          "patch": {
+            "source_id": "pear:.build/task11/d26-game-source1/source.patch",
+            "sha256": "c91d695de10d8626358db7c2c53263f7700b6234e005aa2528645fc2cd7d893a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d27-source5",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d26-game-source1"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d27-source5/prepare.json",
+        "sha256": "806fd6a7617c4c2925464e76f218c6f12792afe89fadc01088eb413588ec5e71"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "94a9e4979ef4692ceb8bea2b040af2f2e7ce9a30204b3cf0bc564551537f0749",
+          "postimage_sha256": "1edabc79cc227deacd564eaf8835030ee0727df0ae8aa4746797864b7e41c37c",
+          "patch": {
+            "source_id": "pear:.build/task11/d27-source5/Core.cpp.patch",
+            "sha256": "79dfff9d664e46e12441fc3315dc25f0f61e300e131534c290114dcb208f6be8"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "b70a0b42b92cf77d84817d42901532e1b5c3fbda4cff0cf6339decb63ff0e467",
+          "postimage_sha256": "8a7085e649d7b08b04c5827f03c3bb860af63966d03049e0e9030b8fb438a680",
+          "patch": {
+            "source_id": "pear:.build/task11/d27-source5/Module.cpp.patch",
+            "sha256": "dbc34ccb09d38bacc83650486a348d52135cd1b22f89460acacf70a256c2cb10"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "a47be4cc4d0f7b03e48d200071512c135664f310787a98e73f5e4319ae3caf42",
+          "postimage_sha256": "691559bedb50e3bb7df03fe2ef679359d8692c6b8adf3a6f0296c00f399ee722",
+          "patch": {
+            "source_id": "pear:.build/task11/d27-source5/PearFEXMemory.cpp.patch",
+            "sha256": "6c10e0b9f416f17213379c85e3e4b1020b58981a3a4837d19f8d7c6dbf4a8ae0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d29-source1",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d27-source5"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d29-source1/prepare.json",
+        "sha256": "807de5309f4bb1ea004625431d89e1638b85473977b052927e0fe08368250cae"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "1edabc79cc227deacd564eaf8835030ee0727df0ae8aa4746797864b7e41c37c",
+          "postimage_sha256": "0f7cd811c6660dc5d7931289247036f2c135c92711ed4da623ac00f97ab54f5e",
+          "patch": {
+            "source_id": "pear:.build/task11/d29-source1/Core.cpp.patch",
+            "sha256": "066dc7f8a94f4e65734185c2a904178dbada0bd8daadbb4834a67a5bfd527d07"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "8a7085e649d7b08b04c5827f03c3bb860af63966d03049e0e9030b8fb438a680",
+          "postimage_sha256": "3d03cb287b530b8cd4d256871a4dec310f7b0a980cdc942d6d9286e24323a0a9",
+          "patch": {
+            "source_id": "pear:.build/task11/d29-source1/Module.cpp.patch",
+            "sha256": "6694a452aeb74e821d440826e767a8ef95225248439e9f181928bbea318e12a8"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d31-source3",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d29-source1"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d31-source3/prepare.json",
+        "sha256": "6d76c7b500878e9ce658306c792b565a84a16e5372e58d22812e865cc68097cd"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "0f7cd811c6660dc5d7931289247036f2c135c92711ed4da623ac00f97ab54f5e",
+          "postimage_sha256": "53bd292987684dbb8e236321e38cf82c00ee64e863c9b1b166150e6c20ce17ac",
+          "patch": {
+            "source_id": "pear:.build/task11/d31-source3/Core.cpp.patch",
+            "sha256": "75c970a81516cb61a5020b2697288bce78ab41beb8b9c61ecc3fc5ebfad5e126"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "3d03cb287b530b8cd4d256871a4dec310f7b0a980cdc942d6d9286e24323a0a9",
+          "postimage_sha256": "d54582afbc6ce5c88a435338f126535e70bd1c6f4746858f3d788c93d4400547",
+          "patch": {
+            "source_id": "pear:.build/task11/d31-source3/Module.cpp.patch",
+            "sha256": "ef5d878abf6d2a1db7354c7829cd06782d06c7616dbfcac0cf8d1853acb1ccf6"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "691559bedb50e3bb7df03fe2ef679359d8692c6b8adf3a6f0296c00f399ee722",
+          "postimage_sha256": "b8419c1fe009240d746ff50018117a948d05115f0e2de8c15d7a600ae4ed0ed6",
+          "patch": {
+            "source_id": "pear:.build/task11/d31-source3/PearFEXMemory.cpp.patch",
+            "sha256": "caed43783d558aa672812fdc0f9a3f6260902edd1e45c6733c631f27cdd6802b"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d32-source4",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d31-source3"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d32-source4/prepare.json",
+        "sha256": "077350682066ce11d8bfda21860e348a6fe69a708f709a43b641159791daa9fb"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "53bd292987684dbb8e236321e38cf82c00ee64e863c9b1b166150e6c20ce17ac",
+          "postimage_sha256": "2de10d9df19d3bf790d6b26fc44305b26d38856c89c23a6116c340f6295bc1e7",
+          "patch": {
+            "source_id": "pear:.build/task11/d32-source4/Core.cpp.patch",
+            "sha256": "dbb28186fe923496654f51a0b04d4865ca9adfcb46da3763a69e3ddd57de144b"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "d54582afbc6ce5c88a435338f126535e70bd1c6f4746858f3d788c93d4400547",
+          "postimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "patch": {
+            "source_id": "pear:.build/task11/d32-source4/Module.cpp.patch",
+            "sha256": "69339e48c29c8ead80913d4acf9fd011577a3c43496f9bbeece8e3fb79b1dd78"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "b8419c1fe009240d746ff50018117a948d05115f0e2de8c15d7a600ae4ed0ed6",
+          "postimage_sha256": "8e6d5edf1cb8a9c4585cff57898335d061fc844f893f712db79033c84fc3a603",
+          "patch": {
+            "source_id": "pear:.build/task11/d32-source4/PearFEXMemory.cpp.patch",
+            "sha256": "6473fe8f8e6757a7c213d38f4808a14e8be2725d4f2b543863252911785be411"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d33-source3",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d32-source4"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d33-source3/prepare.json",
+        "sha256": "6ca66105970ae3e79875faa44d56ee5ff39b2ba5cf8ff1dc9ef5e5609f7425d2"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "2de10d9df19d3bf790d6b26fc44305b26d38856c89c23a6116c340f6295bc1e7",
+          "postimage_sha256": "8669ad39bd9165ddd4df4c8d22e0f3f7e19d191dc62979c2ba9eee93dfd4b52e",
+          "patch": {
+            "source_id": "pear:.build/task11/d33-source3/Core.cpp.patch",
+            "sha256": "1b62fd071da977efa8aeb0c939d2cbc8d8536903395a9b8001246b83cbb91914"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "8e6d5edf1cb8a9c4585cff57898335d061fc844f893f712db79033c84fc3a603",
+          "postimage_sha256": "e9c6010d56e8af51d5411f4138a7f504f071b8453bb767642ef01014cecd57ec",
+          "patch": {
+            "source_id": "pear:.build/task11/d33-source3/PearFEXMemory.cpp.patch",
+            "sha256": "e09953b2d51e95525a354c0421437a6a001a58ca0d3535f8f961f14137ad4f5f"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "postimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "patch": {
+            "source_id": "pear:.build/task11/d33-source3/Module.cpp.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d34-source1",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "behavioral_correction",
+      "depends_on": [
+        "generated-d33-source3"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d34-source1/prepare.json",
+        "sha256": "8d0bcb01c3597b331b478aab3c736395845800de400ba88e19f6528f3f9f7d5f"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "8669ad39bd9165ddd4df4c8d22e0f3f7e19d191dc62979c2ba9eee93dfd4b52e",
+          "postimage_sha256": "8cd430fbcd19cc1d7e513168d75c7e04c93f22d65ab6c125b9d118f9543d0887",
+          "patch": {
+            "source_id": "pear:runtime/fex/idempotent_repair.patch",
+            "sha256": "ae2030348a0419c04f95b092e6f414c91c8f3483870684cf964d5baf9960325d"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "e9c6010d56e8af51d5411f4138a7f504f071b8453bb767642ef01014cecd57ec",
+          "postimage_sha256": "e9c6010d56e8af51d5411f4138a7f504f071b8453bb767642ef01014cecd57ec"
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "postimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac"
+        }
+      ]
+    },
+    {
+      "id": "generated-d35-source1",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d34-source1"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d35-source1/prepare.json",
+        "sha256": "0693c10873c70c74e6b02a96b2d2eedf60a7a0b9f022efb24b7067f565be26ef"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "8cd430fbcd19cc1d7e513168d75c7e04c93f22d65ab6c125b9d118f9543d0887",
+          "postimage_sha256": "8cd430fbcd19cc1d7e513168d75c7e04c93f22d65ab6c125b9d118f9543d0887",
+          "patch": {
+            "source_id": "pear:.build/task11/d35-source1/Core.cpp.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "e9c6010d56e8af51d5411f4138a7f504f071b8453bb767642ef01014cecd57ec",
+          "postimage_sha256": "e607f9e14fc86f13c4920f58780b98f263767566903da0dfdf52bd5ac499bcd4",
+          "patch": {
+            "source_id": "pear:.build/task11/d35-source1/PearFEXMemory.cpp.patch",
+            "sha256": "ff58ffb519f0e5a1e21dc2ae8ecc975772e83a01de2493f05de05c8a14781cc3"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "postimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "patch": {
+            "source_id": "pear:.build/task11/d35-source1/Module.cpp.patch",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generated-d36-source1",
+      "layer": "task11_selected_generated",
+      "owner_issue": 11,
+      "component": "fex",
+      "change_class": "diagnostic",
+      "depends_on": [
+        "generated-d35-source1"
+      ],
+      "historical_adoption": "selected_diagnostic_candidate_not_source_adopted",
+      "import_status": "selected_candidate_accepted_for_isolated_import",
+      "origin_commit": null,
+      "origin_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+      "origin_state": "owner_accepted_uncommitted_or_generated_source",
+      "manifest": {
+        "source_id": "pear:.build/task11/d36-source1/prepare.json",
+        "sha256": "1146027b4faff9c877328d795b6e0f1604a0a8123b6ecff675ad5821c37e0056"
+      },
+      "source_edges": [
+        {
+          "path": "FEXCore/Source/Interface/Core/Core.cpp",
+          "preimage_sha256": "8cd430fbcd19cc1d7e513168d75c7e04c93f22d65ab6c125b9d118f9543d0887",
+          "postimage_sha256": "6d429b4f031e40a7c2685f428f26f6e86cb7717fc963275dcf5b15be88300165",
+          "patch": {
+            "source_id": "pear:.build/task11/d36-source1/Core.cpp.patch",
+            "sha256": "16076284b466aef78e1f1320fd281e7ee27f1d96e723225fa5562e772e7ec9e8"
+          }
+        },
+        {
+          "path": "Source/Windows/Common/PearFEXMemory.cpp",
+          "preimage_sha256": "e607f9e14fc86f13c4920f58780b98f263767566903da0dfdf52bd5ac499bcd4",
+          "postimage_sha256": "380ca354c1d424fb8f94278f834e81e339a8008a5d1c43b89e16d3376edf3f7f",
+          "patch": {
+            "source_id": "pear:.build/task11/d36-source1/PearFEXMemory.cpp.patch",
+            "sha256": "d1fdadfdbe823a0c93f1c16bef4c0d1749d9123f69938e189749b03454b6517c"
+          }
+        },
+        {
+          "path": "Source/Windows/ARM64EC/Module.cpp",
+          "preimage_sha256": "594026419f35ccdeb7b92a7c824f54f636d224fc90683920f76e538eab4a9cac",
+          "postimage_sha256": "8b61138b67361230ebda3bca24eb95a98e5216e6495c7dca26d5a76b9b48160d",
+          "patch": {
+            "source_id": "pear:.build/task11/d36-source1/Module.cpp.patch",
+            "sha256": "9010e5a7e0c0b250b2769ddd52a78ffdc935f82a40b30f191b7ab16f155d27f3"
+          }
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "source_id": "fex:CodeEmitter/CodeEmitter/Buffer.h",
+      "path": "CodeEmitter/CodeEmitter/Buffer.h",
+      "sha256": "19ee5cea1f985286be33a6bac9ffbc8b3f8d475c7164fa9a70a7656e08e1f42f",
+      "size_bytes": 4367,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-17"
+    },
+    {
+      "source_id": "fex:CodeEmitter/CodeEmitter/Emitter.h",
+      "path": "CodeEmitter/CodeEmitter/Emitter.h",
+      "sha256": "080edca22cba5563e40188fd5cbf97c8d7c7cfee5fbc23713b453a74359c0243",
+      "size_bytes": 31147,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task6-cpu-01"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/CMakeLists.txt",
+      "path": "FEXCore/Source/CMakeLists.txt",
+      "sha256": "dfcd2cb0d1406122ae875ac1d0e48bcee35658ae4ca8b2e14a28ca2ed824ce8c",
+      "size_bytes": 11494,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-40"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Config/Config.cpp",
+      "path": "FEXCore/Source/Interface/Config/Config.cpp",
+      "sha256": "3dfaf99dbdc0165ab8c6dead751bf5c0ba17a7dc566fe1663b7e3684d588acf4",
+      "size_bytes": 23567,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-31"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Context/Context.cpp",
+      "path": "FEXCore/Source/Interface/Context/Context.cpp",
+      "sha256": "a64c770f4d41e38bfe912b0afda878996d35d7bd260e03e4db8ab6b0432cf187",
+      "size_bytes": 8113,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-40"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Context/Context.h",
+      "path": "FEXCore/Source/Interface/Context/Context.h",
+      "sha256": "dd0d6dfb9fcfc82048616bbc00c16bcd711482511395dd2da5a90680adebdb3b",
+      "size_bytes": 24603,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-51"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/CPUBackend.cpp",
+      "path": "FEXCore/Source/Interface/Core/CPUBackend.cpp",
+      "sha256": "8697d9be23026e780e1593b938e5338d9e83610188434a8bfd772ab4c2ea84d2",
+      "size_bytes": 22248,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-18"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/CPUBackend.h",
+      "path": "FEXCore/Source/Interface/Core/CPUBackend.h",
+      "sha256": "f29a11861d88df3e5e99ed4cdd1bc782c2adfd35c016cf11f5291015728cb59e",
+      "size_bytes": 7255,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-18"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/CPUID.cpp",
+      "path": "FEXCore/Source/Interface/Core/CPUID.cpp",
+      "sha256": "7b3d3d9f381a4ba49a7e4c23ccb923e8cdcc188f748b4712a4eae08a53c2dba5",
+      "size_bytes": 59753,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-34"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/CPUID.h",
+      "path": "FEXCore/Source/Interface/Core/CPUID.h",
+      "sha256": "ef46a547b04aa5428b03a5417ec35250a2fd4aff00e12b6e6033502551234613",
+      "size_bytes": 23083,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-34"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/Core.cpp",
+      "path": "FEXCore/Source/Interface/Core/Core.cpp",
+      "sha256": "6d429b4f031e40a7c2685f428f26f6e86cb7717fc963275dcf5b15be88300165",
+      "size_bytes": 126332,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d36-source1"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.cpp",
+      "path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.cpp",
+      "sha256": "10914dec18d3d18c11a6787ac8fc709eb8b1fb4f5a96f89e93515e6a8f011c2e",
+      "size_bytes": 107278,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-54"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.h",
+      "path": "FEXCore/Source/Interface/Core/Dispatcher/Dispatcher.h",
+      "sha256": "4703030c454aa3b20d461ce9b41dda7778491c187661d77b7bc28958c06529f4",
+      "size_bytes": 8087,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-51"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/JIT/BranchOps.cpp",
+      "path": "FEXCore/Source/Interface/Core/JIT/BranchOps.cpp",
+      "sha256": "bb21dec457093e43ce3c17f75bb3545f366bb81c6a203c903176ea0a7b58fad4",
+      "size_bytes": 16938,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-23"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+      "path": "FEXCore/Source/Interface/Core/JIT/JIT.cpp",
+      "sha256": "d28372ed5bd82f156aa57491aa255c261ffebdf0f825e12413b595c812071b20",
+      "size_bytes": 83838,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d26-game-source1"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/JIT/JITClass.h",
+      "path": "FEXCore/Source/Interface/Core/JIT/JITClass.h",
+      "sha256": "69d9a9bb0e7de4e801871a0b73602ab33f9a7c09c64590d4d4d8e4328f1ee3e7",
+      "size_bytes": 25425,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d26-game-source1"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+      "path": "FEXCore/Source/Interface/Core/JIT/MiscOps.cpp",
+      "sha256": "456db664c2ceb3d83f4d90acbf9aa54e05319c7e842bbdef7e5888f3b761e64e",
+      "size_bytes": 13053,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d26-game-source1"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/LookupCache.cpp",
+      "path": "FEXCore/Source/Interface/Core/LookupCache.cpp",
+      "sha256": "ac5cabe4a257920eb79f91c16ad8b9c539470690b2329f3316749f5ac57cdab4",
+      "size_bytes": 6599,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-38"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/LookupCache.h",
+      "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+      "sha256": "01e8616f208521ca01091487bc5ff213773829cf2513dfa9d16066f97b001a7d",
+      "size_bytes": 22116,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-35"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/PearJITLinkLayout.h",
+      "path": "FEXCore/Source/Interface/Core/PearJITLinkLayout.h",
+      "sha256": "6224e0a5256534708f06595f86ad9e6bfb29d9b65771eee9189f59af0e3f0a37",
+      "size_bytes": 4412,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-08"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+      "path": "FEXCore/Source/Interface/Core/PearJITLinkTickets.h",
+      "sha256": "c8128c73685c5341e64b46487c0c6eb517edc7742adb87708cbea47ad1eff338",
+      "size_bytes": 4382,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task11-startup-15"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+      "path": "FEXCore/Source/Interface/Core/PearJITLinks.cpp",
+      "sha256": "4bff016111f61f43b79df977c2f55139a75fe8dc0689fb0e7f02c46f62678019",
+      "size_bytes": 26174,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task11-startup-10"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/PearJITLinks.h",
+      "path": "FEXCore/Source/Interface/Core/PearJITLinks.h",
+      "sha256": "b4e70e8385cfbadf64389b6dd57376bb96629196ca4cb49c857d0c78981d2f81",
+      "size_bytes": 3572,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-08"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/PearJITMetadata.h",
+      "path": "FEXCore/Source/Interface/Core/PearJITMetadata.h",
+      "sha256": "20431878e7e975bffd6b6060db3678a6623b9b60845208a1cd86d5fb2f5c2ff7",
+      "size_bytes": 2628,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-05"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+      "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+      "sha256": "8fec80eef79c9662ef76dd72054ed3d97b11c3c2c9baf2566547b5aafd680657",
+      "size_bytes": 10518,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-40"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/Core/SharedCodeBufferManager.h",
+      "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.h",
+      "sha256": "39e638d9ce84ce69db1977aaf97e2a307b50e0655a5d7c016f7b83833f651e79",
+      "size_bytes": 6897,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-17"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/PassManager.cpp",
+      "path": "FEXCore/Source/Interface/IR/PassManager.cpp",
+      "sha256": "b5d318ffc0cd909293f3a80966498952cae206c97851ba2f40fa36e9cd6c5599",
+      "size_bytes": 6143,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-38"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/PassManager.h",
+      "path": "FEXCore/Source/Interface/IR/PassManager.h",
+      "sha256": "d0a7841d0286b8019faac1ebf8e03531ab4efcbb39c6fc4b2499eef6410cb270",
+      "size_bytes": 3394,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-35"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/Passes.h",
+      "path": "FEXCore/Source/Interface/IR/Passes.h",
+      "sha256": "4535c50bec0bf39e2e3b0fa31e06a806b140ed05c37e0ea663007482610803ec",
+      "size_bytes": 896,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-35"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/Passes/RedundantFlagCalculationElimination.cpp",
+      "path": "FEXCore/Source/Interface/IR/Passes/RedundantFlagCalculationElimination.cpp",
+      "sha256": "1d921a6dbe67522ea35940fd32077d92117358f9b784f7f3ab9c971ea8327fa8",
+      "size_bytes": 23183,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-35"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+      "path": "FEXCore/Source/Interface/IR/Passes/RegisterAllocationPass.cpp",
+      "sha256": "c27b5fb49ad6836f45803e7ee029c68339a2aff919b189d1e7729c255bcabb23",
+      "size_bytes": 29236,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d26-game-source1"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Interface/IR/Passes/x87StackOptimizationPass.cpp",
+      "path": "FEXCore/Source/Interface/IR/Passes/x87StackOptimizationPass.cpp",
+      "sha256": "6443c3f1bad6f00f3a4bd388292843820430e15dfbf4912aebf433eeab21d70b",
+      "size_bytes": 42463,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-35"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/AllocatorHooks.cpp",
+      "path": "FEXCore/Source/Utils/AllocatorHooks.cpp",
+      "sha256": "f9a458113b45568652ccebd8d04640bf51583e2507e733c74d31a7fa80fad67f",
+      "size_bytes": 6402,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-40"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/ArchHelpers/Arm64.cpp",
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64.cpp",
+      "sha256": "f039cee1108279645e72769d56fcfb1b5751889b622d24a64b5b531d4cfee5c2",
+      "size_bytes": 80018,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-15"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/ArchHelpers/Arm64InstructionConstants.h",
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64InstructionConstants.h",
+      "sha256": "7f6a789075544099408e373a98511b796a712912265ac334a92129331e9d9d64",
+      "size_bytes": 3789,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-11"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/ArchHelpers/Arm64Preparation.h",
+      "path": "FEXCore/Source/Utils/ArchHelpers/Arm64Preparation.h",
+      "sha256": "db39e4ade63756c134609bc79f12a2bb730f0978f4af9dc82820f37b0bce5566",
+      "size_bytes": 3573,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-11"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/PearEmptyObjectStorage.cpp",
+      "path": "FEXCore/Source/Utils/PearEmptyObjectStorage.cpp",
+      "sha256": "4094c7633ea0da4ee032fe223eeea35e8f1fbd68029632833ad9f41ac26091c9",
+      "size_bytes": 3171,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-44"
+    },
+    {
+      "source_id": "fex:FEXCore/Source/Utils/PearFEXRetirement.cpp",
+      "path": "FEXCore/Source/Utils/PearFEXRetirement.cpp",
+      "sha256": "af78eadf5bb4275b466c5e84dfbfda42e701c61f0fe81a4cdcb58960fd53aac6",
+      "size_bytes": 3644,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task11-startup-06"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Config/Config.h",
+      "path": "FEXCore/include/FEXCore/Config/Config.h",
+      "sha256": "db67ac76ef6146bb587d7df7c69457681ec83de8b3fb6bcf1a39a1282d9ccbf4",
+      "size_bytes": 12042,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-31"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Config/PearConfigAllocator.h",
+      "path": "FEXCore/include/FEXCore/Config/PearConfigAllocator.h",
+      "sha256": "fe9b0d5fdca9c198738fcec9f86cb09a50a60257d2ce2bb1a88f83bc8d50ad77",
+      "size_bytes": 2886,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-31"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Core/Context.h",
+      "path": "FEXCore/include/FEXCore/Core/Context.h",
+      "sha256": "f88ecdb960b1664402e6fa22f9dc2c50c26d332dd23a395b2ccefea4f8098eb0",
+      "size_bytes": 12269,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task11-startup-03"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Core/HostFeatures.h",
+      "path": "FEXCore/include/FEXCore/Core/HostFeatures.h",
+      "sha256": "89ac64af3346457a18fa635112e3d26e8263dcbf107a84c08f6e7ad85a15ba9d",
+      "size_bytes": 3288,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-02"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Debug/InternalThreadState.h",
+      "path": "FEXCore/include/FEXCore/Debug/InternalThreadState.h",
+      "sha256": "08ab6d391701355f4356c508f3bb8e5abd0a6e52360808d3c7f518935d2dc142",
+      "size_bytes": 4125,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-16"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/AllocatorHooks.h",
+      "path": "FEXCore/include/FEXCore/Utils/AllocatorHooks.h",
+      "sha256": "8bede143837bf3902f23f928b56217f9f22b6c95eb30c8932d47929ec152756a",
+      "size_bytes": 7397,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-26"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/ArchHelpers/Arm64.h",
+      "path": "FEXCore/include/FEXCore/Utils/ArchHelpers/Arm64.h",
+      "sha256": "0e413f8e9e895bc1ffb048d7f2c4d8a9d78384ed5370606da398e7d43b447380",
+      "size_bytes": 2321,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-11"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/PearDataMemory.h",
+      "path": "FEXCore/include/FEXCore/Utils/PearDataMemory.h",
+      "sha256": "4e9f94cc78fda875a6eab2e06483435de2468efb870e3a46097d020f855c1a60",
+      "size_bytes": 1367,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-38"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/PearFEXLinks.h",
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXLinks.h",
+      "sha256": "1cba741536eef82fd7fdee4e1ecad8c85883ea67297c6b968dcd881bb2cd3b26",
+      "size_bytes": 2500,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-10"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+      "sha256": "532f1b06365a3d65f719c6f1ce0df3d5431e3d51bed0fdddb3270fdfbca4b65d",
+      "size_bytes": 16776,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task11-startup-03"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/PearFEXRetirement.h",
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXRetirement.h",
+      "sha256": "1edc6cf02d96adc20be530219f98943a3b89f7acb5d2adfc208f148c56979e11",
+      "size_bytes": 8506,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-03"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/Utils/PearSourceGuard.h",
+      "path": "FEXCore/include/FEXCore/Utils/PearSourceGuard.h",
+      "sha256": "f39c5b7957091b0ba2cf49a492eec3ac6259501a511147614bc30276468fd674",
+      "size_bytes": 2331,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-17"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/fextl/memory.h",
+      "path": "FEXCore/include/FEXCore/fextl/memory.h",
+      "sha256": "c8fade6eb37b9526e0a6e516cb2f5e39c9ad1d18bb88f398a6d605506c6d2553",
+      "size_bytes": 1370,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-40"
+    },
+    {
+      "source_id": "fex:FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "sha256": "e441ca2dacaaeb28d03b81ea8e51a16067670499ff28390395279bb925910eeb",
+      "size_bytes": 5725,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-25"
+    },
+    {
+      "source_id": "fex:Source/Common/Config.cpp",
+      "path": "Source/Common/Config.cpp",
+      "sha256": "b06a8f3812446bd90f4aaf826e1ba432d6c96f86263f1410072ecd226f7d3ec2",
+      "size_bytes": 26999,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-04"
+    },
+    {
+      "source_id": "fex:Source/Tools/CommonTools/DummyHandlers.cpp",
+      "path": "Source/Tools/CommonTools/DummyHandlers.cpp",
+      "sha256": "4fddd369e6b194e0fc63ef6c1ae4132ac25e94336a0b6ad9dd1772f46d12040c",
+      "size_bytes": 2102,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-22"
+    },
+    {
+      "source_id": "fex:Source/Tools/CommonTools/DummyHandlers.h",
+      "path": "Source/Tools/CommonTools/DummyHandlers.h",
+      "sha256": "a7bbe3aadf0b2f0b895a546f3ea6409347d60ff431f440d5508de4ae6c266d23",
+      "size_bytes": 1826,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-22"
+    },
+    {
+      "source_id": "fex:Source/Windows/ARM64EC/CMakeLists.txt",
+      "path": "Source/Windows/ARM64EC/CMakeLists.txt",
+      "sha256": "a6adab38815d97d22b55d4e0f79c72054510e85041fa89a1de85d77bf08e5c09",
+      "size_bytes": 704,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-03"
+    },
+    {
+      "source_id": "fex:Source/Windows/ARM64EC/Module.S",
+      "path": "Source/Windows/ARM64EC/Module.S",
+      "sha256": "ecf58cfaebfb7214ce4ec6a41364827225de4da4bc4371c05b59eb94f70bc11d",
+      "size_bytes": 8037,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-05"
+    },
+    {
+      "source_id": "fex:Source/Windows/ARM64EC/Module.cpp",
+      "path": "Source/Windows/ARM64EC/Module.cpp",
+      "sha256": "8b61138b67361230ebda3bca24eb95a98e5216e6495c7dca26d5a76b9b48160d",
+      "size_bytes": 103449,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d36-source1"
+    },
+    {
+      "source_id": "fex:Source/Windows/CMakeLists.txt",
+      "path": "Source/Windows/CMakeLists.txt",
+      "sha256": "097934c05a0fc551ce79e1015e5d3f28d86381570f0753c6daa640ed568d2720",
+      "size_bytes": 1630,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-23"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/CMakeLists.txt",
+      "path": "Source/Windows/Common/CMakeLists.txt",
+      "sha256": "5efb5cebe2ea5011ead0cfe3e27b9721e8dc3dde75cbfc5c1a129a89ff693568",
+      "size_bytes": 2104,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-43"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/CPUFeatures.cpp",
+      "path": "Source/Windows/Common/CPUFeatures.cpp",
+      "sha256": "6ac1c8dff1295e7bc9b32225682a6e7e92e3ed57562316cd92f634556432e79a",
+      "size_bytes": 8365,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-02"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/CRT/Misc.cpp",
+      "path": "Source/Windows/Common/CRT/Misc.cpp",
+      "sha256": "41946004123dc79da6c2d8d365f56ec1366b38e5cea12a12481bd14b0c7109e0",
+      "size_bytes": 7519,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-27"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/CRT/PearCheckedEnvironment.h",
+      "path": "Source/Windows/Common/CRT/PearCheckedEnvironment.h",
+      "sha256": "ec96b961925118ce4878f9b3f7cce314aa75c140bf599234d651f3803a2cea39",
+      "size_bytes": 969,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-21"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/DarwinConfigPolicy.cpp",
+      "path": "Source/Windows/Common/DarwinConfigPolicy.cpp",
+      "sha256": "6a0d801be1f77abe01a2605a9b04a13ae156f85dd4554d30ca48d1af52d26dd3",
+      "size_bytes": 2000,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-06"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/DarwinConfigPolicy.h",
+      "path": "Source/Windows/Common/DarwinConfigPolicy.h",
+      "sha256": "24a09f91b100112da8076fa5099929e80e0ad44e1882e4feb795fb49986904d3",
+      "size_bytes": 2032,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-06"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/InvalidationTracker.cpp",
+      "path": "Source/Windows/Common/InvalidationTracker.cpp",
+      "sha256": "2f6c3c801da432fe3a8a1529df013690f1a261cb87f1c5b3d6ca013aa84a001c",
+      "size_bytes": 15176,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-02"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/InvalidationTracker.h",
+      "path": "Source/Windows/Common/InvalidationTracker.h",
+      "sha256": "bddbd92cbee13eb5709fd84e1bd47e29de665192c3ed05fd9e3ecf2ef23298ba",
+      "size_bytes": 3454,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-02"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/OvercommitTracker.h",
+      "path": "Source/Windows/Common/OvercommitTracker.h",
+      "sha256": "cb0d569bd1f9189160da36fd3f74af510e6a4016072bc0c76859923ae45bfea7",
+      "size_bytes": 3223,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-integration-06"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/PearFEXMemory.cpp",
+      "path": "Source/Windows/Common/PearFEXMemory.cpp",
+      "sha256": "380ca354c1d424fb8f94278f834e81e339a8008a5d1c43b89e16d3376edf3f7f",
+      "size_bytes": 108871,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "generated-d36-source1"
+    },
+    {
+      "source_id": "fex:Source/Windows/Common/WinAPI/Alloc.cpp",
+      "path": "Source/Windows/Common/WinAPI/Alloc.cpp",
+      "sha256": "319e789426f98f4a607e8f6ab7b063f824b36661ae3c3f663c36503b84463681",
+      "size_bytes": 8402,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task8-fex-01"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/CMakeLists.txt",
+      "path": "Source/Windows/PearEmptyInit/CMakeLists.txt",
+      "sha256": "e9202b3af6a6c0255e568216ac28eeb7584a477591314e20c4744c6af29d77b6",
+      "size_bytes": 1070,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-23"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/CheckedCRT.cpp",
+      "path": "Source/Windows/PearEmptyInit/CheckedCRT.cpp",
+      "sha256": "4906d7d58cb7200e4ee537b55ea392394114d633b7b7d1ed787a9d9dd729c008",
+      "size_bytes": 26540,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-49"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/CheckedCRT.h",
+      "path": "Source/Windows/PearEmptyInit/CheckedCRT.h",
+      "sha256": "9a6e7978bf35691562020cee4ce08fc0ca1050e313ba160a6e9777710a905180",
+      "size_bytes": 1834,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-48"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/Fixture.cpp",
+      "path": "Source/Windows/PearEmptyInit/Fixture.cpp",
+      "sha256": "a564d8821d5ec0ba92eca440fab1d3aa2c7e4d5efda0af1d7f89e0daf2bbaf21",
+      "size_bytes": 12417,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-64"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/Fixture.def",
+      "path": "Source/Windows/PearEmptyInit/Fixture.def",
+      "sha256": "42c3727c1473d7e43da199c6949c3d65b6fd2c502ddae667bc321633ba9521ca",
+      "size_bytes": 59,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-23"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/PearEmptyInitProof.h",
+      "path": "Source/Windows/PearEmptyInit/PearEmptyInitProof.h",
+      "sha256": "931ef3c21508c13bb5b3f8a0410d00de9e9dae4eb2d258b09efa553e45458aaa",
+      "size_bytes": 1798,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-85"
+    },
+    {
+      "source_id": "fex:Source/Windows/PearEmptyInit/Report.h",
+      "path": "Source/Windows/PearEmptyInit/Report.h",
+      "sha256": "9360ef88c8e6857583023c9813d0dd8a5157dc3838de394d248ff4dc495a8381",
+      "size_bytes": 2040,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-23"
+    },
+    {
+      "source_id": "fex:Source/Windows/UnixLib/CMakeLists.txt",
+      "path": "Source/Windows/UnixLib/CMakeLists.txt",
+      "sha256": "6e51fd10338f8cd3868f985a5ae68b955ad42e371aa737792314df52cdbcbe66",
+      "size_bytes": 698,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-01"
+    },
+    {
+      "source_id": "fex:Source/Windows/UnixLib/FEXUnixLib.h",
+      "path": "Source/Windows/UnixLib/FEXUnixLib.h",
+      "sha256": "546d82072faebb63206ccc131086a5d585f8fd7ae32c70f44a86b4fb544588b5",
+      "size_bytes": 1637,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-01"
+    },
+    {
+      "source_id": "fex:Source/Windows/UnixLib/FEXUnixLibDarwin.cpp",
+      "path": "Source/Windows/UnixLib/FEXUnixLibDarwin.cpp",
+      "sha256": "6b9e52f9a4951752ca0d6606c4109283d13d621e784255ba0553ff8e980f66e8",
+      "size_bytes": 5161,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-01"
+    },
+    {
+      "source_id": "fex:Source/Windows/WOW64/CMakeLists.txt",
+      "path": "Source/Windows/WOW64/CMakeLists.txt",
+      "sha256": "55e3d82783941a76d0337dc553a129b46c577f9842bfedb50ce7c93dfff416cc",
+      "size_bytes": 688,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-services-03"
+    },
+    {
+      "source_id": "fex:Source/Windows/WOW64/Module.cpp",
+      "path": "Source/Windows/WOW64/Module.cpp",
+      "sha256": "4a9211abb2155c1d633ac4d52d7dd49fa4727771d97c10f7e0ff540529e9f221",
+      "size_bytes": 49398,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-16"
+    },
+    {
+      "source_id": "fex:Tests/Windows/PearEmptyInit/caller.cpp",
+      "path": "Tests/Windows/PearEmptyInit/caller.cpp",
+      "sha256": "6084fe624b8a0eddefea9d39c59637df03fcd3648b02dee739d022b5c6a7623b",
+      "size_bytes": 3365,
+      "git_mode": "100644",
+      "kind": "regular",
+      "last_patch_node": "task5-memory-23"
+    }
+  ],
+  "generic_payloads": [
+    {
+      "source_id": "fex-diagnostic:PearAttachObservation.h",
+      "path": "Pear/Diagnostics/include/PearAttachObservation.h",
+      "sha256": "8d084762e3b6d58d195b91c191cce0ad4154cc41f5762671aeb6aae10ce0a854",
+      "size_bytes": 2178,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearAttachObservation.h",
+        "sha256": "8d084762e3b6d58d195b91c191cce0ad4154cc41f5762671aeb6aae10ce0a854"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearBindingCensus.h",
+      "path": "Pear/Diagnostics/include/PearBindingCensus.h",
+      "sha256": "1efaebc7bf521a2af1b3de5e77ebb8e74d7f65192cf564a87bfdc990b032502c",
+      "size_bytes": 1854,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearBindingCensus.h",
+        "sha256": "1efaebc7bf521a2af1b3de5e77ebb8e74d7f65192cf564a87bfdc990b032502c"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearBindingCensusEmit.h",
+      "path": "Pear/Diagnostics/include/PearBindingCensusEmit.h",
+      "sha256": "af906beb8ad6e4f70b465dca1140ebcdf100f9b8614f20ac4d1c9d846846d9d9",
+      "size_bytes": 1760,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearBindingCensusEmit.h",
+        "sha256": "af906beb8ad6e4f70b465dca1140ebcdf100f9b8614f20ac4d1c9d846846d9d9"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearMismatchObservation.h",
+      "path": "Pear/Diagnostics/include/PearMismatchObservation.h",
+      "sha256": "466ff7a0a5d67580c295465decf5c21121901f7015bc825415fab0b6e5f40f5e",
+      "size_bytes": 2981,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearMismatchObservation.h",
+        "sha256": "466ff7a0a5d67580c295465decf5c21121901f7015bc825415fab0b6e5f40f5e"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearSlotLifetime.h",
+      "path": "Pear/Diagnostics/include/PearSlotLifetime.h",
+      "sha256": "da0a68d651adbafbebc03f196b6da2533ad1231814a03bab4d8729b10cf9f43d",
+      "size_bytes": 2061,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearSlotLifetime.h",
+        "sha256": "da0a68d651adbafbebc03f196b6da2533ad1231814a03bab4d8729b10cf9f43d"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearSlotLifetimeMemory.inc",
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeMemory.inc",
+      "sha256": "87a7c0731e08f043600a048334df4187bb4a8aba0fca7652de1b9a83b6bbabd6",
+      "size_bytes": 1495,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearSlotLifetimeMemory.inc",
+        "sha256": "87a7c0731e08f043600a048334df4187bb4a8aba0fca7652de1b9a83b6bbabd6"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearSlotLifetimeRuntime.inc",
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeRuntime.inc",
+      "sha256": "a389e934d0bba22b98a3e0d1b32290e6afedc4a9dae715cc707c9a1f2e0932e9",
+      "size_bytes": 2559,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearSlotLifetimeRuntime.inc",
+        "sha256": "a389e934d0bba22b98a3e0d1b32290e6afedc4a9dae715cc707c9a1f2e0932e9"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearTargetObservation.h",
+      "path": "Pear/Diagnostics/include/PearTargetObservation.h",
+      "sha256": "99e29c2f5ab72731864b7a4e8d0fed0113f8d5362e36e946213cdf6958f6f4a2",
+      "size_bytes": 3348,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearTargetObservation.h",
+        "sha256": "99e29c2f5ab72731864b7a4e8d0fed0113f8d5362e36e946213cdf6958f6f4a2"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearThreadCreateObservation.h",
+      "path": "Pear/Diagnostics/include/PearThreadCreateObservation.h",
+      "sha256": "4e845abacb95bd4c85aee18cecbf22671ce89416c998083b63039ba4d153c041",
+      "size_bytes": 1478,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearThreadCreateObservation.h",
+        "sha256": "4e845abacb95bd4c85aee18cecbf22671ce89416c998083b63039ba4d153c041"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearThreadCreateRuntime.inc",
+      "path": "Pear/Diagnostics/include/PearThreadCreateRuntime.inc",
+      "sha256": "d6bfa37d532b5e0765c01801585845e45c3a970c1b3b07ce661bff2525313354",
+      "size_bytes": 3776,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearThreadCreateRuntime.inc",
+        "sha256": "d6bfa37d532b5e0765c01801585845e45c3a970c1b3b07ce661bff2525313354"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearWriterObservation.h",
+      "path": "Pear/Diagnostics/include/PearWriterObservation.h",
+      "sha256": "5087c8a87de6aac1ce8fefc89e2990c3bc88812de4e27ccce3a47fce5d5d1a1f",
+      "size_bytes": 865,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearWriterObservation.h",
+        "sha256": "5087c8a87de6aac1ce8fefc89e2990c3bc88812de4e27ccce3a47fce5d5d1a1f"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearWriterRing.h",
+      "path": "Pear/Diagnostics/include/PearWriterRing.h",
+      "sha256": "7323887c88cd02dd5fb488766cdeeff489ae3b801adbdcfaf32697275faacdf3",
+      "size_bytes": 3141,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d36-source1/include/PearWriterRing.h",
+        "sha256": "7323887c88cd02dd5fb488766cdeeff489ae3b801adbdcfaf32697275faacdf3"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearPhaseCopy.cpp",
+      "path": "Pear/Diagnostics/include/PearPhaseCopy.cpp",
+      "sha256": "dcfd01c3e5cb109c37d357b94e8efd6b2b9f4364023594fc8a4b8ba987e6d4a3",
+      "size_bytes": 849,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d26-game-source1/include/PearPhaseCopy.cpp",
+        "sha256": "dcfd01c3e5cb109c37d357b94e8efd6b2b9f4364023594fc8a4b8ba987e6d4a3"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearPhaseJIT.inc",
+      "path": "Pear/Diagnostics/include/PearPhaseJIT.inc",
+      "sha256": "2877433556c248768a559033b39d984cd919be643e4b069aa85bc77b3c47bd69",
+      "size_bytes": 1702,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d26-game-source1/include/PearPhaseJIT.inc",
+        "sha256": "2877433556c248768a559033b39d984cd919be643e4b069aa85bc77b3c47bd69"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearPhaseObservation.h",
+      "path": "Pear/Diagnostics/include/PearPhaseObservation.h",
+      "sha256": "18ddd49a6e7fc852c846298d16cf4e6206131caed1ff5ef9dc2fa3269027333a",
+      "size_bytes": 8992,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d26-game-source1/include/PearPhaseObservation.h",
+        "sha256": "18ddd49a6e7fc852c846298d16cf4e6206131caed1ff5ef9dc2fa3269027333a"
+      }
+    },
+    {
+      "source_id": "fex-diagnostic:PearPhaseRuntime.inc",
+      "path": "Pear/Diagnostics/include/PearPhaseRuntime.inc",
+      "sha256": "a577e5a2165354910eac610427f094c2433f6c173df9e6745151ee5023b9333f",
+      "size_bytes": 5996,
+      "git_mode": "100644",
+      "kind": "regular",
+      "historical_source": {
+        "source_id": "pear:.build/task11/d26-game-source1/include/PearPhaseRuntime.inc",
+        "sha256": "a577e5a2165354910eac610427f094c2433f6c173df9e6745151ee5023b9333f"
+      }
+    }
+  ],
+  "external_inputs": [
+    {
+      "owner": "pear-runtime",
+      "path": "include/PearAbortObservation.h",
+      "sha256": "da52c81da2051d3c255dc953f1c49758d76920f065de076de2adfa53c6f324a5",
+      "role": "shared diagnostic header"
+    },
+    {
+      "owner": "pear-wine",
+      "path": "include/wine/pear_fex_memory.h",
+      "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+      "role": "Wine-owned memory and lifecycle ABI"
+    },
+    {
+      "owner": "private_local_input",
+      "name": "PearPhaseSelection.h",
+      "role": "game-derived selector; external and never tracked; required only for the selected private diagnostic configuration"
+    }
+  ],
+  "private_exclusions": [
+    "game-derived phase selector",
+    "owned game image/spec/roles",
+    "authentication/prefix/save state",
+    "private diagnostics and signing material"
+  ]
+}

@@ -5,8 +5,12 @@
 #include "Interface/Core/LookupCache.h"
 #include "Interface/Core/SharedCodeBufferManager.h"
 #include <FEXCore/Utils/LogManager.h>
+#include <cstdlib>
 #include <mutex>
 #include <new>
+
+extern "C" bool PearLinkObservationEnabled();
+extern "C" void PearLinkObservation(uint32_t, uint32_t, uint64_t, uint64_t);
 
 namespace FEXCore::CPU::PearJITLinks {
 namespace Memory = FEXCore::Utils::PearFEXMemory;
@@ -28,7 +32,7 @@ struct Registry {
     const FEXCore::Core::InternalThreadState* Thread {};
     uint64_t Executor {}, SourceSerial {};
   };
-  std::array<EntryIdentity,CAPACITY> Entries {};
+  std::array<EntryIdentity,ENTRY_CAPACITY> Entries {};
   std::atomic<uint32_t> EntryWord {};
   void Changed() {
     EntryWord.fetch_add(1,std::memory_order_release);
@@ -132,7 +136,7 @@ struct Registry {
     return Poison(Original);
   }
 };
-static_assert(sizeof(Registry)+sizeof(Memory::WriteGuard)+sizeof(void*)<=24576,"Fixed link NX metadata budget");
+static_assert(sizeof(Registry)+sizeof(Memory::WriteGuard)+sizeof(void*)<=32*1024*1024,"Fixed link NX metadata budget");
 namespace {
 // Fixed private NX storage avoids implicit DLL/global teardown owner calls or
 // releasing uncertain actual source refs after the retirement ledger lifetime.
@@ -147,16 +151,27 @@ Registry& StateRegistry() {
 
 std::optional<Ticket> Prepare(SourceDescriptor D) {
   auto& R=StateRegistry();
-  std::lock_guard L {R.Mutex};
-  if (!D) return std::nullopt;
-  // Direct linking is optional. Keep the proven indirect branch when the
-  // bounded table is full or a peer is sealing entry. Do not close the ledger
-  // merely because an optimization has no available slot.
-  if (R.Ledger.HasSealedEntries() || R.Ledger.Occupied()==CAPACITY) return std::nullopt;
-  const auto T=R.Ledger.Prepare();
-  if (!T) return std::nullopt;
-  R.Slots[T->Index].Source.emplace(std::move(D));
-  return T;
+  std::optional<Ticket> Result;
+  const bool Observe=PearLinkObservationEnabled();
+  uint32_t Reason {};
+  size_t Occupied {};
+  {
+    std::lock_guard L {R.Mutex};
+    Result = [&]() -> std::optional<Ticket> {
+      if (!D) { Reason=1; return std::nullopt; }
+      // Preserve the original short-circuit order and optional-link policy.
+      if (R.Ledger.HasSealedEntries()) { Reason=2; return std::nullopt; }
+      if (R.Ledger.Occupied()==CAPACITY) { Reason=3; return std::nullopt; }
+      const auto T=R.Ledger.Prepare();
+      if (!T) { Reason=4; return std::nullopt; }
+      R.Slots[T->Index].Source.emplace(std::move(D));
+      Reason=5; return T;
+    }();
+    if (Observe) Occupied=R.Ledger.Occupied();
+  }
+  // Emit after releasing the registry mutex; this snapshot grants no authority.
+  if (Observe) PearLinkObservation(2,Reason,Occupied,CAPACITY);
+  return Result;
 }
 Memory::Result CancelPrepared(Ticket T) {
   auto& R=StateRegistry();
@@ -221,13 +236,25 @@ Memory::Result PatchPrepared(Ticket T, FEXCore::Core::InternalThreadState* Threa
   }
   return Stored ? Published : R.Poison({PEAR_FEX_STALE_IDENTITY,0,0});
 }
+// Failure-only opt-in observation; the original transaction result is retained.
+static std::atomic<unsigned> BatchFailureObservations {};
+static void ObserveBatchFailure(const char* Phase, Memory::Result Failure) {
+  const char* Enabled=std::getenv("PEAR_FEX_BATCH_OBSERVE");
+  if (!Enabled || Enabled[0]!='1' || Enabled[1]) return;
+  auto Sequence=BatchFailureObservations.load(std::memory_order_relaxed);
+  while (Sequence<8 && !BatchFailureObservations.compare_exchange_weak(
+           Sequence,Sequence+1,std::memory_order_relaxed)) {}
+  if (Sequence<8)
+    LogMan::Msg::EFmt("PEAR_BATCH phase={} seq={} status={} domain={} code={}",
+                     Phase,Sequence,Failure.Status,Failure.ErrorDomain,Failure.ErrorCode);
+}
 Memory::Result BeginBatch(FEXCore::Context::ContextImpl* C,FEXCore::Core::InternalThreadState* Thread) {
   auto& R=StateRegistry();
   auto Life=Memory::AcquireCurrentSourceLifetime(C);
   if (!Life || Life.ActualThread()!=Thread || !Registry::ThreadMatches(C,Thread)) return {PEAR_FEX_STALE_IDENTITY,0,0};
   const auto Bound=Memory::BindSourceThread(Thread); if (!Bound) return Bound;
   Memory::SourceMutationTurn Mutation {Life};
-  if (!Mutation) return Mutation.Status();
+  if (!Mutation) { const auto Failure=Mutation.Status(); ObserveBatchFailure("mutation",Failure); return Failure; }
   std::optional<SourceDescriptor> First;
   auto Reserved=Registry::ReservedSource(Thread);
   auto Published=Thread->CPUBackend->FindPearPublishedBarrierTarget();
@@ -250,7 +277,7 @@ Memory::Result BeginBatch(FEXCore::Context::ContextImpl* C,FEXCore::Core::Intern
     Work->Before=First->Owner->GetPearSnapshot(); Work->Transaction=Work->Before;
     if (!Registry::Identity(*First,Work->Before)) return R.Poison({PEAR_FEX_STALE_IDENTITY,0,0});
     Work->Writer.emplace(Work->Transaction,First->Layout.WriteOffset,First->Layout.WriteSize);
-    if (!*Work->Writer) return R.Poison(Work->Writer->Status());
+    if (!*Work->Writer) { const auto Failure=Work->Writer->Status(); ObserveBatchFailure("writer-linked",Failure); return R.Poison(Failure); }
     if (!Registry::Matches(*First,*Work->Writer)) return R.RefuseOpen(*First,Work->Before,Work->Transaction,*Work->Writer,{PEAR_FEX_STALE_IDENTITY,0,0});
   } else if (Published) {
     Work->Published=std::move(Published);
@@ -262,12 +289,12 @@ Memory::Result BeginBatch(FEXCore::Context::ContextImpl* C,FEXCore::Core::Intern
     // A real target write gate supplies quiescence even when the translator has
     // emitted code but no link descriptor. No code bytes are changed here.
     Work->Writer.emplace(Work->Transaction,0,16);
-    if (!*Work->Writer) return R.Poison(Work->Writer->Status());
+    if (!*Work->Writer) { const auto Failure=Work->Writer->Status(); ObserveBatchFailure("writer-published",Failure); return R.Poison(Failure); }
   } else {
     Work->Reserved=std::move(Reserved); Work->Before=Registry::ReservedSnapshot(*Work->Reserved); Work->Transaction=Work->Before;
     if (!Registry::SameReserved(*Work->Reserved,Work->Before,Thread)) return R.Poison({PEAR_FEX_STALE_IDENTITY,0,0});
     Work->Writer.emplace(Work->Transaction,0,16);
-    if (!*Work->Writer) return R.Poison(Work->Writer->Status());
+    if (!*Work->Writer) { const auto Failure=Work->Writer->Status(); ObserveBatchFailure("writer-reserved",Failure); return R.Poison(Failure); }
     if (Work->Writer->Data()!=Registry::ReservedNumericBase(*Work->Reserved)) {
       const auto Cleanup=R.AbortReserved(*Work);
       if (!Cleanup) LogMan::Msg::EFmt("Pear reserved barrier abort retained: status {}, domain {}, code {}",
@@ -394,7 +421,7 @@ bool EntryResumeAdmitted(const SourceLifetime& Life) {
   const auto Actual=Registry::Capture(Life);
   auto& R=FEXCore::CPU::PearJITLinks::StateRegistry(); std::lock_guard L {R.Mutex};
   if (!R.First || !R.Ledger.EntryAdmissionOpen()) return false;
-  for (size_t I=0;I<FEXCore::CPU::PearJITLinks::CAPACITY;++I) {
+  for (size_t I=0;I<FEXCore::CPU::PearJITLinks::ENTRY_CAPACITY;++I) {
     if (R.Ledger.HasSealedEntries() && Registry::Same(R.Entries[I],Actual)) return true;
   }
   return false;

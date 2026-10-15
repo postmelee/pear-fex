@@ -1,3 +1,8 @@
+#include "PearSlotLifetime.h"
+#include "PearAttachObservation.h"
+#include "PearWriterObservation.h"
+#include "PearTargetObservation.h"
+#include "PearAbortObservation.h"
 // SPDX-License-Identifier: MIT
 // Original Pear adapter; the exact Wine wire header is the ABI authority.
 #include <FEXCore/Utils/PearFEXMemory.h>
@@ -5,6 +10,8 @@
 #include <FEXCore/Utils/PearFEXLinks.h>
 #include <FEXCore/Debug/InternalThreadState.h>
 #include <atomic>
+#include <cstdlib>
+#include <FEXCore/Utils/LogManager.h>
 #include <cstring>
 #include <limits>
 #include <ntstatus.h>
@@ -25,6 +32,75 @@ extern uint32_t NtDllRedirectionLUTSize;
 }
 #endif
 
+// One diagnostic scope process-wide. A single failed CAS means unavailable.
+// No TLS, waiting, allocation, retained output-record pointer or memory policy decision.
+struct PearReadIdentitySlot {
+  PearReadIdentity value {};
+  const void* thread {};
+  const void* dest {};
+  size_t offset {},bytes {};
+  uint64_t ticket {};
+};
+static PearReadIdentitySlot PearReadIdentityActive {};
+static std::atomic<bool> PearReadIdentityBusy {};
+static std::atomic<uintptr_t> PearReadIdentityOwner {};
+static uint64_t PearReadIdentityNext {};
+static std::atomic<bool> PearReadIdentityLost {};
+static_assert(std::atomic<bool>::is_always_lock_free);
+static_assert(std::atomic<uintptr_t>::is_always_lock_free);
+struct PearReadIdentityGuard {
+  bool owned {};
+  PearReadIdentityGuard() {
+    bool expected=false;
+    owned=PearReadIdentityBusy.compare_exchange_strong(expected,true,std::memory_order_acquire);
+  }
+  ~PearReadIdentityGuard(){if(owned)PearReadIdentityBusy.store(false,std::memory_order_release);}
+  PearReadIdentityGuard(const PearReadIdentityGuard&)=delete;
+  PearReadIdentityGuard& operator=(const PearReadIdentityGuard&)=delete;
+};
+static uintptr_t PearReadIdentitySelf(){return reinterpret_cast<uintptr_t>(GetCurrentTEB());}
+extern "C" uint64_t PearReadIdentityBegin(const void* thread,const void* dest,size_t offset,size_t bytes) {
+  if (!thread || !dest || bytes!=52) return 0;
+  PearReadIdentityGuard lock;
+  if (!lock.owned) { PearReadIdentityLost.store(true,std::memory_order_relaxed);return 0; }
+  const auto self=PearReadIdentitySelf();if(!self)return 0;
+  const auto owner=PearReadIdentityOwner.load(std::memory_order_relaxed);
+  if (owner) {
+    // A rejected nested scope must not let its identical-range read fill the outer record.
+    if(owner==self)PearReadIdentityLost.store(true,std::memory_order_relaxed);
+    return 0;
+  }
+  if(PearReadIdentityNext==UINT64_MAX)return 0;
+  PearReadIdentityActive={{},thread,dest,offset,bytes,++PearReadIdentityNext};
+  PearReadIdentityLost.store(false,std::memory_order_relaxed);
+  PearReadIdentityOwner.store(self,std::memory_order_release);
+  return PearReadIdentityActive.ticket;
+}
+extern "C" void PearReadIdentityEnd(uint64_t ticket,PearReadIdentity* out) {
+  if(!ticket || !out || !PearReadIdentityOwner.load(std::memory_order_acquire))return;
+  PearReadIdentityGuard lock;
+  if(!lock.owned || PearReadIdentityOwner.load(std::memory_order_relaxed)!=PearReadIdentitySelf() ||
+     PearReadIdentityActive.ticket!=ticket)return;
+  *out=PearReadIdentityActive.value;
+  if(PearReadIdentityLost.load(std::memory_order_relaxed))out->seen=2;
+  PearReadIdentityActive={};PearReadIdentityOwner.store(0,std::memory_order_release);
+}
+
+static PearWriterRecorder PearWriterRing {};
+static void PearWriterReadCut(const void* thread,const void* dest,size_t offset,size_t bytes) {
+  if(bytes!=52 || !PearReadIdentityOwner.load(std::memory_order_acquire))return;
+  PearReadIdentityGuard lock;
+  if(!lock.owned){PearReadIdentityLost.store(true,std::memory_order_relaxed);return;}
+  if(PearReadIdentityOwner.load(std::memory_order_relaxed)!=PearReadIdentitySelf() ||
+     PearReadIdentityLost.load(std::memory_order_relaxed))return;
+  auto& s=PearReadIdentityActive;
+  if(s.thread!=thread || s.dest!=dest || s.offset!=offset || s.bytes!=bytes)return;
+  auto& value=s.value;
+  if(value.writer_seen){value.writer_seen=2;return;}
+  const auto cut=PearWriterRing.Cut();
+  value.writer_seen=cut.seen;value.writer_cut=cut.sequence;value.writer_loss=cut.lost;
+}
+
 namespace FEXCore::Utils::PearFEXMemory {
 namespace {
 using BridgeType = uint32_t(WINAPI*)(const pear_fex_memory_request*, pear_fex_memory_response*);
@@ -32,6 +108,7 @@ static BridgeType BridgeDirect {};
 static uint64_t OwnerPID {};
 static std::atomic<bool> Configured {false};
 enum class LeaseKind : uint32_t { None, Active, Pinned, Unresolved };
+enum class PendingTransition : uint32_t { Unknown, Entry, Exit, Handoff, Poll, Resume, Unpin, Unregister };
 struct ActiveLease {
   Allocation Target {};
   const void* TEB {};
@@ -52,6 +129,7 @@ struct Binding {
   uint64_t Executor {};
   uint32_t Role {};
   bool Pending {};
+  PendingTransition Transition {};
   bool Capturing {};
   bool Unresolved {};
   bool CleanupAttempted {};
@@ -83,6 +161,73 @@ static ContextLifetime* ContextRecord(const FEXCore::Context::Context* Object) {
 static std::atomic<uintptr_t> Registry {0};
 static std::atomic<uint64_t> MutationExecutor {0};
 static std::atomic<uint32_t> MutationSequence {0};
+// D5 diagnostics have no owner authority. The mutation buffer has the same
+// exclusive writer as MutationExecutor; peer checkpoints are single atomic words.
+struct WakePeer {
+  uint64_t Executor {}, Serial {};
+  uint32_t Index {}, Role {}, Lease {}, Flags {}, DoorbellBefore {};
+};
+struct WakeScan {
+  uint64_t Writer {};
+  uint32_t Epoch {}, Writing {}, NestedWriting {}, Count {};
+  WakePeer Peers[PEAR_FEX_MEMORY_MAX_EXECUTORS] {};
+};
+static std::atomic<bool> WakeEnabled {false};
+static std::atomic<uint32_t> WakeEpoch {};
+static std::atomic<uint64_t> WakeCheckpoints[PEAR_FEX_MEMORY_MAX_EXECUTORS] {};
+static WakeScan WakeSnapshot {};
+static uint32_t WakeNextEpoch {}, WakeDumps {};
+static_assert(std::atomic<uint64_t>::is_always_lock_free);
+static_assert(sizeof(WakeSnapshot)+sizeof(WakeCheckpoints)+sizeof(WakeEpoch)+
+              sizeof(WakeEnabled)+sizeof(WakeNextEpoch)+sizeof(WakeDumps) <= 4096);
+static void BeginWakeScan(uint64_t Writer, bool Writing) {
+  if (!WakeEnabled.load(std::memory_order_relaxed)) return;
+  WakeSnapshot = {};
+  WakeSnapshot.Writer = Writer; WakeSnapshot.Writing = Writing;
+  // Exhaustion disables attribution; never wrap a correlation identity.
+  if (WakeNextEpoch != UINT32_MAX) WakeSnapshot.Epoch = ++WakeNextEpoch;
+  WakeEpoch.store(WakeSnapshot.Epoch, std::memory_order_release);
+}
+static WakePeer* CaptureWakePeer(const Binding& Peer) {
+  if (!WakeEnabled.load(std::memory_order_relaxed) || !Peer.Executor || Peer.Executor==WakeSnapshot.Writer) return nullptr;
+  if (WakeSnapshot.Count >= PEAR_FEX_MEMORY_MAX_EXECUTORS) return nullptr;
+  auto& Row=WakeSnapshot.Peers[WakeSnapshot.Count++];
+  Row.Executor=Peer.Executor; Row.Serial=Peer.LifetimeSerial;
+  Row.Index=static_cast<uint32_t>(&Peer-Bindings); Row.Role=Peer.Role; Row.Lease=static_cast<uint32_t>(Peer.Active.Kind);
+  Row.Flags=(Peer.SourceKind==Binding::Kind::Thread ? 1U:0U) | (Peer.Role==PEAR_FEX_ROLE_ARM64EC ? 2U:0U) |
+    (Peer.Active.Kind==LeaseKind::Active ? 4U:0U) | (Peer.LifetimeClosing ? 8U:0U) |
+    (Peer.LifetimeDeleteSealed ? 16U:0U) | (Peer.Unresolved ? 32U:0U) |
+    (Peer.Pending ? 2048U:0U) | (Peer.Capturing ? 4096U:0U);
+  return &Row;
+}
+// Epoch/serial/phase/status fit one release/acquire word: no torn attribution,
+// reader retry, per-event allocation or peer lock. Missing/overflow is unknown.
+static void RecordWakeCheckpoint(uint32_t Index, uint64_t Serial, unsigned Phase, Result Outcome) {
+  if (!WakeEnabled.load(std::memory_order_relaxed) || Index>=PEAR_FEX_MEMORY_MAX_EXECUTORS ||
+      !Serial || Serial>UINT16_MAX || !Phase || Phase>6 || Outcome.Status>UINT8_MAX) return;
+  const auto Epoch=WakeEpoch.load(std::memory_order_acquire);
+  if (!Epoch) return;
+  const uint64_t Word=(uint64_t(Epoch)<<32) | (Serial<<16) | (uint64_t(Phase)<<8) | Outcome.Status;
+  WakeCheckpoints[Index].store(Word,std::memory_order_release);
+}
+static uint64_t MatchedWakeCheckpoint(const WakePeer& Peer, uint32_t Epoch) {
+  if (!Epoch || !Peer.Serial || Peer.Serial>UINT16_MAX || Peer.Index>=PEAR_FEX_MEMORY_MAX_EXECUTORS) return 0;
+  const auto Word=WakeCheckpoints[Peer.Index].load(std::memory_order_acquire);
+  return uint32_t(Word>>32)==Epoch && ((Word>>16)&UINT16_MAX)==Peer.Serial ? Word : 0;
+}
+static void ObserveWakeFailure(uint64_t Writer) {
+  if (!WakeEnabled.load(std::memory_order_relaxed) || !Writer ||
+      MutationExecutor.load(std::memory_order_acquire)!=Writer || WakeSnapshot.Writer!=Writer || WakeDumps>=8) return;
+  const auto Sequence=WakeDumps++;
+  LogMan::Msg::EFmt("PEAR_WAKE seq={} writer={} epoch={} writing={} nested={} rows={}",
+    Sequence,Writer,WakeSnapshot.Epoch,WakeSnapshot.Writing,WakeSnapshot.NestedWriting,WakeSnapshot.Count);
+  for (uint32_t I=0;I<WakeSnapshot.Count;++I) {
+    const auto& P=WakeSnapshot.Peers[I]; const auto Word=MatchedWakeCheckpoint(P,WakeSnapshot.Epoch);
+    LogMan::Msg::EFmt("PEAR_WAKE_PEER seq={} index={} id={} serial={} role={} lease={} flags={} before={} checkpoint={} phase={} status={}",
+      Sequence,I,P.Executor,P.Serial,P.Role,P.Lease,P.Flags,P.DoorbellBefore,unsigned(Word!=0),unsigned((Word>>8)&255),unsigned(Word&255));
+  }
+}
+
 static_assert(sizeof(Bindings) + sizeof(ContextLifetimes) + sizeof(NextLifetimeSerial) + sizeof(Registry) + sizeof(MutationExecutor) + sizeof(MutationSequence) + sizeof(BridgeDirect) + sizeof(OwnerPID) + sizeof(Configured) <= 24576,
               "Bounded source adapter NX metadata, typed bindings and retained registration failures");
 // This local bound is part of, not a substitute for, the compiled aggregate
@@ -133,6 +278,40 @@ static Binding* CurrentBinding() {
   for (auto& B : Bindings) if (B.TEB == TEB && B.NativeThread == ID && B.SourceKind != Binding::Kind::None) return &B;
   return nullptr;
 }
+// Diagnostic metadata only under existing source ownership; no owner call.
+struct PearWriterRegistryGuard {
+  bool Owned{};
+  PearWriterRegistryGuard(){
+    const auto self=reinterpret_cast<uintptr_t>(GetCurrentTEB());uintptr_t empty=0;
+    Owned=self && Registry.compare_exchange_weak(empty,self,std::memory_order_acquire,std::memory_order_relaxed);
+  }
+  ~PearWriterRegistryGuard(){if(Owned)Registry.store(0,std::memory_order_release);}
+};
+static bool PearWriterActor(const void* thread,uint64_t life,PearWriterRecord& record) {
+  PearWriterRegistryGuard lock;if(!lock.Owned)return false;
+  const auto* b=CurrentBinding();
+  if(!b || !thread || !life || b->SourceState!=thread || b->LifetimeSerial!=life ||
+     !b->LifetimeHolds || b->LifetimeClosing || b->LifetimeDeleteSealed || b->Unresolved || b->Pending || b->Capturing || b->CleanupOnly ||
+     b->SourceKind!=Binding::Kind::Thread ||
+     (b->Active.Kind!=LeaseKind::None && b->Active.Kind!=LeaseKind::Pinned) || !b->Executor ||
+     MutationExecutor.load(std::memory_order_acquire)!=b->Executor)return false;
+  record.pid=OwnerPID;record.executor=b->Executor;record.thread=b->NativeThread;
+  record.life=b->LifetimeSerial;record.source=reinterpret_cast<uintptr_t>(b->SourceState);
+  record.turn=MutationSequence.load(std::memory_order_acquire);return true;
+}
+extern "C" uint64_t PearWriterBegin(PearWriterRecord* record,const void* thread,uint64_t life) {
+  if(!record || !PearWriterActor(thread,life,*record)){PearWriterRing.Lose();return 0;}
+  return PearWriterRing.Begin(*record);
+}
+extern "C" void PearWriterFinish(uint64_t id,bool stores,uint64_t status,uint64_t domain,uint64_t code,bool published,bool updated) {
+  PearWriterRing.Finish(id,stores,status,domain,code,published,updated);
+}
+extern "C" bool PearWriterSnapshot(const void* thread,uint64_t life,PearWriterBatch* batch) {
+  PearWriterRecord actor{};
+  if(!batch || !PearWriterActor(thread,life,actor)){PearWriterRing.Lose();if(batch){*batch={};batch->lost=1;}return false;}
+  return PearWriterRing.Snapshot(*batch);
+}
+
 static Binding CurrentSnapshot() {
   RegistryGuard Guard;
   auto* B = CurrentBinding();
@@ -167,6 +346,18 @@ static void Target(pear_fex_memory_request& Q, const Allocation& A, bool Epoch, 
   Q.allocation_class = A.Token.allocation_class; Q.ec_role = A.Token.ec_role;
   if (Epoch) Q.write_epoch = A.Token.write_epoch;
   if (State) Q.expected_state = A.Token.expected_state;
+}
+// Failure-only diagnostic; no owner operation or admission retry.
+static void ObserveWriteFailure(const char* Phase, Result Outcome, bool Called, bool Validated) {
+  const char* Enabled = std::getenv("PEAR_FEX_WRITE_OBSERVE");
+  if (!Enabled || std::strcmp(Enabled, "1")) return;
+  static std::atomic<unsigned> Count {};
+  unsigned Sequence = Count.load(std::memory_order_relaxed);
+  while (Sequence < 8 && !Count.compare_exchange_weak(Sequence, Sequence + 1, std::memory_order_relaxed)) {}
+  if (Sequence >= 8) return;
+  LogMan::Msg::EFmt("PEAR_WRITE phase={} seq={} status={} domain={} code={} called={} validated={}",
+                   Phase, Sequence, Outcome.Status, Outcome.ErrorDomain, Outcome.ErrorCode,
+                   unsigned(Called), unsigned(Validated));
 }
 struct InvocationFacts {
   bool BridgeCalled {};
@@ -277,7 +468,7 @@ static size_t Usable(const Allocation& A) {
 // Capture a real current binding, invalidate the read proof and release the NX
 // lock before crossing the native gate. Pending rejects same-thread reentry and
 // never counts as a cooperative park acknowledgement in the Unix owner.
-static Result BeginTransition(const Allocation* A, Binding& Snapshot, bool Entry) {
+static Result BeginTransition(const Allocation* A, Binding& Snapshot, bool Entry, PendingTransition Transition) {
   RegistryGuard Guard;
   auto* B = CurrentBinding();
   if (!B || B->Pending || B->Capturing || B->Unresolved || !B->Executor || (A && !TargetBinding(*A, *B))) return Refuse();
@@ -285,7 +476,7 @@ static Result BeginTransition(const Allocation* A, Binding& Snapshot, bool Entry
   if (Entry && B->Active.Kind == LeaseKind::Active) return Refuse(PEAR_FEX_INVALID_REQUEST);
   Snapshot = *B;
   B->Active = {};
-  B->Pending = true;
+  B->Pending = true; B->Transition=Transition;
   return Refuse(PEAR_FEX_OK);
 }
 static Result FinishTransition(const Binding& Snapshot, Result Outcome, const Allocation* Entered = nullptr,
@@ -297,7 +488,7 @@ static Result FinishTransition(const Binding& Snapshot, Result Outcome, const Al
     Retirement::PoisonSourceAdmission(Lost);
     return Lost;
   }
-  B->Pending = false;
+  B->Pending = false; B->Transition=PendingTransition::Unknown;
   // A failed native transition never restores a stale positive read proof.
   B->Active = {};
   if (Outcome && Unregistered) {
@@ -605,6 +796,9 @@ SourceLifetime& SourceLifetime::operator=(SourceLifetime&& Other) noexcept {
   return *this;
 }
 SourceLifetime::~SourceLifetime() { Release(); }
+void SourceLifetime::ObserveWakeCheckpoint(unsigned Phase, Result Outcome) const {
+  if (Held) RecordWakeCheckpoint(BindingIndex,BindingSerial,Phase,Outcome);
+}
 Result SourceLifetime::Validate(bool RequireOpen) const {
   RegistryGuard Guard;
   return Refuse(Held && LifetimeMatch(BindingIndex,BindingSerial,ContextSerial,RequireOpen) ? PEAR_FEX_OK : PEAR_FEX_STALE_IDENTITY);
@@ -696,61 +890,138 @@ void NotifySourceEntryChange(const std::atomic<uint32_t>& Word) {
   RtlWakeAddressAll(const_cast<std::atomic<uint32_t>*>(&Word));
 }
 
-SourceMutationTurn::SourceMutationTurn(const SourceLifetime& Life, bool Writing) {
+// Failure-only metadata snapshot. Never wait for a registry holder.
+struct MutationOwnerSnapshot {
+  uint32_t State {4};
+  uint64_t WineThread {}, Serial {};
+  uint32_t Role {}, Lease {}, Holds {}, Flags {}, Transition {};
+};
+static MutationOwnerSnapshot CaptureMutationOwner(uint64_t Expected) {
+  const auto Sequence=MutationSequence.load(std::memory_order_acquire);
+  if (!Expected || MutationExecutor.load(std::memory_order_acquire)!=Expected) return {3};
+  const auto Self=reinterpret_cast<uintptr_t>(GetCurrentTEB());
+  uintptr_t Empty=0;
+  if (!Registry.compare_exchange_strong(Empty,Self,std::memory_order_acquire,std::memory_order_relaxed)) return {2};
+  MutationOwnerSnapshot Result {};
+  unsigned Matches=0;
+  for (const auto& B:Bindings) {
+    if (B.Executor!=Expected || B.SourceKind==Binding::Kind::None) continue;
+    ++Matches;
+    Result={1,static_cast<uint64_t>(B.NativeThread),B.LifetimeSerial,B.Role,
+            static_cast<uint32_t>(B.Active.Kind),B.LifetimeHolds,
+            (B.Pending?1U:0U)|(B.Capturing?2U:0U)|(B.Unresolved?4U:0U)|
+            (B.LifetimeClosing?8U:0U)|(B.LifetimeDeleteSealed?16U:0U)|(B.CleanupOnly?32U:0U),
+            B.Pending?static_cast<uint32_t>(B.Transition):0U};
+  }
+  if (Matches!=1 || !Result.WineThread) Result={Matches>1?5U:4U};
+  if (MutationExecutor.load(std::memory_order_acquire)!=Expected ||
+      MutationSequence.load(std::memory_order_acquire)!=Sequence) Result={3};
+  Registry.store(0,std::memory_order_release);
+  return Result;
+}
+extern "C" bool PearMutationOwnerObservationEnabled();
+extern "C" void PearMutationOwnerObservation(uint64_t, uint64_t, uint32_t, uint64_t, uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+
+extern "C" void PearMutationBoundObservation(uint64_t, uint64_t, uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+extern "C" void PearMutationWaitObservation(uint64_t, uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+
+SourceMutationTurn::SourceMutationTurn(const SourceLifetime& Life, bool Writing)
+  : SourceMutationTurn(Life, Writing, nullptr) {}
+SourceMutationTurn::SourceMutationTurn(const SourceLifetime& Life, bool Writing, EntryDiagnostic* Diagnostic) {
   Outcome=Life.Validate();
-  if (!Outcome) return;
+  if (!Outcome) { EntryFailure(Diagnostic, 10, Outcome); return; }
   Executor=Life.Executor();
+  // Local observation only; the original admission and finite loop are unchanged.
+  uint64_t FirstOwner {}, LastOwner {};
+  uint32_t Attempts {}, OwnerChanges {}, SequenceChanges {}, LastSequence {}, WaitsOK {}, WaitTimeouts {}, Polls {};
   for (unsigned Attempt=0;Attempt<1000;++Attempt) {
     const auto B=CurrentSnapshot();
     if (!Executor || B.Executor!=Executor || B.SourceContext!=Life.ActualContext() ||
         B.SourceState!=Life.ActualThread() ||
         (B.Active.Kind!=LeaseKind::None && B.Active.Kind!=LeaseKind::Pinned)) {
-      Outcome=Refuse(PEAR_FEX_STALE_IDENTITY); return;
+      Outcome=Refuse(PEAR_FEX_STALE_IDENTITY);
+      EntryFailure(Diagnostic, 11, Outcome, static_cast<uint32_t>(B.Active.Kind), 1); return;
     }
     const auto Sequence=MutationSequence.load(std::memory_order_acquire);
     uint64_t Empty=0;
     if (MutationExecutor.compare_exchange_strong(Empty,Executor,std::memory_order_acquire,std::memory_order_relaxed)) {
       Owned=true;
+      BeginWakeScan(Executor,Writing);
       if (Writing) {
         // Reuse FEX's existing block-boundary suspend check, not a new signal
         // handler or executable patch. Entry/resume holds the same source turn,
         // so no executor can become ACTIVE after this scan until publication.
         RegistryGuard Guard;
         for (auto& Peer:Bindings) {
+          auto* Wake=CaptureWakePeer(Peer);
           if (Peer.Executor==Executor || Peer.SourceKind!=Binding::Kind::Thread ||
               Peer.Role!=PEAR_FEX_ROLE_ARM64EC || Peer.Active.Kind!=LeaseKind::Active ||
               Peer.LifetimeClosing || Peer.LifetimeDeleteSealed || Peer.Unresolved) continue;
           const auto* C=ContextRecord(Peer.SourceContext);
+          if (Wake) Wake->Flags |= 64U | (C && !C->Closing && !C->DeleteSealed && !C->Retained ? 128U : 0U);
           if (!C || C->Closing || C->DeleteSealed || C->Retained) continue;
           // Registry ownership prevents lifetime sealing/deletion during this
           // bounded metadata-only access. No owner, VM or callback call occurs.
           auto* Thread=const_cast<FEXCore::Core::InternalThreadState*>(
             static_cast<const FEXCore::Core::InternalThreadState*>(Peer.SourceState));
-          if (Thread && Thread->CTX==Peer.SourceContext && Thread->CurrentFrame && Thread->CurrentFrame->Thread==Thread)
-            __atomic_fetch_or(&Thread->CurrentFrame->SuspendDoorbell,1U,__ATOMIC_RELEASE);
+          if (Wake) Wake->Flags |= 256U;
+          if (Thread && Thread->CTX==Peer.SourceContext && Thread->CurrentFrame && Thread->CurrentFrame->Thread==Thread) {
+            const auto Before=__atomic_fetch_or(&Thread->CurrentFrame->SuspendDoorbell,1U,__ATOMIC_RELEASE);
+            if (Wake) { Wake->Flags |= 512U | 1024U; Wake->DoorbellBefore=Before; }
+          }
         }
       }
       Outcome=Refuse(PEAR_FEX_OK); return;
     }
     // The linker synchronously invokes compilation on the same actual native
     // thread. The outer turn spans that nested work; no second release occurs.
-    if (Empty==Executor) { Outcome=Refuse(PEAR_FEX_OK); return; }
+    if (Empty==Executor) {
+      if (WakeEnabled.load(std::memory_order_relaxed) && Writing && WakeSnapshot.Writer==Executor && WakeSnapshot.NestedWriting!=UINT32_MAX)
+        ++WakeSnapshot.NestedWriting;
+      Outcome=Refuse(PEAR_FEX_OK); return;
+    }
+    if (Diagnostic) {
+      if (!Attempts) FirstOwner=Empty;
+      else { OwnerChanges+=LastOwner!=Empty; SequenceChanges+=LastSequence!=Sequence; }
+      LastOwner=Empty; LastSequence=Sequence; ++Attempts;
+    }
     Waited=true;
     if (B.Active.Kind==LeaseKind::Pinned) {
+      if (Diagnostic) ++Polls;
       Outcome=Poll(B.Active.Target,B.Active.EntryOffset,B.Active.Continuation,B.Active.Target.Token.write_epoch);
-      if (!Outcome) return;
+      if (!Outcome) { EntryFailure(Diagnostic, 12, Outcome); return; }
     }
     Outcome=WaitSourceEntryChange(MutationSequence,Sequence,5);
-    if (!Outcome && Outcome.Status!=PEAR_FEX_QUIESCENCE_TIMEOUT) return;
-    Outcome=Life.Validate(); if (!Outcome) return;
+    if (Diagnostic) {
+      if (Outcome) ++WaitsOK;
+      else if (Outcome.Status==PEAR_FEX_QUIESCENCE_TIMEOUT) ++WaitTimeouts;
+    }
+    if (!Outcome && Outcome.Status!=PEAR_FEX_QUIESCENCE_TIMEOUT) { EntryFailure(Diagnostic, 13, Outcome); return; }
+    Outcome=Life.Validate(); if (!Outcome) { EntryFailure(Diagnostic, 14, Outcome); return; }
+    // One early observation per stable wait, before the unchanged final bound.
+    // Snapshot is nonblocking; no owner call, new wait or retry is introduced.
+    if (Diagnostic && Attempts==200 && !OwnerChanges && !SequenceChanges &&
+        WaitTimeouts==200 && PearMutationOwnerObservationEnabled()) {
+      const auto Owner=CaptureMutationOwner(LastOwner);
+      PearMutationWaitObservation(Executor,LastOwner,LastSequence,Owner.State,Owner.WineThread,Owner.Serial,
+                                 Owner.Role,Owner.Lease,Owner.Holds,Owner.Flags,Owner.Transition);
+    }
   }
   Outcome=Refuse(PEAR_FEX_QUIESCENCE_TIMEOUT);
+  EntryFailure(Diagnostic, 15, Outcome);
+  if (Diagnostic) PearMutationBoundObservation(Executor,FirstOwner,LastOwner,Attempts,OwnerChanges,SequenceChanges,WaitsOK,WaitTimeouts,Polls);
+  if (Diagnostic && PearMutationOwnerObservationEnabled()) {
+    const auto Owner=CaptureMutationOwner(LastOwner);
+    PearMutationOwnerObservation(Executor,LastOwner,Owner.State,Owner.WineThread,Owner.Serial,
+                                 Owner.Role,Owner.Lease,Owner.Holds,Owner.Flags,Owner.Transition);
+  }
 }
 SourceMutationTurn::SourceMutationTurn(SourceMutationTurn&& Other) noexcept
  : Outcome(Other.Outcome),Executor(Other.Executor),Owned(Other.Owned),Waited(Other.Waited) { Other.Owned=false; }
 SourceMutationTurn::~SourceMutationTurn() { Release(); }
 void SourceMutationTurn::Release() {
   if (!Owned) return;
+  if (WakeEnabled.load(std::memory_order_relaxed)) WakeEpoch.store(0,std::memory_order_release);
   auto Expected=Executor;
   if (!MutationExecutor.compare_exchange_strong(Expected,0,std::memory_order_release,std::memory_order_relaxed)) {
     Retirement::PoisonSourceAdmission(Refuse(PEAR_FEX_STALE_IDENTITY)); return;
@@ -853,35 +1124,47 @@ Result Init(void* NtDll, uint64_t UnixOwnerPid) {
   if (!NativeRVA || NtDllBase > std::numeric_limits<uintptr_t>::max()-NativeRVA) return Refuse();
   Resolved = reinterpret_cast<BridgeType>(NtDllBase+NativeRVA);
 #endif
+  const char* WakeOptIn=std::getenv("PEAR_FEX_WAKE_OBSERVE");
+  const bool WakeOn=WakeOptIn && !std::strcmp(WakeOptIn,"1");
   RegistryGuard Guard;
   if (BridgeDirect) return BridgeDirect == Resolved && OwnerPID == UnixOwnerPid ? Refuse(PEAR_FEX_OK) : Refuse(PEAR_FEX_STALE_IDENTITY);
+  WakeEnabled.store(WakeOn,std::memory_order_relaxed);
   BridgeDirect = Resolved; OwnerPID = UnixOwnerPid; Configured.store(true, std::memory_order_release);
   return Refuse(PEAR_FEX_OK);
 }
 namespace {
-static Result BindActual(const FEXCore::Context::Context* Context, const void* SourceState, Binding::Kind Kind) {
+static Result BindActual(const FEXCore::Context::Context* Context, const void* SourceState, Binding::Kind Kind, PearAttach::Diagnostic* Diag=nullptr) {
+  PearAttach::ClearIdentities(Diag);
   const auto Admission = NewAdmission();
-  if (!Admission) return Admission;
-  if (!Context || !SourceState || !Configured.load(std::memory_order_acquire) || !BridgeDirect || !OwnerPID) return Refuse();
+  if (!Admission) return PearAttach::Capture(Diag,PearAttach::Branch::BindAdmission,Admission);
+  if (!Context || !SourceState || !Configured.load(std::memory_order_acquire) || !BridgeDirect || !OwnerPID) return PearAttach::Capture(Diag,PearAttach::Branch::BindIdentity,Refuse());
   const auto TEB = GetCurrentTEB();
   const auto ID = reinterpret_cast<uintptr_t>(TEB->ClientId.UniqueThread);
-  if (!ID) return Refuse();
+  if (!ID) return PearAttach::Capture(Diag,PearAttach::Branch::BindIdentity,Refuse());
   RegistryGuard Guard;
   auto* Life = ContextRecord(Context);
-  if (!Life || Life->Closing || Life->DeleteSealed || Life->Retained) return Refuse();
+  if (Diag && Life) { Diag->ContextSerial=Life->Serial; Diag->Flags|=PearAttach::ContextKnown; }
+  if (!Life || Life->Closing || Life->DeleteSealed || Life->Retained) return PearAttach::Capture(Diag,PearAttach::Branch::BindIdentity,Refuse());
   Binding* Empty {};
   for (auto& B : Bindings) {
     if (B.TEB == TEB && B.NativeThread == ID) {
+      if (Diag) { Diag->BindingSerial=B.LifetimeSerial; Diag->Flags|=PearAttach::BindingKnown; }
       if (B.Pending || B.Capturing || B.Unresolved || B.LifetimeClosing || B.SourceKind != Kind ||
-          B.SourceContext != Context || B.SourceState != SourceState) return Refuse(PEAR_FEX_STALE_IDENTITY);
+          B.SourceContext != Context || B.SourceState != SourceState) return PearAttach::Capture(Diag,PearAttach::Branch::BindExistingIdentity,Refuse(PEAR_FEX_STALE_IDENTITY));
       return Refuse(PEAR_FEX_OK);
     }
     if (!B.TEB && !Empty) Empty = &B;
   }
-  if (!Empty || NextLifetimeSerial == UINT64_MAX) return Refuse(PEAR_FEX_CAPACITY);
+  if (!Empty || NextLifetimeSerial == UINT64_MAX) {
+    if (Diag) Diag->Flags|=PearAttach::CapacityKnown | (!Empty?PearAttach::NoEmptyBinding:0u) |
+      (NextLifetimeSerial == UINT64_MAX?PearAttach::SerialExhausted:0u);
+    if (Diag) PearBindings::Copy(Diag->Census,Bindings,NextLifetimeSerial);
+    return PearAttach::Capture(Diag,PearAttach::Branch::BindCapacity,Refuse(PEAR_FEX_CAPACITY));
+  }
   *Empty = {};
   Empty->TEB = TEB; Empty->NativeThread = ID; Empty->SourceState = SourceState;
   Empty->SourceContext = Context; Empty->SourceKind = Kind; Empty->LifetimeSerial = ++NextLifetimeSerial;
+  if (Diag) { Diag->BindingSerial=Empty->LifetimeSerial; Diag->Flags|=PearAttach::BindingKnown; }
   return Refuse(PEAR_FEX_OK);
 }
 } // namespace
@@ -903,27 +1186,36 @@ Result BindSourceThread(const FEXCore::Core::InternalThreadState* Thread) {
   return Life.Validate();
 }
 namespace {
-static Result RegisterActualExecutor(uint32_t SourceRole, bool CleanupOnly) {
+static Result RegisterActualExecutor(uint32_t SourceRole, bool CleanupOnly, PearAttach::Diagnostic* Diag=nullptr) {
+  PearAttach::ClearIdentities(Diag);
   if (!CleanupOnly) {
-    const auto Admission=NewAdmission(); if (!Admission) return Admission;
+    const auto Admission=NewAdmission(); if (!Admission) return PearAttach::Capture(Diag,PearAttach::Branch::RegisterAdmission,Admission);
   }
   Binding Snapshot;
   {
     RegistryGuard Guard;
     auto* B = CurrentBinding();
     auto* C=B ? ContextRecord(B->SourceContext) : nullptr;
+    if (Diag && B) { Diag->BindingSerial=B->LifetimeSerial; Diag->Flags|=PearAttach::BindingKnown; }
+    if (Diag && C) { Diag->ContextSerial=C->Serial; Diag->Flags|=PearAttach::ContextKnown; }
     if (!B || !C || C->DeleteSealed || C->Retained || C->DestroyedBacking || B->LifetimeClosing ||
         B->Executor || B->Pending || B->Capturing || B->Unresolved || SourceRole!=CompiledSourceRole() ||
         (CleanupOnly ? (!B->CleanupOnly || B->SourceKind!=Binding::Kind::Bootstrap || !C->Closing || C->Holds ||
-          C->CreationTEB!=B->TEB || C->CreationNativeThread!=B->NativeThread) : (C->Closing || B->CleanupOnly))) return Refuse();
-    B->Pending = true; Snapshot = *B;
+          C->CreationTEB!=B->TEB || C->CreationNativeThread!=B->NativeThread) : (C->Closing || B->CleanupOnly))) return PearAttach::Capture(Diag,PearAttach::Branch::RegisterPrecheck,Refuse());
+    B->Pending = true; B->Transition=PendingTransition::Unknown; Snapshot = *B;
   }
   auto Q = Request(PEAR_FEX_EXECUTOR_REGISTER); Q.ec_role = SourceRole;
   pear_fex_memory_response R {};
   InvocationFacts Facts;
   auto Outcome = Invoke(Q, R, &Facts);
+  PearAttach::Intermediate(Diag,Outcome);
+  if (Diag) {
+    Diag->Flags|=PearAttach::BridgeFactsKnown | (Facts.BridgeCalled?PearAttach::BridgeCalled:0u) |
+      (Facts.ValidatedRefusal?PearAttach::ValidatedRefusal:0u) | (Facts.CleanupCandidate?PearAttach::CleanupCandidateKnown:0u);
+  }
+  PearAttach::Capture(Diag,PearAttach::Branch::RegisterInvoke,Outcome);
   if (Outcome && (!R.executor_id || R.flags != PEAR_FEX_NATIVE_IDLE || !NoTargetFacts(R)))
-    Outcome = ResponseShapeFailure(Q.opcode);
+    Outcome = PearAttach::Capture(Diag,PearAttach::Branch::RegisterResponseShape,ResponseShapeFailure(Q.opcode));
   const bool Uncertain = !Outcome && Facts.BridgeCalled && !Facts.ValidatedRefusal;
   Result Cleanup;
   InvocationFacts CleanupFacts;
@@ -939,9 +1231,9 @@ static Result RegisterActualExecutor(uint32_t SourceRole, bool CleanupOnly) {
     if (!B || !SameBinding(*B, Snapshot) || !B->Pending) {
       const auto Lost = Outcome ? Refuse(PEAR_FEX_STALE_IDENTITY) : Outcome;
       Retirement::PoisonSourceAdmission(Lost);
-      return Lost;
+      return PearAttach::Capture(Diag,PearAttach::Branch::RegisterFinishIdentity,Lost);
     }
-    B->Pending = false;
+    B->Pending = false; B->Transition=PendingTransition::Unknown;
     if (Outcome) {
       B->Executor = R.executor_id; B->Role = SourceRole;
       B->OriginalFailure = Refuse(PEAR_FEX_OK); B->CleanupOutcome = {}; B->CleanupAttempted = false;
@@ -998,11 +1290,15 @@ uint32_t CurrentSourceRole() {
   return B.SourceKind == Binding::Kind::Thread && B.Executor && B.Role == CompiledSourceRole() ? B.Role : 0;
 }
 Result UnregisterExecutor() {
+  PearSlot::Scope PearObservation(PearSlot::Stage::Unregister);
+  const auto PearOriginalBody=[&]() -> Result {
   Binding B;
-  const auto Begun = BeginTransition(nullptr, B, false);
+  const auto Begun = BeginTransition(nullptr, B, false,PendingTransition::Unregister);
   if (!Begun) return Begun;
   InvocationFacts Facts;
+  PearSlot::Scope PearBridge(PearSlot::Stage::BridgeUnregister,B.SourceContext,B.SourceState);
   const auto Outcome = CheckedUnregister(B.Executor, &Facts);
+  PearBridge.Return(2,Outcome.Status,Outcome.ErrorDomain,Outcome.ErrorCode,bool(Outcome),false,false,Facts.BridgeCalled,Facts.ValidatedRefusal);
   if (!Outcome) {
     RegistryGuard Guard;
     auto* Actual = CurrentBinding();
@@ -1021,26 +1317,37 @@ Result UnregisterExecutor() {
     if (Actual && SameBinding(*Actual, B)) Actual->Unresolved = true;
   }
   return Finished;
+  };
+  const auto PearReturned=PearOriginalBody();
+  PearObservation.Return(2,PearReturned.Status,PearReturned.ErrorDomain,PearReturned.ErrorCode,bool(PearReturned));
+  return PearReturned;
 }
-Result SourceLifecycle::AttachAllocatedThread(const FEXCore::Context::Context* Context,
-                            FEXCore::Core::InternalThreadState* Thread, uint32_t SourceRole) {
+static Result AttachAllocatedThreadImpl(const FEXCore::Context::Context* Context,
+                            FEXCore::Core::InternalThreadState* Thread, uint32_t SourceRole, PearAttach::Diagnostic* Diag) {
   if (!ThreadFieldsMatch(Context, Thread) || SourceRole != CompiledSourceRole())
-    return Refuse(PEAR_FEX_INVALID_REQUEST);
+    return PearAttach::Capture(Diag,PearAttach::Branch::InvalidArguments,Refuse(PEAR_FEX_INVALID_REQUEST));
   const auto Admission = NewAdmission();
-  if (!Admission) return Admission;
+  if (!Admission) return PearAttach::Capture(Diag,PearAttach::Branch::OuterAdmission,Admission);
   Binding Existing;
   bool SameThread {};
   {
     RegistryGuard Guard;
     auto* B = CurrentBinding();
+    if (Diag) {
+      const auto* C=ContextRecord(Context);
+      if (C) { Diag->ContextSerial=C->Serial; Diag->Flags|=PearAttach::ContextKnown; }
+      if (B) { Diag->BindingSerial=B->LifetimeSerial; Diag->Flags|=PearAttach::BindingKnown; }
+    }
     if (B) {
       if (B->SourceContext != Context || B->Pending || B->Capturing || (B->Active.Kind != LeaseKind::None) || B->Unresolved)
-        return B->Unresolved && !B->OriginalFailure ? B->OriginalFailure : Refuse(PEAR_FEX_STALE_IDENTITY);
+        return B->Unresolved && !B->OriginalFailure ?
+          PearAttach::Capture(Diag,PearAttach::Branch::ExistingPrior,B->OriginalFailure) :
+          PearAttach::Capture(Diag,PearAttach::Branch::ExistingIdentity,Refuse(PEAR_FEX_STALE_IDENTITY));
       SameThread = B->SourceKind == Binding::Kind::Thread && B->SourceState == Thread;
-      if (!SameThread && B->SourceKind != Binding::Kind::Bootstrap) return Refuse(PEAR_FEX_STALE_IDENTITY);
+      if (!SameThread && B->SourceKind != Binding::Kind::Bootstrap) return PearAttach::Capture(Diag,PearAttach::Branch::ExistingIdentity,Refuse(PEAR_FEX_STALE_IDENTITY));
       B->AttachAttempt = Thread;
       Existing = *B;
-      if (SameThread && B->Executor) B->Pending = true;
+      if (SameThread && B->Executor) { B->Pending = true; B->Transition=PendingTransition::Unknown; }
       // A clean bootstrap or earlier confirmed registration refusal has no
       // owner executor. Erase only this exact live matching identity.
       if (!B->Executor && !HasUnreleasedOwner(*B) && B->SourceKind == Binding::Kind::Bootstrap) *B = {};
@@ -1050,11 +1357,12 @@ Result SourceLifecycle::AttachAllocatedThread(const FEXCore::Context::Context* C
     if (Existing.Role != SourceRole) {
       const auto BadRole = Refuse(PEAR_FEX_STALE_IDENTITY);
       Retirement::PoisonSourceAdmission(BadRole);
-      return FinishTransition(Existing, BadRole);
+      return PearAttach::Capture(Diag,PearAttach::Branch::SameThreadRole,FinishTransition(Existing, BadRole));
     }
     // Idempotence requires a new actual native-idle owner observation. The NX
     // lock was released before the call; no unregistered ID is reused.
     const auto Idle = ObserveRegisteredIdle(Existing);
+    PearAttach::Intermediate(Diag,Idle);
     const auto Finished = FinishTransition(Existing, Idle);
     if (!Finished) {
       RegistryGuard Guard;
@@ -1064,24 +1372,34 @@ Result SourceLifecycle::AttachAllocatedThread(const FEXCore::Context::Context* C
       }
       Retirement::PoisonSourceAdmission(Finished);
     }
-    return Finished;
+    return PearAttach::Capture(Diag,PearAttach::Branch::SameThreadIdleOrFinish,Finished);
   }
   if (Existing.Executor) {
     // Preserve the live bootstrap Context on any refusal/unknown cleanup.
     const auto Unregistered = UnregisterExecutor();
-    if (!Unregistered) return Unregistered;
+    if (!Unregistered) return PearAttach::Capture(Diag,PearAttach::Branch::BootstrapUnregister,Unregistered);
     // Clear only this exact known-unregistered bootstrap for the source-owned
     // transfer. A Thread tombstone is never discarded by Attach or CanRelease.
     RegistryGuard Guard;
     auto* B=CurrentBinding(); auto* C=ContextRecord(Context);
     if (!B || !C || C->Closing || C->DeleteSealed || C->Retained || B->SourceKind != Binding::Kind::Bootstrap ||
-        B->SourceContext != Context || B->AttachAttempt != Thread || HasUnreleasedOwner(*B)) return Refuse(PEAR_FEX_STALE_IDENTITY);
+        B->SourceContext != Context || B->AttachAttempt != Thread || HasUnreleasedOwner(*B)) return PearAttach::Capture(Diag,PearAttach::Branch::BootstrapTransferIdentity,Refuse(PEAR_FEX_STALE_IDENTITY));
     *B={};
   }
-  const auto Bound = BindActual(Context, Thread, Binding::Kind::Thread);
+  const auto Bound = BindActual(Context, Thread, Binding::Kind::Thread,Diag);
   if (!Bound) return Bound;
-  return RegisterExecutor(SourceRole);
+  return RegisterActualExecutor(SourceRole,false,Diag);
 }
+Result SourceLifecycle::AttachAllocatedThread(const FEXCore::Context::Context* Context,
+    FEXCore::Core::InternalThreadState* Thread,uint32_t SourceRole) {
+  return AttachAllocatedThreadImpl(Context,Thread,SourceRole,nullptr);
+}
+Result AttachAllocatedThreadObserved(const FEXCore::Context::Context* Context,
+    FEXCore::Core::InternalThreadState* Thread,uint32_t SourceRole,PearAttach::Diagnostic* Diag) {
+  if (Diag) *Diag={};
+  return AttachAllocatedThreadImpl(Context,Thread,SourceRole,Diag);
+}
+
 namespace {
 static bool CanRelease(const FEXCore::Core::InternalThreadState* Thread,
                        const FEXCore::Context::Context* Context) {
@@ -1135,7 +1453,7 @@ static Result CheckCleanup(const FEXCore::Context::Context* Context,
                 B->SourceKind == Binding::Kind::Bootstrap && B->SourceState == Context);
     if (!Match || !B->Executor || B->Role != CompiledSourceRole() ||
         B->Pending || B->Capturing || B->Unresolved || (B->Active.Kind != LeaseKind::None)) return Refuse();
-    Snapshot = *B; B->Pending = true;
+    Snapshot = *B; B->Pending = true; B->Transition=PendingTransition::Unknown;
   }
   // Cleanup is allowed after poison, but never from an unknown identity. The
   // actual owner must report this exact executor native-idle on this thread.
@@ -1196,27 +1514,32 @@ Result Query(Allocation& A) {
   return Result;
 }
 Result Enter(const Allocation& A, size_t EntryOffset, uint64_t Continuation) {
-  const auto Admission=NewAdmission(); if (!Admission) return Admission;
+  return Enter(A, EntryOffset, Continuation, nullptr);
+}
+Result Enter(const Allocation& A, size_t EntryOffset, uint64_t Continuation, EntryDiagnostic* Diagnostic) {
+  const auto Admission=NewAdmission(); if (!Admission) return EntryFailure(Diagnostic, 20, Admission);
   // Hold the actual source before accepting caller metadata. The seal blocks
   // new Prepared/batch work through queued owner entry and token acceptance.
   auto Life=AcquireCurrentSourceLifetime();
-  if (!Life) return Refuse(PEAR_FEX_STALE_IDENTITY);
+  if (!Life) return EntryFailure(Diagnostic, 21, Refuse(PEAR_FEX_STALE_IDENTITY));
   Links::SealedEntry Sealed;
-  const auto SealedResult=Links::TrySealEntry(Life,Sealed); if (!SealedResult) return SealedResult;
+  const auto SealedResult=Links::TrySealEntry(Life,Sealed); if (!SealedResult) return EntryFailure(Diagnostic, 22, SealedResult);
   const auto Limit=Usable(A);
   if (!A.Base || !A.Token.write_epoch || A.Token.expected_state!=PEAR_FEX_PUBLISHED_RX ||
-      (EntryOffset&3) || EntryOffset>Limit || 4>Limit-EntryOffset) return Refuse(PEAR_FEX_INVALID_REQUEST);
-  const auto StillCurrent=Sealed.Validate(Life); if (!StillCurrent) return StillCurrent;
+      (EntryOffset&3) || EntryOffset>Limit || 4>Limit-EntryOffset) return EntryFailure(Diagnostic, 23, Refuse(PEAR_FEX_INVALID_REQUEST));
+  const auto StillCurrent=Sealed.Validate(Life); if (!StillCurrent) return EntryFailure(Diagnostic, 24, StillCurrent);
   Binding B;
-  const auto Begun=BeginTransition(&A,B,true); if (!Begun) return Begun;
+  const auto Begun=BeginTransition(&A,B,true,PendingTransition::Entry); if (!Begun) return EntryFailure(Diagnostic, 25, Begun);
   pear_fex_memory_response R {};
   const auto Outcome=Operation(A,PEAR_FEX_EXECUTOR_ENTRY,Continuation,EntryOffset,0,R,&B);
+  EntryFailure(Diagnostic, 26, Outcome);
   const auto Finished=FinishTransition(B,Outcome,&A,EntryOffset,Continuation);
+  EntryFailure(Diagnostic, 27, Finished);
   // Unknown owner/source results retain the original seal; no implicit grant
   // or rollback is fabricated. The original operation error remains primary.
   const auto Released=Sealed.Release();
   if (!Finished) return Finished;
-  return Released;
+  return EntryFailure(Diagnostic, 28, Released);
 }
 namespace {
 static bool ManagedActiveMatches(const Allocation& A, const Binding& B) {
@@ -1339,7 +1662,11 @@ static ManagedReadResult CopyManagedRXImpl(const Allocation& Protection, const A
     TryRegistryGuard Guard;
     auto* B = Guard.Owned ? CurrentBinding() : nullptr;
     if (B && B->Capturing && SameBinding(*B, Snapshot) && SameActive(B->Active, Snapshot.Active) &&
-        ManagedActiveMatches(Protection, *B)) B->Capturing = false;
+        ManagedActiveMatches(Protection, *B)) {
+      // Successful copy and target validation are complete; exact ACTIVE/Capturing lease is still held.
+      if(Outcome && TargetState)PearWriterReadCut(ActualSourceThreadState,Destination.data(),Offset,Size);
+      B->Capturing = false;
+    }
     else if (Outcome) Outcome = Refuse(PEAR_FEX_STALE_IDENTITY);
     // If the exact captured binding cannot be revalidated, leave its marker
     // closed. It cannot be used for entry/exit/handoff or resumed success.
@@ -1360,12 +1687,38 @@ ManagedReadResult CopyManagedRX(const Allocation& A, const void* ActualSourceThr
 ManagedReadResult CopyManagedRXUnderGlobalLease(const Allocation& ProtectionD, const RetainedManagedTarget& Target,
   const void* ActualSourceThreadState, size_t Offset, std::span<uint8_t> Destination) {
   if (!Target) return {};
-  return CopyManagedRXImpl(ProtectionD, Target.Captured, Target.SourceState, ActualSourceThreadState, Offset, Destination);
+  const auto Read=CopyManagedRXImpl(ProtectionD, Target.Captured, Target.SourceState, ActualSourceThreadState, Offset, Destination);
+  // OFF exits without consulting the TEB; no static TLS access in this path.
+  if (!Read || Read.BytesCopied!=52 || Destination.size()!=52 || !PearReadIdentityOwner.load(std::memory_order_acquire)) return Read;
+  PearReadIdentityGuard lock;
+  if (!lock.owned) { PearReadIdentityLost.store(true,std::memory_order_relaxed);return Read; }
+  if (PearReadIdentityOwner.load(std::memory_order_relaxed)!=PearReadIdentitySelf()) return Read;
+  if (PearReadIdentityLost.load(std::memory_order_relaxed)) return Read;
+  auto& Scope=PearReadIdentityActive;
+  if (Scope.thread==ActualSourceThreadState && Scope.dest==Destination.data() &&
+      Scope.offset==Offset && Scope.bytes==Destination.size() && Read.BytesCopied==52) {
+    auto& d=Scope.value;
+    if (d.seen) d.seen=2;
+    else {
+      // Access through the existing friend reader, after its unchanged success checks.
+      // No private-class layout, request ABI, additional target lookup or byte copy.
+      d.seen=1;d.owner=reinterpret_cast<uintptr_t>(Target.Owner.get());
+      d.state=reinterpret_cast<uintptr_t>(Target.SourceState);
+      d.base=reinterpret_cast<uintptr_t>(Target.Captured.Base);
+      d.owner_pid=Target.Captured.Token.owner_pid;
+      d.allocation=Target.Captured.Token.allocation_id;d.generation=Target.Captured.Token.generation;
+      d.extent=Target.Captured.Token.extent_offset;d.size=Target.Captured.Token.extent_size;
+      d.epoch=Target.Captured.Token.write_epoch;d.expected=Target.Captured.Token.expected_state;
+      d.aclass=Target.Captured.Token.allocation_class;d.role=Target.Captured.Token.ec_role;
+      d.offset=Offset;d.bytes=Read.BytesCopied;
+    }
+  }
+  return Read;
 }
 
 Result Exit(const Allocation& A) {
   Binding B;
-  const auto Begun = BeginTransition(&A, B, false);
+  const auto Begun = BeginTransition(&A, B, false,PendingTransition::Exit);
   if (!Begun) return Begun;
   pear_fex_memory_response R {};
   const auto Outcome = Operation(A, PEAR_FEX_EXECUTOR_EXIT, 0, 0, 0, R, &B);
@@ -1409,7 +1762,7 @@ static Result FinishPinTransition(const Binding& Before, Result Outcome, const I
   }
   const bool Unknown = B->Unresolved || (!Outcome && Facts.BridgeCalled &&
     (NewPin || !Facts.ValidatedRefusal));
-  B->Pending = false; B->Active = {};
+  B->Pending = false; B->Transition=PendingTransition::Unknown; B->Active = {};
   if (Unknown) {
     // Retain only the real pre-call tuple, explicitly without ACTIVE or retry
     // authority. Initial HANDOFF uncertainty cannot adopt unreturned pin IDs.
@@ -1446,7 +1799,7 @@ Result Unpin(const Allocation& A, uint64_t Continuation, uint64_t PinEpoch) {
     return Operation(A, PEAR_FEX_CONTINUATION_UNPIN, Continuation, 0, PinEpoch, R);
   }
   Binding B;
-  const auto Begun = BeginTransition(&A, B, false);
+  const auto Begun = BeginTransition(&A, B, false,PendingTransition::Unpin);
   if (!Begun) return Begun;
   pear_fex_memory_response R {};
   InvocationFacts Facts;
@@ -1457,7 +1810,7 @@ Result Handoff(const Allocation& A, size_t ResumeOffset, uint64_t& Continuation)
   const auto Active = CurrentSnapshot();
   if (!ManagedActiveMatches(A, Active)) return Refuse(PEAR_FEX_STALE_IDENTITY);
   Binding B;
-  const auto Begun = BeginTransition(&A, B, false);
+  const auto Begun = BeginTransition(&A, B, false,PendingTransition::Handoff);
   if (!Begun) return Begun;
   pear_fex_memory_response R {};
   InvocationFacts Facts;
@@ -1471,7 +1824,7 @@ Result Poll(const Allocation& A, size_t ResumeOffset, uint64_t Continuation, uin
   if (!PinnedMatches(Original, A, ResumeOffset, Continuation, OriginalPinEpoch))
     return Refuse(PEAR_FEX_STALE_IDENTITY);
   Binding B;
-  const auto Begun = BeginTransition(&A, B, false);
+  const auto Begun = BeginTransition(&A, B, false,PendingTransition::Poll);
   if (!Begun) return Begun;
   pear_fex_memory_response R {};
   InvocationFacts Facts;
@@ -1493,7 +1846,7 @@ Result Resume(const Allocation& CurrentD, size_t ResumeOffset, uint64_t Continua
   // This is the atomic owner leaf. The actual Core call site must retain its
   // sealed entry and actual object lifetimes; neither is created by this call.
   Binding B;
-  const auto Begun = BeginTransition(&CurrentD, B, false);
+  const auto Begun = BeginTransition(&CurrentD, B, false,PendingTransition::Resume);
   if (!Begun) return Begun;
   pear_fex_memory_response R {};
   InvocationFacts Facts;
@@ -1518,7 +1871,7 @@ Result Retire(Allocation& A) {
 WriteGuard::WriteGuard(Allocation& A, size_t Offset, size_t Size, uint64_t Continuation)
   : Owner(A), WindowSize(Size) {
   Outcome = NewAdmission();
-  if (!Outcome) return;
+  if (!Outcome) { ObserveWriteFailure("admission", Outcome, false, false); return; }
   Binding B;
   const auto Limit = Usable(A);
   if (!Size || Offset > Limit || Size > Limit-Offset || !CurrentTarget(A, B)) { Outcome = Refuse(); return; }
@@ -1526,8 +1879,9 @@ WriteGuard::WriteGuard(Allocation& A, size_t Offset, size_t Size, uint64_t Conti
   Request.executor_id = B.Executor; Request.continuation_id = Continuation;
   Request.operation_offset = Offset; Request.operation_size = Size;
   pear_fex_memory_response R {};
-  Outcome = Invoke(Request, R);
-  if (!Outcome) return;
+  InvocationFacts Facts;
+  Outcome = Invoke(Request, R, &Facts);
+  if (!Outcome) { ObserveWriteFailure("invoke", Outcome, Facts.BridgeCalled, Facts.ValidatedRefusal); ObserveWakeFailure(Request.executor_id); return; }
   if (!R.private_write_base || R.private_write_base < Offset ||
       R.private_write_base > std::numeric_limits<uintptr_t>::max() ||
       R.private_write_base > std::numeric_limits<uintptr_t>::max()-Size ||
@@ -1568,7 +1922,9 @@ Result WriteGuard::Abort() {
   if (!Open) return Outcome;
   Request.opcode = PEAR_FEX_ABORT_WRITE;
   pear_fex_memory_response R {};
-  auto Result = Invoke(Request, R);
+  const bool AbortObserved=PearAbortEnabled();
+  InvocationFacts AbortFacts;
+  auto Result = Invoke(Request, R, AbortObserved ? &AbortFacts : nullptr);
   if (Result && (R.lifecycle_state != PEAR_FEX_RESERVED_NONE || R.effective_protection ||
       R.write_epoch != Request.write_epoch || R.continuation_id != Request.continuation_id ||
       (R.flags != PEAR_FEX_NATIVE_IDLE && R.flags != PEAR_FEX_NATIVE_PINNED)))
@@ -1577,6 +1933,26 @@ Result WriteGuard::Abort() {
   if (Result) { Update(Owner, R); Owner.Base = nullptr; }
   else { Owner.Status = Result.Status; Owner.ErrorDomain = Result.ErrorDomain; Owner.ErrorCode = Result.ErrorCode; Owner.Base = nullptr; }
   if (Outcome) Outcome = Result;
+  if (AbortObserved && !Result) {
+    PearAbortRecord d {};
+    d.guard=reinterpret_cast<uintptr_t>(this);
+    d.pid = Request.owner_pid;
+    d.executor = Request.executor_id;
+    d.allocation = Request.allocation_id;
+    d.generation = Request.generation;
+    d.extent = Request.extent_offset;
+    d.size = Request.extent_size;
+    d.epoch = Request.write_epoch;
+    d.expected = Request.expected_state;
+    d.aclass = Request.allocation_class;
+    d.role = Request.ec_role;
+    d.continuation = Request.continuation_id;
+    d.bridge=AbortFacts.BridgeCalled; d.validated=AbortFacts.ValidatedRefusal;
+    d.status=Result.Status; d.domain=Result.ErrorDomain; d.code=Result.ErrorCode;
+    PearAbortEmit(2,&d);
+  }
   return Result;
 }
 } // namespace FEXCore::Utils::PearFEXMemory
+
+#include "PearSlotLifetimeMemory.inc"

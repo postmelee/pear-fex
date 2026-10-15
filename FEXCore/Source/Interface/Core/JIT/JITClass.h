@@ -662,6 +662,9 @@ private:
 
   void EmitSuspendInterruptCheck();
 
+#ifdef PEAR_PHASE_OBSERVE
+  void EmitPearPhase(uint64_t PC, bool Marker);
+#endif
   void EmitEntryPoint(ARMEmitter::BackwardLabel& HeaderLabel, bool CheckTF);
 
   [[nodiscard]] CodeBuffer::CodeBufferAllocation AllocateCodeBufferInSharedCache(size_t Size);

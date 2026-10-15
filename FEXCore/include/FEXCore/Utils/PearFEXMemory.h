@@ -58,6 +58,16 @@ struct Result {
   int32_t ErrorCode {};
   explicit operator bool() const { return Status == PEAR_FEX_OK; }
 };
+// Private diagnostic state belongs to one EC gate invocation. It carries no
+// authority and never replaces the original Result or a source identity.
+struct EntryDiagnostic {
+  uint32_t Phase {}, Facts {}, Known {};
+};
+inline Result EntryFailure(EntryDiagnostic* D, uint32_t Phase, Result R,
+                           uint32_t Facts = 0, uint32_t Known = 0) {
+  if (D && !R && !D->Phase) { D->Phase = Phase; D->Facts = Facts; D->Known = Known; }
+  return R;
+}
 // Read-only owner snapshot, separate from allocation/publication responses.
 Result ObserveMetadata(pear_fex_memory_metadata& Output);
 // One finite pre-engine preparation. Register an idle native executor, observe
@@ -87,6 +97,8 @@ public:
   FEXCore::Core::InternalThreadState* ActualThread() const;
   uint64_t Executor() const;
   uint64_t Identity() const { return BindingSerial; }
+  // Diagnostic-only checkpoint while this actual source lifetime remains held.
+  void ObserveWakeCheckpoint(unsigned Phase, Result Outcome = {PEAR_FEX_OK,0,0}) const;
 private:
   friend SourceLifetime AcquireCurrentSourceLifetime(const FEXCore::Context::Context*);
   uint64_t ContextSerial {}, BindingSerial {};
@@ -103,6 +115,7 @@ SourceLifetime AcquireCurrentSourceLifetime(const FEXCore::Context::Context* Exp
 class SourceMutationTurn {
 public:
   explicit SourceMutationTurn(const SourceLifetime&, bool Writing=true);
+  SourceMutationTurn(const SourceLifetime&, bool Writing, EntryDiagnostic*);
   SourceMutationTurn(const SourceMutationTurn&)=delete;
   SourceMutationTurn& operator=(const SourceMutationTurn&)=delete;
   SourceMutationTurn(SourceMutationTurn&&) noexcept;
@@ -223,6 +236,7 @@ Result UnregisterExecutor();
 Allocation Reserve(size_t Size, uint32_t AllocationClass, uint32_t SourceRole);
 Result Query(Allocation&);
 Result Enter(const Allocation&, size_t EntryOffset, uint64_t Continuation = 0);
+Result Enter(const Allocation&, size_t EntryOffset, uint64_t Continuation, EntryDiagnostic*);
 // NX-only proof for the current actual TEB/source/executor. A successful ENTRY
 // records this exact allocation and entry offset. The proof is cleared before
 // EXIT/HANDOFF/UNREGISTER and is unavailable during any native transition.

@@ -1,3 +1,13 @@
+#include "PearSlotLifetime.h"
+#ifdef PEAR_PHASE_OBSERVE
+#include "PearPhaseObservation.h"
+#include <cstring>
+static std::atomic<uint64_t> PearPhaseLife {};
+static void PearPhaseMap(uint64_t,const char*);
+static void PearPhaseUnmap(uint64_t,uint64_t);
+#endif
+#include <cerrno>
+#include <cstdlib>
 #ifdef PEAR_FEX_DARWIN
 #include "Common/DarwinConfigPolicy.h"
 #endif
@@ -145,6 +155,9 @@ struct ThreadCPUArea {
 };
 
 struct FrontendThreadData {
+#ifdef PEAR_PHASE_OBSERVE
+  uint64_t PhaseLifetime {PearPhaseLife.fetch_add(1,std::memory_order_relaxed)+1};
+#endif
   bool InLockedRWXRead {};
 #ifdef PEAR_FEX_MEMORY_OWNER
   std::optional<FEXCore::Utils::PearFEXMemory::SourceLifetime> MemoryNotificationLife;
@@ -251,6 +264,23 @@ std::pair<NTSTATUS, ThreadCPUArea> GetThreadCPUArea(HANDLE Thread) {
 ThreadCPUArea GetCPUArea() {
   return ThreadCPUArea(NtCurrentTeb());
 }
+
+class ScopedCallbackDisable {
+private:
+  bool Prev;
+
+public:
+  ScopedCallbackDisable() {
+    const auto CPUArea = GetCPUArea();
+    Prev = CPUArea.Area->InSyscallCallback;
+    CPUArea.Area->InSyscallCallback = true;
+  }
+
+  ~ScopedCallbackDisable() {
+    GetCPUArea().Area->InSyscallCallback = Prev;
+  }
+};
+
 
 FrontendThreadData* GetFrontendThreadData(FEXCore::Core::InternalThreadState* Thread) {
   return static_cast<FrontendThreadData*>(Thread->FrontendPtr);
@@ -382,10 +412,16 @@ void HandleImageMap(uint64_t Address, bool MainImage = false) {
   fextl::string ModuleName = fextl::string {FEX::Windows::BaseName(ModulePath)};
   InvalidationTracker->HandleImageMap(ModuleName, Address);
   ImageTracker->HandleImageMap(ModulePath, Address, MainImage);
+#ifdef PEAR_PHASE_OBSERVE
+  PearPhaseMap(Address,ModuleName.c_str());
+#endif
 }
 
 void HandleImageUnmap(uint64_t Address, uint64_t Size) {
   ImageTracker->HandleImageUnmap(Address, Size);
+#ifdef PEAR_PHASE_OBSERVE
+  PearPhaseUnmap(Address,Size);
+#endif
 }
 } // namespace
 
@@ -712,10 +748,17 @@ static void PearCleanupPartialContext(NTSTATUS Status, const PearMemory::Result*
 }
 #endif
 
+// Resolved before source admission; exception checkpoints must not acquire
+// the loader lock to rediscover an already loaded debug-output export.
+using PearCheckpointOutput = int (*)(const char*);
+static std::atomic<PearCheckpointOutput> PearCheckpointSink {};
+static_assert(std::atomic<PearCheckpointOutput>::is_always_lock_free);
+#include "PearPhaseRuntime.inc"
+
 // Bounded development checkpoints use Wine's existing output path. No guest
 // memory, account data, register dump or new runtime ABI is recorded here.
 static void PearInitCheckpoint(const char* Phase, uint32_t Status, uint32_t Domain, int32_t Code) {
-  const auto Output = reinterpret_cast<int (*)(const char*)>(GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "__wine_dbg_output"));
+  const auto Output = PearCheckpointSink.load(std::memory_order_acquire);
   if (!Output) return;
   char Text[192];
   snprintf(Text, sizeof(Text), "Pear FEX init %s: status=%08x domain=%u code=%d\n", Phase, Status, Domain, Code);
@@ -723,17 +766,279 @@ static void PearInitCheckpoint(const char* Phase, uint32_t Status, uint32_t Doma
 }
 
 #ifdef PEAR_FEX_MEMORY_OWNER
+// Startup-only opt-in. Gate records use the existing resolved sink, outside
+// registry locks. No last-phase state is shared between recursive invocations.
+static bool PearEntryObserve {};
+#include "PearThreadCreateRuntime.inc"
+#include "PearSlotLifetimeRuntime.inc"
+
+#include "PearAbortObservation.h"
+static bool PearAbortOptIn {};
+// Slots are never reused in a process; a lost/overflowed record cannot bind later.
+struct PearAbortSlot { std::atomic<unsigned> State {}; PearAbortRecord Record {}; };
+static PearAbortSlot PearAbortSlots[8];
+static std::atomic<unsigned> PearAbortNext {};
+static_assert(std::atomic<unsigned>::is_always_lock_free);
+extern "C" bool PearAbortEnabled() { return PearAbortOptIn && PearEntryObserve && PearPhaseOptIn; }
+static bool PearAbortSame(const PearAbortRecord& a,const PearAbortRecord& b) {
+  return a.pid==b.pid && a.tid==b.tid && a.guard==b.guard &&
+    a.allocation==b.allocation && a.generation==b.generation && a.extent==b.extent &&
+    a.size==b.size && a.epoch==b.epoch && a.expected==b.expected &&
+    a.aclass==b.aclass && a.role==b.role && a.continuation==b.continuation;
+}
+extern "C" uint64_t PearAbortBegin(const PearAbortRecord* Record) {
+  if (!PearAbortEnabled()) return 0;
+  unsigned Slot=PearAbortNext.load(std::memory_order_relaxed);
+  do { if (Slot>=8) return 0; } while (!PearAbortNext.compare_exchange_weak(Slot,Slot+1,std::memory_order_relaxed));
+  auto d=*Record; d.pid=PearPhasePID; d.tid=GetCurrentThreadId(); d.call=Slot+1;
+  PearAbortSlots[Slot].Record=d;
+  PearAbortSlots[Slot].State.store(2,std::memory_order_release); return Slot+1;
+}
+#include "PearMismatchObservation.h"
+static std::atomic<unsigned> PearMismatchEmitted {};
+extern "C" void PearMismatchEmit(const PearMismatchRecord* Record) {
+  if (!PearAbortEnabled() || Record->abort.call!=1) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  auto m=*Record; m.abort.pid=PearPhasePID; m.abort.tid=GetCurrentThreadId();
+  const auto& Slot=PearAbortSlots[0];
+  if (Slot.State.load(std::memory_order_acquire)!=2 ||
+      !PearAbortSame(m.abort,Slot.Record) || m.abort.life!=Slot.Record.life) return;
+  unsigned Expected=0;
+  if (!PearMismatchEmitted.compare_exchange_strong(Expected,1,std::memory_order_relaxed)) return;
+  const int SavedErrno=errno; const DWORD SavedError=GetLastError();
+  char Text[2048]; const int Length=pear_mismatch_format(Text,sizeof(Text),&m);
+  if (Length>0 && static_cast<size_t>(Length)<sizeof(Text)) Output(Text);
+  SetLastError(SavedError); errno=SavedErrno;
+}
+#include "PearTargetObservation.h"
+static std::atomic<unsigned> PearTargetEmitted {};
+extern "C" void PearTargetEmit(const PearTargetRecord* Record) {
+  if (!PearAbortEnabled() || Record->abort.call!=1) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);if(!Output)return;
+  auto t=*Record;t.abort.pid=PearPhasePID;t.abort.tid=GetCurrentThreadId();
+  const auto& Slot=PearAbortSlots[0];
+  if(Slot.State.load(std::memory_order_acquire)!=2 || !PearAbortSame(t.abort,Slot.Record) || t.abort.life!=Slot.Record.life)return;
+  unsigned Expected=0;if(!PearTargetEmitted.compare_exchange_strong(Expected,1,std::memory_order_relaxed))return;
+  const int SavedErrno=errno;const DWORD SavedError=GetLastError();
+  char Text[2048];const int Length=pear_target_format(Text,sizeof(Text),&t);
+  if(Length>0 && static_cast<size_t>(Length)<sizeof(Text))Output(Text);
+  SetLastError(SavedError);errno=SavedErrno;
+}
+#include "PearWriterObservation.h"
+static std::atomic<unsigned> PearWriterEmitted{};
+extern "C" void PearWriterEmit(const PearTargetRecord* record,const PearWriterBatch* b) {
+  if(!PearAbortEnabled() || !record || !b || record->abort.call!=1 || b->count>64)return;
+  const auto output=PearCheckpointSink.load(std::memory_order_acquire);if(!output)return;
+  auto t=*record;t.abort.pid=PearPhasePID;t.abort.tid=GetCurrentThreadId();
+  const auto& slot=PearAbortSlots[0];
+  if(slot.State.load(std::memory_order_acquire)!=2 || !PearAbortSame(t.abort,slot.Record) || t.abort.life!=slot.Record.life)return;
+  unsigned expected=0;if(!PearWriterEmitted.compare_exchange_strong(expected,1,std::memory_order_relaxed))return;
+  const int saved=errno;const DWORD last=GetLastError();char text[4096];int n;
+  n=snprintf(text,sizeof(text),"PEAR_WRITER_CUT1 pid=%llu tid=%llu guard=%llu call=%llu life=%llu allocation=%llu generation=%llu extent=%llu size=%llu epoch=%llu expected=%llu aclass=%llu role=%llu continuation=%llu read_seen=%llu read_cut=%llu read_loss=%llu end_seen=%llu first=%llu last=%llu loss=%llu count=%llu\n",(unsigned long long)t.abort.pid,(unsigned long long)t.abort.tid,(unsigned long long)t.abort.guard,(unsigned long long)t.abort.call,(unsigned long long)t.abort.life,(unsigned long long)t.abort.allocation,(unsigned long long)t.abort.generation,(unsigned long long)t.abort.extent,(unsigned long long)t.abort.size,(unsigned long long)t.abort.epoch,(unsigned long long)t.abort.expected,(unsigned long long)t.abort.aclass,(unsigned long long)t.abort.role,(unsigned long long)t.abort.continuation,(unsigned long long)t.read.writer_seen,(unsigned long long)t.read.writer_cut,(unsigned long long)t.read.writer_loss,(unsigned long long)b->seen,(unsigned long long)b->first,(unsigned long long)b->last,(unsigned long long)b->lost,(unsigned long long)b->count);if(n>0 && size_t(n)<sizeof(text))output(text);
+  for(size_t i=0;i<b->count;++i){const auto& w=b->rows[i];
+    n=snprintf(text,sizeof(text),"PEAR_WRITER1 pid=%llu tid=%llu guard=%llu call=%llu life=%llu allocation=%llu generation=%llu extent=%llu size=%llu epoch=%llu expected=%llu aclass=%llu role=%llu continuation=%llu writer_sequence=%llu writer_pid=%llu writer_executor=%llu writer_thread=%llu writer_life=%llu writer_operation=%llu writer_source=%llu writer_owner=%llu writer_state=%llu writer_allocation=%llu writer_generation=%llu writer_extent=%llu writer_size=%llu writer_base=%llu writer_aclass=%llu writer_role=%llu writer_offset=%llu writer_bytes=%llu writer_store_mask=%llu writer_changed_mask=%llu writer_before_epoch=%llu writer_write_epoch=%llu writer_turn=%llu writer_original0=%llu writer_original1=%llu writer_original2=%llu writer_next0=%llu writer_next1=%llu writer_next2=%llu writer_stores_done=%llu writer_terminal=%llu writer_publish_success=%llu writer_source_updated=%llu writer_status=%llu writer_domain=%llu writer_code=%llu\n",(unsigned long long)t.abort.pid,(unsigned long long)t.abort.tid,(unsigned long long)t.abort.guard,(unsigned long long)t.abort.call,(unsigned long long)t.abort.life,(unsigned long long)t.abort.allocation,(unsigned long long)t.abort.generation,(unsigned long long)t.abort.extent,(unsigned long long)t.abort.size,(unsigned long long)t.abort.epoch,(unsigned long long)t.abort.expected,(unsigned long long)t.abort.aclass,(unsigned long long)t.abort.role,(unsigned long long)t.abort.continuation,(unsigned long long)w.sequence,(unsigned long long)w.pid,(unsigned long long)w.executor,(unsigned long long)w.thread,(unsigned long long)w.life,(unsigned long long)w.operation,(unsigned long long)w.source,(unsigned long long)w.owner,(unsigned long long)w.state,(unsigned long long)w.allocation,(unsigned long long)w.generation,(unsigned long long)w.extent,(unsigned long long)w.size,(unsigned long long)w.base,(unsigned long long)w.aclass,(unsigned long long)w.role,(unsigned long long)w.offset,(unsigned long long)w.bytes,(unsigned long long)w.store_mask,(unsigned long long)w.changed_mask,(unsigned long long)w.before_epoch,(unsigned long long)w.write_epoch,(unsigned long long)w.turn,(unsigned long long)w.original0,(unsigned long long)w.original1,(unsigned long long)w.original2,(unsigned long long)w.next0,(unsigned long long)w.next1,(unsigned long long)w.next2,(unsigned long long)w.stores_done,(unsigned long long)w.terminal,(unsigned long long)w.publish_success,(unsigned long long)w.source_updated,(unsigned long long)w.status,(unsigned long long)w.domain,(unsigned long long)w.code);if(n>0 && size_t(n)<sizeof(text))output(text);
+  }
+  SetLastError(last);errno=saved;
+}
+extern "C" void PearAbortEmit(unsigned Side, const PearAbortRecord* Record) {
+  if (!PearAbortEnabled() || Side<1 || Side>2) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  auto d=*Record; d.pid=PearPhasePID; d.tid=GetCurrentThreadId();
+  if (Side==2) {
+    unsigned Index=8, Matches=0;
+    for (unsigned i=0;i<8;++i) if (PearAbortSlots[i].State.load(std::memory_order_acquire)==2 && PearAbortSame(d,PearAbortSlots[i].Record)) { Index=i; ++Matches; }
+    if (Matches!=1) return;
+    unsigned Expected=2;
+    if (!PearAbortSlots[Index].State.compare_exchange_strong(Expected,3,std::memory_order_acq_rel)) return;
+    d.call=PearAbortSlots[Index].Record.call; d.life=PearAbortSlots[Index].Record.life;
+  } else {
+    if (!d.call || d.call>8) return;
+    auto& Slot=PearAbortSlots[d.call-1];
+    if (!PearAbortSame(d,Slot.Record) || d.life!=Slot.Record.life) return;
+    if (Slot.State.exchange(4,std::memory_order_acq_rel)==4) return;
+    if (!d.status) return;
+  }
+  const int SavedErrno=errno; const DWORD SavedError=GetLastError();
+  char Text[1536]; const int Length=pear_abort_format(Text,sizeof(Text),Side,&d);
+  if (Length>0 && static_cast<size_t>(Length)<sizeof(Text)) Output(Text);
+  SetLastError(SavedError); errno=SavedErrno;
+}
+
+static uint32_t PearEntryPID {};
+static std::atomic<unsigned> PearEntryRecords {};
+static void PearEntryObservation(unsigned Mode, const PearMemory::EntryDiagnostic& D, PearMemory::Result R) {
+  if (!PearEntryObserve || R) return;
+  const auto Output = PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot = PearEntryRecords.load(std::memory_order_relaxed);
+  do { if (Slot >= 16) return; }
+  while (!PearEntryRecords.compare_exchange_weak(Slot, Slot+1, std::memory_order_relaxed));
+  const int SavedErrno = errno;
+  const DWORD SavedError = GetLastError();
+  char Text[512];
+  snprintf(Text, sizeof(Text), "PEAR_ECENTRY1 pid=%lu tid=%lu mode=%u phase=%u status=%u domain=%u code=%d facts=%u known=%u\n",
+           static_cast<unsigned long>(PearEntryPID), static_cast<unsigned long>(GetCurrentThreadId()),
+           Mode, D.Phase, R.Status, R.ErrorDomain, R.ErrorCode, D.Facts, D.Known);
+  Output(Text);
+  SetLastError(SavedError);
+  errno = SavedErrno;
+}
+
+// Failure-only local wait counters; no clock, VM query or scheduling policy.
+static std::atomic<unsigned> PearMutationRecords {};
+extern "C" void PearMutationBoundObservation(uint64_t Executor, uint64_t FirstOwner, uint64_t LastOwner,
+    uint32_t Attempts, uint32_t OwnerChanges, uint32_t SequenceChanges, uint32_t WaitsOK, uint32_t WaitTimeouts, uint32_t Polls) {
+  if (!PearEntryObserve) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot=PearMutationRecords.load(std::memory_order_relaxed);
+  do { if (Slot>=16) return; }
+  while (!PearMutationRecords.compare_exchange_weak(Slot,Slot+1,std::memory_order_relaxed));
+  const int SavedErrno=errno;
+  const DWORD SavedError=GetLastError();
+  char Text[512];
+  snprintf(Text,sizeof(Text),"PEAR_MUTATION1 pid=%lu tid=%lu seq=%u executor=%llu first=%llu last=%llu attempts=%u owner_changes=%u sequence_changes=%u waits_ok=%u wait_timeouts=%u polls=%u\n",
+      static_cast<unsigned long>(PearEntryPID),static_cast<unsigned long>(GetCurrentThreadId()),Slot,
+      static_cast<unsigned long long>(Executor),static_cast<unsigned long long>(FirstOwner),static_cast<unsigned long long>(LastOwner),
+      Attempts,OwnerChanges,SequenceChanges,WaitsOK,WaitTimeouts,Polls);
+  Output(Text);SetLastError(SavedError);errno=SavedErrno;
+}
+
+// Source-turn failure metadata, independent of the native owner's timeout path.
+static std::atomic<unsigned> PearMutationOwnerRecords {};
+extern "C" bool PearMutationOwnerObservationEnabled() {
+  return PearEntryObserve && PearCheckpointSink.load(std::memory_order_acquire);
+}
+extern "C" void PearMutationOwnerObservation(uint64_t Executor, uint64_t Owner, uint32_t State,
+    uint64_t WineThread, uint64_t Serial, uint32_t Role, uint32_t Lease, uint32_t Holds, uint32_t Flags, uint32_t Transition) {
+  if (!PearEntryObserve) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot=PearMutationOwnerRecords.load(std::memory_order_relaxed);
+  do { if (Slot>=16) return; }
+  while (!PearMutationOwnerRecords.compare_exchange_weak(Slot,Slot+1,std::memory_order_relaxed));
+  const int SavedErrno=errno;
+  const DWORD SavedError=GetLastError();
+  char Text[512];
+  snprintf(Text,sizeof(Text),"PEAR_SOURCE_OWNER2 pid=%lu tid=%lu seq=%u executor=%llu owner=%llu state=%u wine_tid=%llu serial=%llu role=%u lease=%u holds=%u flags=%u transition=%u\n",
+      static_cast<unsigned long>(PearEntryPID),static_cast<unsigned long>(GetCurrentThreadId()),Slot,
+      static_cast<unsigned long long>(Executor),static_cast<unsigned long long>(Owner),State,
+      static_cast<unsigned long long>(WineThread),static_cast<unsigned long long>(Serial),Role,Lease,Holds,Flags,Transition);
+  Output(Text);SetLastError(SavedError);errno=SavedErrno;
+}
+
+// Early source-wait trigger for the existing external owned sampler.
+static std::atomic<unsigned> PearMutationWaitRecords {};
+extern "C" void PearMutationWaitObservation(uint64_t Executor, uint64_t Owner, uint32_t MutationSequence,
+    uint32_t State, uint64_t WineThread, uint64_t Serial, uint32_t Role, uint32_t Lease,
+    uint32_t Holds, uint32_t Flags, uint32_t Transition) {
+  if (!PearEntryObserve) return;
+  const auto Output=PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot=PearMutationWaitRecords.load(std::memory_order_relaxed);
+  do { if (Slot>=16) return; }
+  while (!PearMutationWaitRecords.compare_exchange_weak(Slot,Slot+1,std::memory_order_relaxed));
+  const int SavedErrno=errno;
+  const DWORD SavedError=GetLastError();
+  char Text[512];
+  snprintf(Text,sizeof(Text),"PEAR_SOURCE_WAIT1 pid=%lu tid=%lu seq=%u executor=%llu owner=%llu state=%u wine_tid=%llu serial=%llu role=%u lease=%u holds=%u flags=%u transition=%u mutation_seq=%u attempts=200\n",
+      static_cast<unsigned long>(PearEntryPID),static_cast<unsigned long>(GetCurrentThreadId()),Slot,
+      static_cast<unsigned long long>(Executor),static_cast<unsigned long long>(Owner),State,
+      static_cast<unsigned long long>(WineThread),static_cast<unsigned long long>(Serial),Role,Lease,Holds,Flags,Transition,MutationSequence);
+  Output(Text);SetLastError(SavedError);errno=SavedErrno;
+}
+
+// Startup-only bounded completed-link observations. No owner/VM query is added.
+static bool PearLinkObserve {};
+static std::atomic<uint64_t> PearLinkOrdinals[2] {};
+extern "C" bool PearLinkObservationEnabled() { return PearLinkObserve; }
+extern "C" void PearLinkObservation(uint32_t Kind, uint32_t Reason, uint64_t A, uint64_t B) {
+  if (!PearLinkObserve || Kind < 1 || Kind > 2) return;
+  const auto Output = PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  auto& Counter = PearLinkOrdinals[Kind-1];
+  auto Ordinal = Counter.load(std::memory_order_relaxed);
+  do { if (Ordinal >= (uint64_t{1} << 63)) return; }
+  while (!Counter.compare_exchange_weak(Ordinal, Ordinal+1, std::memory_order_relaxed));
+  ++Ordinal;
+  // Eight initial records and powers of two: at most 68 records per kind.
+  if (Ordinal > 8 && (Ordinal & (Ordinal-1))) return;
+  const int SavedErrno = errno;
+  const DWORD SavedError = GetLastError();
+  char Text[256];
+  snprintf(Text, sizeof(Text), "PEAR_LINK1 pid=%lu tid=%lu kind=%u reason=%u ordinal=%llu a=%llu b=%llu\n",
+           static_cast<unsigned long>(PearEntryPID), static_cast<unsigned long>(GetCurrentThreadId()),
+           Kind, Reason, static_cast<unsigned long long>(Ordinal), static_cast<unsigned long long>(A), static_cast<unsigned long long>(B));
+  Output(Text);
+  SetLastError(SavedError);
+  errno = SavedErrno;
+}
+
+// Failure-path callsite observation; no native owner or policy changes.
+extern "C" bool PearFailureObservationEnabled() { return PearEntryObserve; }
+static std::atomic<unsigned> PearFailureRecords {};
+extern "C" void PearFailureObservation(uint32_t Kind, uintptr_t Caller, uint32_t Prior,
+                                       uint32_t Status, uint32_t Domain, int32_t Code,
+                                       uint32_t FirstStatus, uint32_t HasAllocation) {
+  if (!PearEntryObserve) return;
+  const auto Output = PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot = PearFailureRecords.load(std::memory_order_relaxed);
+  do { if (Slot >= 16) return; }
+  while (!PearFailureRecords.compare_exchange_weak(Slot, Slot+1, std::memory_order_relaxed));
+  const int SavedErrno = errno;
+  const DWORD SavedError = GetLastError();
+  char Text[256];
+  snprintf(Text, sizeof(Text), "PEAR_FAILURE1 pid=%lu tid=%lu seq=%u kind=%u caller=%llx prior=%u status=%u domain=%u code=%d first=%u allocation=%u\n",
+           static_cast<unsigned long>(PearEntryPID), static_cast<unsigned long>(GetCurrentThreadId()),
+           Slot, Kind, static_cast<unsigned long long>(Caller), Prior, Status, Domain, Code, FirstStatus, HasAllocation);
+  Output(Text);
+  SetLastError(SavedError);
+  errno = SavedErrno;
+}
+
+// Bounded repair revalidation facts; this observer grants no write authority.
+static std::atomic<unsigned> PearRepairRecords {};
+extern "C" void PearRepairObservation(uint32_t Reason, uint64_t A0, uint64_t A1, uint64_t D0, uint64_t D1) {
+  if (!PearEntryObserve) return;
+  const auto Output = PearCheckpointSink.load(std::memory_order_acquire);
+  if (!Output) return;
+  unsigned Slot = PearRepairRecords.load(std::memory_order_relaxed);
+  do { if (Slot >= 16) return; }
+  while (!PearRepairRecords.compare_exchange_weak(Slot, Slot+1, std::memory_order_relaxed));
+  const int SavedErrno = errno;
+  const DWORD SavedError = GetLastError();
+  char Text[256];
+  snprintf(Text, sizeof(Text), "PEAR_REPAIR1 pid=%lu tid=%lu seq=%u reason=%u a0=%llu a1=%llu d0=%llu d1=%llu\n",
+           static_cast<unsigned long>(PearEntryPID), static_cast<unsigned long>(GetCurrentThreadId()),Slot,Reason,
+           static_cast<unsigned long long>(A0),static_cast<unsigned long long>(A1),
+           static_cast<unsigned long long>(D0),static_cast<unsigned long long>(D1));
+  Output(Text); SetLastError(SavedError); errno = SavedErrno;
+}
+
 // The assembly wrapper preserves every guest GPR/SIMD register and FP/flag
 // state across this compiled native gate. No generated code runs in the gate.
 extern "C" void PearECGate(unsigned Mode) {
   const auto CPUArea = GetCPUArea();
+  // Defer cooperative suspension until source lifetime and transition ownership
+  // are released. The existing dispatcher/exit path services the doorbell.
+  std::optional<ScopedCallbackDisable> CallbackDisable;
+  if (CPUArea.Area) CallbackDisable.emplace();
   auto Life = PearMemory::AcquireCurrentSourceLifetime(CTX.get());
   auto* Thread = Life ? Life.ActualThread() : nullptr;
   PearMemory::Result Outcome {PEAR_FEX_UNAVAILABLE, 0, 0};
+  PearMemory::EntryDiagnostic Diagnostic {};
+  auto* Observation = PearEntryObserve ? &Diagnostic : nullptr;
   if (Mode <= 2 && PearSourceReady.load(std::memory_order_acquire) && CTX && CPUArea.Area &&
       Thread && CPUArea.ThreadState() == Thread && CPUArea.StateFrame() == Thread->CurrentFrame) {
-    if (Mode == 2) Outcome = CTX->ExitPearEC(Thread, CPUArea.Area->InSimulation != 0);
-    else Outcome = CTX->EnterPearEC(Thread, Mode == 1);
+    if (Mode == 2) Outcome = PearMemory::EntryFailure(Observation, 30, CTX->ExitPearEC(Thread, CPUArea.Area->InSimulation != 0));
+    else Outcome = CTX->EnterPearEC(Thread, Mode == 1, Observation);
+  }
+  if (!Outcome) {
+    PearMemory::EntryFailure(Observation, 1, Outcome);
+    PearEntryObservation(Mode, Diagnostic, Outcome);
   }
   static std::atomic<unsigned> Observations {};
   if (!Outcome || Observations.fetch_add(1, std::memory_order_relaxed) < 16)
@@ -747,6 +1052,11 @@ extern "C" void PearECGate(unsigned Mode) {
     PEAR_FEX_REQUIRE_RESULT(!!Outcome, "Pear EC transition refused: status {}, domain {}, code {}", Outcome);
   }
   CPUArea.Area->InSimulation = Mode != 2;
+#ifdef PEAR_PHASE_OBSERVE
+  const auto PhaseReleased=Life.Release();
+  PEAR_FEX_REQUIRE_RESULT(!!PhaseReleased,"Phase boundary lifetime release failed: status {}, domain {}, code {}",PhaseReleased);
+  PearPhaseDrain();
+#endif
 }
 #endif
 
@@ -799,19 +1109,39 @@ NTSTATUS ProcessInit() {
   SyscallHandler = fextl::make_unique<Exception::ECSyscallHandler>();
 
   const auto NtDll = GetModuleHandleW(L"ntdll.dll");
+  PearCheckpointSink.store(reinterpret_cast<PearCheckpointOutput>(GetProcAddress(NtDll, "__wine_dbg_output")),
+                           std::memory_order_release);
+#ifdef PEAR_PHASE_OBSERVE
+  const char* PhaseOption=std::getenv("PEAR_PHASE_OBSERVE");
+  PearPhaseOptIn=PhaseOption && PhaseOption[0]=='1' && PhaseOption[1]=='\0';
+  PearPhaseRecords.Enable(PearPhaseOptIn);
+#endif
   const bool IsWine = !!GetProcAddress(NtDll, "wine_get_version");
   OvercommitTracker.emplace(IsWine);
 
   FEX::Windows::SetupEnvironmentVariableValues(NtDll);
+#ifdef PEAR_FEX_MEMORY_OWNER
+  const char* EntryOptIn = std::getenv("PEAR_FEX_ENTRY_OBSERVE");
+  PearEntryObserve = EntryOptIn && EntryOptIn[0] == '1' && EntryOptIn[1] == '\0';
+  const auto AbortOptIn=getenv("PEAR_FEX_ABORT_OBSERVE");
+  PearAbortOptIn=AbortOptIn && AbortOptIn[0]=='1' && AbortOptIn[1]=='\0';
+  const char* LinkOptIn = std::getenv("PEAR_FEX_LINK_OBSERVE");
+  PearLinkObserve = LinkOptIn && LinkOptIn[0] == '1' && LinkOptIn[1] == '\0';
+#endif
 
   FEX::Windows::Allocator::SetupHooks(NtDll);
   FEX::Windows::UnixLib::Init(NtDll);
 #ifdef PEAR_FEX_MEMORY_OWNER
-  const auto OwnerInit = PearMemory::Init(NtDll, FEX::Windows::UnixLib::GetPID());
+  const auto EntryOwnerPID = FEX::Windows::UnixLib::GetPID();
+  const auto OwnerInit = PearMemory::Init(NtDll, EntryOwnerPID);
   if (!OwnerInit) {
     PearRecordPrimary(OwnerInit); PearSourceStatus.store(PearFailureStatus(OwnerInit), std::memory_order_release);
     return PearFailureStatus(OwnerInit);
   }
+  PearEntryPID = EntryOwnerPID;
+#ifdef PEAR_PHASE_OBSERVE
+  PearPhasePID = EntryOwnerPID;
+#endif
 #endif
   if (FEX::Windows::UnixLib::Available()) {
     FEXCore::DiskCache::SetFileMapper(FEX::Windows::UnixLib::MapFile);
@@ -928,21 +1258,6 @@ void ProcessTerm(HANDLE Handle, BOOL After, NTSTATUS Status) {
 #endif
 }
 
-class ScopedCallbackDisable {
-private:
-  bool Prev;
-
-public:
-  ScopedCallbackDisable() {
-    const auto CPUArea = GetCPUArea();
-    Prev = CPUArea.Area->InSyscallCallback;
-    CPUArea.Area->InSyscallCallback = true;
-  }
-
-  ~ScopedCallbackDisable() {
-    GetCPUArea().Area->InSyscallCallback = Prev;
-  }
-};
 
 // Returns true if exception dispatch should be halted and the execution context restored to NativeContext
 bool ResetToConsistentStateImpl(const ThreadCPUArea CPUArea, EXCEPTION_RECORD* Exception, CONTEXT* GuestContext, ARM64_NT_CONTEXT* NativeContext) {
@@ -1047,6 +1362,7 @@ static NTSTATUS PearResetOwnedException(EXCEPTION_RECORD* Record, ARM64_NT_CONTE
     auto Life=PearMemory::AcquireCurrentSourceLifetime(CTX.get());
     if (!Life || Life.ActualThread()!=Thread || !Life.Validate()) return STATUS_NOT_SUPPORTED;
     if (Native->Pc==reinterpret_cast<uintptr_t>(&ExitFunctionSuspendPoint)) {
+      Life.ObserveWakeCheckpoint(1);
       const auto Idle=CTX->ExitPearEC(Thread,false);
       if (!Idle) { PearRecordPrimary(Idle); return STATUS_NOT_SUPPORTED; }
       Native->Pc=reinterpret_cast<uintptr_t>(&ExitFunctionSuspendResumePoint);
@@ -1073,6 +1389,7 @@ static NTSTATUS PearResetOwnedException(EXCEPTION_RECORD* Record, ARM64_NT_CONTE
         Next=Action::NativeResume;
       } else {
         const bool Suspend=Record->ExceptionCode==EXCEPTION_ILLEGAL_INSTRUCTION && Instruction==0xD4395FC0;
+        if (Suspend) Life.ObserveWakeCheckpoint(2);
         if (!IsDispatcher) Exception::ReconstructThreadState(Thread,*Native);
         Packed=Exception::StoreStateToPackedECContext(Thread,Native->Fpcr,Native->Fpsr);
         if (Suspend) {
@@ -1099,6 +1416,10 @@ static NTSTATUS PearResetOwnedException(EXCEPTION_RECORD* Record, ARM64_NT_CONTE
   CPUArea.Area->InSyscallCallback=false;
   if (Next==Action::GuestResume) return NtContinueNative(&Packed,false);
   PearInitCheckpoint("GuestException.delivered",GuestRecord.ExceptionCode);
+#ifdef PEAR_PHASE_OBSERVE
+  PearPhaseRecords.EndThread(GetCurrentThreadId(),GetFrontendThreadData(Thread)->PhaseLifetime);
+  PearPhaseDrain();
+#endif
   return NtRaiseExceptionNative(&GuestRecord,&Packed,FirstChance);
 }
 #endif
@@ -1506,6 +1827,9 @@ NTSTATUS ThreadInit() {
     PearSourceReady.store(false, std::memory_order_release); PearSourceStatus.store(STATUS_NOT_SUPPORTED, std::memory_order_release); return STATUS_NOT_SUPPORTED;
   }
 
+#ifdef PEAR_PHASE_OBSERVE
+  const bool PearCreateReadyBefore=PearSourceReady.load(std::memory_order_acquire);
+#endif
   PearMemory::Result ThreadOutcome {}, ThreadCleanup {};
   bool ThreadCleanupAttempted {};
   FEXCore::Core::InternalThreadState* Thread {};
@@ -1523,6 +1847,9 @@ NTSTATUS ThreadInit() {
   // retains/quarantines any source object with unresolved owner registration.
   if (!Thread || !ThreadOutcome) {
     PearInitCheckpoint("ThreadInit.create", ThreadOutcome.Status, ThreadOutcome.ErrorDomain, ThreadOutcome.ErrorCode);
+#ifdef PEAR_PHASE_OBSERVE
+    PearThreadCreateReport(CTX.get(),&ThreadOutcome,ThreadCleanup,ThreadCleanupAttempted,PearCreateReadyBefore);
+#endif
     PearRecordPrimary(ThreadOutcome);
     // An explicit cleanup failure may itself return UNAVAILABLE. Preserve the
     // actual Core attempted flag even after a clean binding was released.
@@ -1676,6 +2003,8 @@ NTSTATUS ThreadInit() {
 
 NTSTATUS ThreadTerm(HANDLE Thread, LONG ExitCode) {
 #ifdef PEAR_FEX_MEMORY_OWNER
+  PearSlot::Scope PearObservation(PearSlot::Stage::ThreadTerm);
+  const auto PearOriginalBody=[&]() -> NTSTATUS {
   if (!CTX || !PearSourceReady.load(std::memory_order_acquire)) return STATUS_NOT_SUPPORTED;
   if (!FEX::Windows::ValidateHandleAccess(Thread, THREAD_TERMINATE)) return STATUS_ACCESS_DENIED;
   THREAD_BASIC_INFORMATION Info {};
@@ -1728,6 +2057,10 @@ NTSTATUS ThreadTerm(HANDLE Thread, LONG ExitCode) {
   Base = reinterpret_cast<void*>(StackLimit); Bytes = 0;
   if (const auto Status = NtFreeVirtualMemory(NtCurrentProcess(), &Base, &Bytes, MEM_RELEASE); Status)
     return Failed({PEAR_FEX_NATIVE_FAILURE, PEAR_FEX_ERROR_NTSTATUS, static_cast<int32_t>(Status)});
+#ifdef PEAR_PHASE_OBSERVE
+  PearPhaseRecords.EndThread(GetCurrentThreadId(),GetFrontendThreadData(State)->PhaseLifetime);
+  PearPhaseDrain();
+#endif
   delete GetFrontendThreadData(State); State->FrontendPtr = nullptr;
   delete[] State->CurrentFrame->State.segment_arrays[FEXCore::Core::CPUState::SEGMENT_ARRAY_INDEX_GDT];
   CPUArea.ThreadState() = nullptr; CPUArea.StateFrame() = nullptr;
@@ -1739,6 +2072,10 @@ NTSTATUS ThreadTerm(HANDLE Thread, LONG ExitCode) {
   FEX::Windows::DeinitCRTThread();
   PearInitCheckpoint("ThreadTerm.complete", STATUS_SUCCESS);
   return STATUS_SUCCESS;
+  };
+  const auto PearReturned=PearOriginalBody();
+  PearObservation.Return(1,static_cast<uint32_t>(PearReturned),0,0,PearReturned==STATUS_SUCCESS);
+  return PearReturned;
 #else
 
 

@@ -87,6 +87,8 @@ public:
 #ifdef PEAR_FEX_MEMORY_OWNER
   // Nonvirtual entry adapters preserve the existing Context layout/vtable.
   FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result EnterPearEC(Core::InternalThreadState*, bool FillState);
+  FEXCore::Utils::PearFEXMemory::Result EnterPearEC(Core::InternalThreadState*, bool FillState,
+                                                FEXCore::Utils::PearFEXMemory::EntryDiagnostic*);
   FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result ExitPearEC(Core::InternalThreadState*, bool Required);
   FEX_DEFAULT_VISIBILITY FEXCore::Utils::PearFEXMemory::Result ObservePearInstruction(Core::InternalThreadState*, uintptr_t PC, uint32_t& Word);
   // Private compiled-exception adapter; preserves the Context layout and owner ABI.

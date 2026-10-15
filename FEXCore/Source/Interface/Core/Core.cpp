@@ -1,3 +1,20 @@
+#include "PearSlotLifetime.h"
+#include "PearAttachObservation.h"
+#include "PearWriterObservation.h"
+#include "PearTargetObservation.h"
+#include "PearMismatchObservation.h"
+#include "PearAbortObservation.h"
+
+#include <cstdint>
+#ifdef PEAR_PHASE_OBSERVE
+extern "C" void PearThreadCreateFailed(uint32_t,uint64_t,uint64_t,uint64_t,uint32_t,uint32_t,int32_t);
+extern "C" void PearThreadCreateAttachFailed(uint64_t,uint64_t,uint64_t,uint32_t,uint32_t,int32_t,const PearAttach::Diagnostic*);
+#endif
+
+#include <cstdint>
+#ifdef PEAR_PHASE_OBSERVE
+extern "C" bool PearPhaseSelected(uint64_t);
+#endif
 // SPDX-License-Identifier: MIT
 /*
 $info$
@@ -93,14 +110,18 @@ $end_info$
 namespace FEXCore::Context {
 #ifdef PEAR_FEX_MEMORY_OWNER
 FEXCore::Utils::PearFEXMemory::Result Context::EnterPearEC(Core::InternalThreadState* Thread, bool FillState) {
+  return EnterPearEC(Thread, FillState, nullptr);
+}
+FEXCore::Utils::PearFEXMemory::Result Context::EnterPearEC(Core::InternalThreadState* Thread, bool FillState,
+    FEXCore::Utils::PearFEXMemory::EntryDiagnostic* Diagnostic) {
   namespace M = FEXCore::Utils::PearFEXMemory;
   auto Life = M::AcquireCurrentSourceLifetime(this);
   if (!Life || !Thread || Life.ActualThread() != Thread || Thread->CTX != this || !Thread->CurrentFrame ||
-      Thread->CurrentFrame->Thread != Thread) return {PEAR_FEX_STALE_IDENTITY, 0, 0};
-  M::SourceMutationTurn EntryTurn {Life,false};
+      Thread->CurrentFrame->Thread != Thread) return M::EntryFailure(Diagnostic, 2, {PEAR_FEX_STALE_IDENTITY, 0, 0});
+  M::SourceMutationTurn EntryTurn {Life,false,Diagnostic};
   if (!EntryTurn) return EntryTurn.Status();
   auto* Impl = static_cast<ContextImpl*>(this);
-  if (!Impl->Dispatcher) return {PEAR_FEX_UNAVAILABLE, 0, 0};
+  if (!Impl->Dispatcher) return M::EntryFailure(Diagnostic, 3, {PEAR_FEX_UNAVAILABLE, 0, 0});
   const auto Facts = Impl->Dispatcher->GetPearSnapshot();
   const auto Base = reinterpret_cast<uintptr_t>(Facts.Base);
   const auto& Pointers = Thread->CurrentFrame->Pointers;
@@ -108,26 +129,28 @@ FEXCore::Utils::PearFEXMemory::Result Context::EnterPearEC(Core::InternalThreadS
   if (!Facts || Facts.Token.allocation_class != PEAR_FEX_CLASS_DISPATCHER ||
       Facts.Token.ec_role != PEAR_FEX_ROLE_ARM64EC || Facts.Token.expected_state != PEAR_FEX_PUBLISHED_RX ||
       !Base || Entry < Base || (Entry & 3) || Entry - Base > Facts.Token.extent_size ||
-      4 > Facts.Token.extent_size - (Entry - Base)) return {PEAR_FEX_UNAVAILABLE, 0, 0};
+      4 > Facts.Token.extent_size - (Entry - Base)) return M::EntryFailure(Diagnostic, 4, {PEAR_FEX_UNAVAILABLE, 0, 0});
   // The owner waits for every managed executor before ANY write/retirement.
   // Retain D as the global execution lease while upstream branches to shared
   // code; compiler/linker native gates already hand off/resume this exact D.
-  return M::Enter(Facts, Entry - Base);
+  return M::Enter(Facts, Entry - Base, 0, Diagnostic);
 }
 FEXCore::Utils::PearFEXMemory::Result Context::ExitPearEC(Core::InternalThreadState* Thread, bool Required) {
   namespace M = FEXCore::Utils::PearFEXMemory;
   auto Life = M::AcquireCurrentSourceLifetime(this);
   if (!Life || !Thread || Life.ActualThread() != Thread || Thread->CTX != this)
     return {PEAR_FEX_STALE_IDENTITY, 0, 0};
+  Life.ObserveWakeCheckpoint(3);
+  const auto Finish=[&](M::Result R) { Life.ObserveWakeCheckpoint(4,R); return R; };
   auto* Impl = static_cast<ContextImpl*>(this);
-  if (!Impl->Dispatcher) return {PEAR_FEX_UNAVAILABLE, 0, 0};
+  if (!Impl->Dispatcher) return Finish({PEAR_FEX_UNAVAILABLE, 0, 0});
   const auto Facts = Impl->Dispatcher->GetPearSnapshot();
   const bool Active = M::HasManagedActive(Facts);
   // check_target_ec also reaches ExitFunctionEC without entering generated
   // code. It must neither fabricate nor consume an execution lease.
-  if (!Required) return {Active ? PEAR_FEX_STALE_IDENTITY : PEAR_FEX_OK, 0, 0};
-  if (!Active) return {PEAR_FEX_UNAVAILABLE, 0, 0};
-  return M::Exit(Facts);
+  if (!Required) return Finish({Active ? PEAR_FEX_STALE_IDENTITY : PEAR_FEX_OK, 0, 0});
+  if (!Active) return Finish({PEAR_FEX_UNAVAILABLE, 0, 0});
+  return Finish(M::Exit(Facts));
 }
 FEXCore::Utils::PearFEXMemory::Result Context::ObservePearInstruction(Core::InternalThreadState* Thread, uintptr_t PC, uint32_t& Word) {
   namespace M=FEXCore::Utils::PearFEXMemory;
@@ -145,6 +168,20 @@ FEXCore::Utils::PearFEXMemory::Result Context::ObservePearInstruction(Core::Inte
   const auto T=Thread->CPUBackend->FindPearRetainedTarget(PC);
   if (!W || !T) return {PEAR_FEX_STALE_IDENTITY,0,0};
   return M::CopyManagedRXUnderGlobalLease(D,*T,Thread,W->Offset,Bytes).Outcome;
+}
+
+extern "C" void PearRepairObservation(uint32_t, uint64_t, uint64_t, uint64_t, uint64_t);
+// A cooperative native-gate wait may admit another qualified writer. Retain
+// allocation identity, published state and monotonic epochs; actual instruction
+// bytes are still compared under the new WriteGuard before any store.
+static bool PearRepairSnapshotCompatible(const FEXCore::Utils::PearFEXMemory::Allocation& X,
+                                         const FEXCore::Utils::PearFEXMemory::Allocation& Y) {
+  return X.Base==Y.Base && X.Token.owner_pid==Y.Token.owner_pid &&
+    X.Token.allocation_id==Y.Token.allocation_id && X.Token.generation==Y.Token.generation &&
+    X.Token.extent_offset==Y.Token.extent_offset && X.Token.extent_size==Y.Token.extent_size &&
+    X.Token.allocation_class==Y.Token.allocation_class && X.Token.ec_role==Y.Token.ec_role &&
+    X.Token.expected_state==Y.Token.expected_state && X.Token.write_epoch &&
+    Y.Token.write_epoch>=X.Token.write_epoch;
 }
 
 // Called from the compiled Windows exception reset path, never a raw Darwin
@@ -167,7 +204,12 @@ FEXCore::Utils::PearFEXMemory::Result Context::RepairPearUnaligned(
   const auto Captured=Window->Owner->GetPearSnapshot();
   std::array<uint32_t,13> Words {};
   auto Bytes=std::span<uint8_t>{reinterpret_cast<uint8_t*>(Words.data()),sizeof(Words)};
-  auto Read=M::CopyManagedRXUnderGlobalLease(D,*Target,Thread,Window->Offset,Bytes);
+  PearReadIdentity ReadIdentity {};
+  M::ManagedReadResult Read {};
+  {
+    PearReadIdentityScope ObserveRead{PearAbortEnabled(),&ReadIdentity,Thread,Bytes.data(),Window->Offset,Bytes.size()};
+    Read=M::CopyManagedRXUnderGlobalLease(D,*Target,Thread,Window->Offset,Bytes);
+  }
   if (!Read) return Read.Outcome;
   const auto Prepared=A::PrepareUnalignedPatchSnapshot(A::UnalignedHandlerType::HalfBarrier,Words);
   if (Prepared.Kind!=A::UnalignedPatchKind::Candidate && Prepared.Kind!=A::UnalignedPatchKind::AlreadyPatched)
@@ -185,33 +227,116 @@ FEXCore::Utils::PearFEXMemory::Result Context::RepairPearUnaligned(
   }
   // No generated instruction runs while idle. The exact source CodeBuffer,
   // Context and Thread remain held; the original native register context is
-  // untouched. Reject any intervening epoch change before writing or returning.
+  // untouched. Revalidate identity/epoch and exact bytes after the wait.
   auto Outcome=ExitPearEC(Thread,true);if (!Outcome) return Outcome;
   M::SourceMutationTurn Turn{Life,true};if (!Turn) return Turn.Status();
-  const auto Same=[](const M::Allocation& X,const M::Allocation& Y) {
-    return X.Base==Y.Base && X.Token.owner_pid==Y.Token.owner_pid &&
-      X.Token.allocation_id==Y.Token.allocation_id && X.Token.generation==Y.Token.generation &&
-      X.Token.extent_offset==Y.Token.extent_offset && X.Token.extent_size==Y.Token.extent_size &&
-      X.Token.allocation_class==Y.Token.allocation_class && X.Token.ec_role==Y.Token.ec_role &&
-      X.Token.expected_state==Y.Token.expected_state && X.Token.write_epoch==Y.Token.write_epoch;
-  };
   auto Transaction=Window->Owner->GetPearSnapshot();
-  if (!Same(Captured,Transaction) || !Same(D,Impl->Dispatcher->GetPearSnapshot()))
+  const auto CurrentDispatcher=Impl->Dispatcher->GetPearSnapshot();
+  const auto Observe=[&](uint32_t Reason) {
+    PearRepairObservation(Reason,Captured.Token.write_epoch,Transaction.Token.write_epoch,
+                          D.Token.write_epoch,CurrentDispatcher.Token.write_epoch);
+  };
+  if (!PearRepairSnapshotCompatible(Captured,Transaction) || !PearRepairSnapshotCompatible(D,CurrentDispatcher)) {
+    Observe(2);
     return M::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY,0,0});
+  }
+  const bool Advanced=Captured.Token.write_epoch!=Transaction.Token.write_epoch || D.Token.write_epoch!=CurrentDispatcher.Token.write_epoch;
   const auto Before=Transaction;
   {
     M::WriteGuard Write{Transaction,Window->Offset,sizeof(Words)};
     if (!Write) return Write.Status();
-    if (!Write.Matches(0,{reinterpret_cast<const uint8_t*>(Words.data()),sizeof(Words)})) {
+    const bool OriginalMatches=Write.Matches(0,{reinterpret_cast<const uint8_t*>(Words.data()),sizeof(Words)});
+    bool AlreadyRepaired=false;
+    if (!OriginalMatches && Before.Token.write_epoch>Captured.Token.write_epoch &&
+        Write.Matches(0,{reinterpret_cast<const uint8_t*>(Prepared.Next.data()),sizeof(Prepared.Next)})) {
+      // Another retained source thread may have completed this exact repair
+      // while this thread left ACTIVE and waited for the mutation turn.
+      // The existing successful guard and identity checks remain authoritative.
+      std::array<uint32_t,13> CurrentWords {};
+      memcpy(CurrentWords.data(),Write.Data(),sizeof(CurrentWords));
+      const auto Again=A::PrepareUnalignedPatchSnapshot(A::UnalignedHandlerType::HalfBarrier,CurrentWords);
+      AlreadyRepaired=CurrentWords==Prepared.Next && Again.Kind==A::UnalignedPatchKind::AlreadyPatched &&
+        Again.Next==CurrentWords && Again.ResumeDelta==Prepared.ResumeDelta;
+    }
+    if (!OriginalMatches && !AlreadyRepaired) {
+      Observe(3);
+      const bool AbortObserved=PearAbortEnabled();
+      const auto AbortBegin=Transaction.Token;
+      PearAbortRecord d {};
+      if (AbortObserved) {
+        d.guard=reinterpret_cast<uintptr_t>(&Write); d.life=Life.Identity();
+        d.allocation=AbortBegin.allocation_id; d.generation=AbortBegin.generation;
+        d.extent=AbortBegin.extent_offset; d.size=AbortBegin.extent_size;
+        d.aclass=AbortBegin.allocation_class; d.role=AbortBegin.ec_role;
+        d.continuation=0; // This exact constructor uses its original default zero.
+        d.epoch=AbortBegin.write_epoch; d.expected=AbortBegin.expected_state;
+        d.begin_state=AbortBegin.expected_state;
+        d.before_epoch=Before.Token.write_epoch; d.before_state=Before.Token.expected_state;
+        d.call=PearAbortBegin(&d);
+        // Copy while the existing successful guard is still open, before Abort.
+        // This later copy does not claim atomicity with the failed memcmp.
+        if (d.call==1) {
+          PearMismatchRecord m {}; m.abort=d;
+          m.pc=PC; m.offset=Window->Offset;
+          m.window_owner=reinterpret_cast<uintptr_t>(Window->Owner.get());
+          m.window_base=Window->Begin; m.window_size=Window->Size;
+          m.data=reinterpret_cast<uintptr_t>(Write.Data());
+          m.captured_epoch=Captured.Token.write_epoch;
+          m.kind=static_cast<unsigned>(Prepared.Kind); m.count=Prepared.StoreCount;
+          m.store0=Prepared.StoreOrder[0]; m.store1=Prepared.StoreOrder[1];
+          m.delta=Prepared.ResumeDelta;
+          memcpy(m.original,Words.data(),sizeof(m.original));
+          memcpy(m.actual,Write.Data(),sizeof(m.actual));
+          memcpy(m.next,Prepared.Next.data(),sizeof(m.next));
+          PearMismatchEmit(&m);
+          PearTargetRecord t {};t.abort=d;t.read=ReadIdentity;
+          t.write_owner=reinterpret_cast<uintptr_t>(Window->Owner.get());
+          t.write_state=reinterpret_cast<uintptr_t>(&Window->Owner->GetPearTokenState());
+          t.write_base=Window->Begin;t.write_offset=Window->Offset;t.write_bytes=sizeof(Words);
+          PearTargetEmit(&t);
+          PearWriterBatch batch{};
+          PearWriterSnapshot(Thread,Life.Identity(),&batch);
+          PearWriterEmit(&t,&batch);
+        }
+      }
       const auto Aborted=Write.Abort();
+      if (AbortObserved) {
+        d.status=Aborted.Status; d.domain=Aborted.ErrorDomain; d.code=Aborted.ErrorCode;
+        PearAbortEmit(1,&d);
+      }
       Window->Owner->ComparePearUpdate(Before,Transaction);
       return M::Retirement::PoisonSourceAdmission(Aborted ? M::Result{PEAR_FEX_STALE_IDENTITY,0,0} : Aborted);
     }
-    for (uint32_t I=0;I<Prepared.StoreCount;++I) {
-      const auto Index=Prepared.StoreOrder[I];
-      std::atomic_ref<uint32_t>(*reinterpret_cast<uint32_t*>(Write.Data()+4*Index)).store(Prepared.Next[Index],std::memory_order_release);
+    if (Advanced) Observe(1);
+    PearWriterRecord writer{};
+    writer.owner=reinterpret_cast<uintptr_t>(Window->Owner.get());
+    writer.state=reinterpret_cast<uintptr_t>(&Window->Owner->GetPearTokenState());
+    writer.allocation=Before.Token.allocation_id;writer.generation=Before.Token.generation;
+    writer.extent=Before.Token.extent_offset;writer.size=Before.Token.extent_size;
+    writer.base=Window->Begin;writer.aclass=Before.Token.allocation_class;writer.role=Before.Token.ec_role;
+    writer.offset=Window->Offset;writer.bytes=sizeof(Words);
+    writer.before_epoch=Before.Token.write_epoch;writer.write_epoch=Transaction.Token.write_epoch;
+    writer.original0=Words[0];writer.original1=Words[1];writer.original2=Words[2];
+    writer.next0=Prepared.Next[0];writer.next1=Prepared.Next[1];writer.next2=Prepared.Next[2];
+    for(uint32_t i=0;!AlreadyRepaired && i<Prepared.StoreCount;++i){
+      const auto index=Prepared.StoreOrder[i];writer.store_mask|=uint64_t{1}<<index;
+      if(Words[index]!=Prepared.Next[index])writer.changed_mask|=uint64_t{1}<<index;
     }
+    // Arm before the first store. Every exit, including failed Publish/Abort, terminates or loses this attempt.
+    PearWriterScope ObserveWriter{PearAbortEnabled() && !AlreadyRepaired,&writer,Thread,Life.Identity()};
+    if (!AlreadyRepaired) {
+      for (uint32_t I=0;I<Prepared.StoreCount;++I) {
+        const auto Index=Prepared.StoreOrder[I];
+        std::atomic_ref<uint32_t>(*reinterpret_cast<uint32_t*>(Write.Data()+4*Index)).store(Prepared.Next[Index],std::memory_order_release);
+      }
+      ObserveWriter.stored=true;
+    }
+    // Even with zero stores, close this write turn through normal publication,
+    // source-token update and managed re-entry/readback below. Never Abort or
+    // return success while the target remains writable and non-executable.
     Outcome=Write.Publish();
+    ObserveWriter.status=Outcome.Status;ObserveWriter.domain=Outcome.ErrorDomain;ObserveWriter.code=Outcome.ErrorCode;
+    ObserveWriter.published=static_cast<bool>(Outcome);
     if (!Outcome) {
       const auto Aborted=Write.Abort();
       if (!Window->Owner->ComparePearUpdate(Before,Transaction) || !Aborted)
@@ -220,6 +345,7 @@ FEXCore::Utils::PearFEXMemory::Result Context::RepairPearUnaligned(
     }
     if (!Window->Owner->ComparePearUpdate(Before,Transaction))
       return M::Retirement::PoisonSourceAdmission({PEAR_FEX_STALE_IDENTITY,0,0});
+    ObserveWriter.updated=true;
   }
   // The same mutation turn spans exit, publish and re-entry, so neither another
   // writer nor source invalidation can change this retained target between them.
@@ -377,18 +503,26 @@ uint64_t ContextImpl::RestoreRIPFromHostPC(FEXCore::Core::InternalThreadState* T
   const uint64_t EndGuest = Config.Is64BitMode ? UINT64_MAX : UINT32_MAX;
   size_t Cursor = Snapshot.Header.OffsetToBlockTail+Snapshot.Tail.OffsetToRIPEntries;
   uint64_t CurrentHost = Snapshot.BlockBegin, CurrentGuest = Snapshot.Tail.RIP;
+  // Private NX bytes remain local to this reconstruction and its existing
+  // global execution lease. Every refill uses the original admitted copy.
+  std::array<uint8_t, 4096> MetadataWindow {};
+  static_assert(CPU::PearJITMetadata::MAX_PAIR_BYTES <= MetadataWindow.size());
+  size_t WindowBegin {}, WindowBytes {};
+  auto ReadPairBytes = [&](size_t Size) -> std::span<const uint8_t> {
+    if (Cursor < WindowBegin || Cursor-WindowBegin > WindowBytes || Size > WindowBytes-(Cursor-WindowBegin)) {
+      WindowBegin = Cursor;
+      WindowBytes = std::min(MetadataWindow.size(), Snapshot.Tail.Size-Cursor);
+      const auto Read = Memory::CopyManagedRXUnderGlobalLease(Snapshot.Protection, *Snapshot.Target, Thread,
+        Snapshot.Window.Offset+Cursor, {MetadataWindow.data(), WindowBytes});
+      RequirePearFrameSnapshot(Read.Outcome);
+    }
+    return {MetadataWindow.data()+(Cursor-WindowBegin), Size};
+  };
   for (uint32_t I = 0; I < Snapshot.Tail.NumberOfRIPEntries; ++I) {
     if (Cursor >= Snapshot.Tail.Size) { RequirePearFrameSnapshot({PEAR_FEX_INVALID_REQUEST, 0, 0}); break; }
-    std::array<uint8_t, CPU::PearJITMetadata::MAX_PAIR_BYTES> Bytes {};
-    auto Read = Memory::CopyManagedRXUnderGlobalLease(Snapshot.Protection, *Snapshot.Target, Thread,
-      Snapshot.Window.Offset+Cursor, {Bytes.data(), 1});
-    RequirePearFrameSnapshot(Read.Outcome);
-    const auto Size = CPU::PearJITMetadata::PairSize(Bytes.front());
+    const auto Size = CPU::PearJITMetadata::PairSize(ReadPairBytes(1).front());
     if (!Size || Size > Snapshot.Tail.Size-Cursor) { RequirePearFrameSnapshot({PEAR_FEX_INVALID_REQUEST, 0, 0}); break; }
-    Read = Memory::CopyManagedRXUnderGlobalLease(Snapshot.Protection, *Snapshot.Target, Thread,
-      Snapshot.Window.Offset+Cursor, {Bytes.data(), Size});
-    RequirePearFrameSnapshot(Read.Outcome);
-    const auto Pair = CPU::PearJITMetadata::DecodePair({Bytes.data(), Size});
+    const auto Pair = CPU::PearJITMetadata::DecodePair(ReadPairBytes(Size));
     uint64_t NextHost {}, NextGuest {};
     if (!Pair || !CPU::PearJITMetadata::Advance(CurrentHost, Pair->IntegerARMPC, Snapshot.BlockBegin, EndHost, NextHost) ||
         !CPU::PearJITMetadata::Advance(CurrentGuest, Pair->IntegerX86RIP, 0, EndGuest, NextGuest)) {
@@ -943,20 +1077,30 @@ FEXCore::Core::InternalThreadState* ContextImpl::CreatePearThread(const FEXCore:
     FEXCore::Utils::PearFEXMemory::Result& Outcome, FEXCore::Utils::PearFEXMemory::Result* Cleanup, bool* CleanupAttempted) {
   namespace Memory = FEXCore::Utils::PearFEXMemory;
   Outcome = {PEAR_FEX_UNAVAILABLE, 0, 0};
+  auto ObserveFailure = [&](uint32_t Stage, const void* Thread) {
+#ifdef PEAR_PHASE_OBSERVE
+    PearThreadCreateFailed(Stage,reinterpret_cast<uint64_t>(static_cast<const FEXCore::Context::Context*>(this)),reinterpret_cast<uint64_t>(Thread),
+                           reinterpret_cast<uint64_t>(&Outcome),Outcome.Status,Outcome.ErrorDomain,Outcome.ErrorCode);
+#else
+    (void)Stage; (void)Thread;
+#endif
+  };
   if (Cleanup) *Cleanup = {};
   if (CleanupAttempted) *CleanupAttempted = false;
   auto ContextHold=Memory::SourceLifecycle::HoldContext(this);
-  if (!ContextHold) return nullptr;
+  if (!ContextHold) { ObserveFailure(1,nullptr); return nullptr; }
   if (!Dispatcher || !Memory::Retirement::AdmissionOpen()) {
     const auto First = Memory::Retirement::FirstFailureSnapshot();
     if (First.Present) Outcome = First.Outcome;
+    ObserveFailure(2,nullptr);
     return nullptr;
   }
   const auto Slot = AcquirePearConstructionSlot();
-  if (!Slot) { Outcome = {PEAR_FEX_CAPACITY, 0, 0}; return nullptr; }
+  if (!Slot) { Outcome = {PEAR_FEX_CAPACITY, 0, 0}; ObserveFailure(3,nullptr); return nullptr; }
   FEXCore::Core::InternalThreadState* Thread {};
   auto* ThreadStorage=FEXCore::Allocator::aligned_alloc(alignof(FEXCore::Core::InternalThreadState),sizeof(FEXCore::Core::InternalThreadState));
   if (!ThreadStorage) {
+    ObserveFailure(4,nullptr);
     FinishPearConstructionSlot(*Slot,nullptr,false);
     Outcome={PEAR_FEX_UNAVAILABLE,0,0};
     Memory::Retirement::PoisonSourceAdmission(Outcome); return nullptr;
@@ -992,8 +1136,22 @@ FEXCore::Core::InternalThreadState* ContextImpl::CreatePearThread(const FEXCore:
   FEXCore::Allocator::VirtualName("FEXMem_ThreadState", Thread, sizeof(*Thread));
   if (NewThreadState) memcpy(&Thread->CurrentFrame->State, NewThreadState, sizeof(FEXCore::Core::CPUState));
   Thread->CurrentFrame->Thread = Thread;
-  Outcome = Memory::SourceLifecycle::AttachAllocatedThread(this, Thread, FEXCore::CPU::PEAR_SOURCE_CODE_ROLE);
+#ifdef PEAR_PHASE_OBSERVE
+  PearAttach::Diagnostic AttachDiagnostic {};
+  const bool ObserveAttach=PearAttachObservationEnabled();
+  Outcome = ObserveAttach ? Memory::AttachAllocatedThreadObserved(this,Thread,FEXCore::CPU::PEAR_SOURCE_CODE_ROLE,&AttachDiagnostic) :
+    Memory::SourceLifecycle::AttachAllocatedThread(this,Thread,FEXCore::CPU::PEAR_SOURCE_CODE_ROLE);
+#else
+  Outcome = Memory::SourceLifecycle::AttachAllocatedThread(this,Thread,FEXCore::CPU::PEAR_SOURCE_CODE_ROLE);
+#endif
   if (!Outcome) {
+#ifdef PEAR_PHASE_OBSERVE
+    if (ObserveAttach) PearThreadCreateAttachFailed(reinterpret_cast<uint64_t>(static_cast<const FEXCore::Context::Context*>(this)),
+      reinterpret_cast<uint64_t>(Thread),reinterpret_cast<uint64_t>(&Outcome),Outcome.Status,Outcome.ErrorDomain,Outcome.ErrorCode,&AttachDiagnostic);
+    else ObserveFailure(5,Thread);
+#else
+    ObserveFailure(5,Thread);
+#endif
     auto* Failed = FailPearThreadConstruction(*Slot, Thread, Outcome, Cleanup, CleanupAttempted);
     Guard.Released = true; return Failed;
   }
@@ -1001,11 +1159,13 @@ FEXCore::Core::InternalThreadState* ContextImpl::CreatePearThread(const FEXCore:
   // locks and ensures the JIT constructor needs no hidden owner allocation.
   auto InitialBuffer = GetPearLatest(Outcome);
   if (!InitialBuffer) {
+    ObserveFailure(6,Thread);
     auto* Failed = FailPearThreadConstruction(*Slot, Thread, Outcome, Cleanup, CleanupAttempted);
     Guard.Released = true; return Failed;
   }
   Outcome=InitializeCompiler(Thread,std::move(InitialBuffer));
   if (!Outcome) {
+    ObserveFailure(7,Thread);
     // The compiler can now be partially constructed. Retain the entire actual
     // Thread/Context tree on refusal; never use the pre-compiler deletion path.
     Memory::Result Released;
@@ -1048,6 +1208,8 @@ FEXCore::Core::InternalThreadState* ContextImpl::CreatePearThread(const FEXCore:
 #ifdef PEAR_FEX_MEMORY_OWNER
 bool ContextImpl::DestroyPearThreadChecked(FEXCore::Core::InternalThreadState* Thread,
     FEXCore::Utils::PearFEXMemory::Result& Outcome,bool& Destroyed,bool& Freed) {
+  PearSlot::Scope PearObservation(PearSlot::Stage::Destroy,this,Thread);
+  const auto PearOriginalBody=[&]() -> bool {
   namespace Memory=FEXCore::Utils::PearFEXMemory;
   Destroyed=false; Freed=false;
   auto ContextHold=Memory::SourceLifecycle::HoldContext(this);
@@ -1073,6 +1235,10 @@ bool ContextImpl::DestroyPearThreadChecked(FEXCore::Core::InternalThreadState* T
   { std::scoped_lock Lock {PearConstruction.Mutex}; if (PearConstruction.PublishedThreads) --PearConstruction.PublishedThreads; }
   FEXCore::Allocator::aligned_free(Thread); Freed=true;
   Outcome=Deleted; return true;
+  };
+  const bool PearReturned=PearOriginalBody();
+  PearObservation.Return(2,Outcome.Status,Outcome.ErrorDomain,Outcome.ErrorCode,PearReturned,Destroyed,Freed);
+  return PearReturned;
 }
 #endif
 void ContextImpl::DestroyThread(FEXCore::Core::InternalThreadState* Thread) {
@@ -1291,7 +1457,11 @@ ContextImpl::GenerateIR(FEXCore::Core::InternalThreadState* Thread, uint64_t Gue
         // that more explicitly later.
         Thread->OpDispatcher->FlushRegisterCache(true);
 
-        if (ExtendedDebugInfo || Thread->OpDispatcher->CanHaveSideEffects(TableInfo, DecodedInfo)) {
+        if (ExtendedDebugInfo ||
+#ifdef PEAR_PHASE_OBSERVE
+            PearPhaseSelected(InstAddress) ||
+#endif
+            Thread->OpDispatcher->CanHaveSideEffects(TableInfo, DecodedInfo)) {
           Thread->OpDispatcher->_GuestOpcode(InstAddress - GuestRIP);
         }
 
@@ -1534,7 +1704,9 @@ FEXCore::Utils::PearFEXMemory::Result ContextImpl::BeginPearDispatcherGate(
   // while the exact D lease is still ACTIVE, before any native handoff.
   const auto Read = Memory::CopyManagedRX(Facts, Thread, Gate.ResumeOffset, Gate.ResumeWord);
   if (!Read) return Read.Outcome;
+  Gate.Lifetime.ObserveWakeCheckpoint(5);
   const auto Handed = Memory::Handoff(Facts, Gate.ResumeOffset, Gate.Continuation);
+  Gate.Lifetime.ObserveWakeCheckpoint(6,Handed);
   if (!Handed) return Handed;
   Gate.Open = true;
   return {PEAR_FEX_OK, 0, 0};
