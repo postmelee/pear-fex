@@ -13,3 +13,9 @@ out/
 .cache
 .idea/
 CMakeLists.txt.user
+
+# Pear downstream private inputs and disposable outputs
+**/PearPhaseSelection.h
+/Pear/private/
+/Pear/.build/
+__pycache__/

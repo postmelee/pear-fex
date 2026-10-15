@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "pear_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+  "origin_state": "Recorded original component diagnostics; not a new upstream contribution.",
+  "files": [
+    {
+      "path": "Pear/Diagnostics/thread_create_observation.py",
+      "origin_path": "tools/steam/thread_create_observation.py",
+      "origin_sha256": "817bbf8d021a049430b3bef517c033d007cc06f7662d89836a401795f128a9ff",
+      "sha256": "cfbd2e406759cfd0fd2cc65850c911c2c9c2dc3747ef706d358b0d43db702479",
+      "size_bytes": 2538,
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Diagnostics/attach_observation.py",
+      "origin_path": "tools/steam/attach_observation.py",
+      "origin_sha256": "c43c17b25ddd35feb589ae3ec8871da91a3c3b563cca5aec625a43e949152c9a",
+      "sha256": "f6006cd17e765ab8a2c6d70d25a3ae4654974702a9d629338f6cab60669c63ac",
+      "size_bytes": 4713,
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Diagnostics/binding_census_observation.py",
+      "origin_path": "tools/steam/binding_census_observation.py",
+      "origin_sha256": "c9da546422484d3aaa2bf9470eb30f323340ca5d34299850561d8eaafc6bc494",
+      "sha256": "813cc4f000f091e79e8288967b216b8fa3c64d8c45463730ae97f1cebea32b85",
+      "size_bytes": 3553,
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Diagnostics/slot_lifetime_observation.py",
+      "origin_path": "tools/steam/slot_lifetime_observation.py",
+      "origin_sha256": "edc026b9fbbd33ad949c29149ea00536920434eaa16584240afc869998061c44",
+      "sha256": "cdb5b186bb1659fad54502fc772ef37403822620756d2b87fdcc37922c7897b4",
+      "size_bytes": 4160,
+      "adaptation": "Only Python imports changed to component-local modules.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Tests/test_thread_create_observation.py",
+      "origin_path": "tests/steam/test_thread_create_observation.py",
+      "origin_sha256": "fb9a11f5583d92632c5ae91337671d9f24a63948f62995fd567b21595090ed7b",
+      "sha256": "1ec40e8accf750eea04c8490289e8da0d195b826b0c123c84f9c0737d7757cf7",
+      "size_bytes": 2719,
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Tests/test_attach_observation.py",
+      "origin_path": "tests/steam/test_attach_observation.py",
+      "origin_sha256": "b8040c70b8bcbdbfd434a112b415367e656c4677b11148ce3c7cd7cfaa143585",
+      "sha256": "4fbfcbc35debe6a896eeb2d485d654bf24a7328f739a56195b90d6315be9d6c2",
+      "size_bytes": 4952,
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Tests/test_binding_census.py",
+      "origin_path": "tests/steam/test_binding_census.py",
+      "origin_sha256": "c70c080611c2b3f03fa828a46ccff6b487a122b91b003c823caa7029452fd1e6",
+      "sha256": "ed3eb19f882d0756d12c2df0dbe3b9975c9b1275bb5741ce79e2884b8388e98f",
+      "size_bytes": 3480,
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "existing_spdx": [
+        "MIT"
+      ]
+    },
+    {
+      "path": "Pear/Tests/test_slot_lifetime_observation.py",
+      "origin_path": "tests/steam/test_slot_lifetime_observation.py",
+      "origin_sha256": "ba077c58e4c4ebd7839560d6ab019338ec74c582ffae7aea377420ebf159df9e",
+      "sha256": "8751a2d45267921c63e7b6e797e2152f3db5dad88c85c7b24d8811cb887d8b5a",
+      "size_bytes": 3478,
+      "adaptation": "Only Python imports changed to component-local modules/tests; synthetic cases unchanged.",
+      "existing_spdx": [
+        "GPL-3.0-or-later"
+      ]
+    }
+  ],
+  "new_pear_source_license": "GPL-3.0-or-later",
+  "license_text": {
+    "path": "Pear/COPYING",
+    "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195"
+  },
+  "manual_notice_boundary": "Copied files retain existing inline notices, including legacy MIT headers with no copyright line. No ownership or license is invented to satisfy a formatter."
+}

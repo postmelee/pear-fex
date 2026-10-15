@@ -36,3 +36,10 @@ Follow the guide on the official FEX-Emu Wiki [here](https://wiki.fex-emu.com/in
 
 ### Navigating the Source
 See the [Source Outline](docs/SourceOutline.md) for more information.
+
+## Pear downstream development
+
+This private downstream fork preserves the upstream history and documentation.
+See [Pear component notes](Pear/README.md) for the selected source checkpoint,
+verification commands, shared dependencies, per-file notices and current build
+and runtime limits.

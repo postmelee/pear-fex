@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "task": 56,
+  "stage": 2,
+  "date": "2026-10-16",
+  "accepted_import_commit": "a8d4f4811a2ece9fece24ed6d4a7840f01254a84",
+  "selected_import_commit": "52fd8a95955ad33cc589bcd8c5837b84cb21705e",
+  "source_checks": {
+    "accepted_projection_files": 82,
+    "selected_projection_files": 83,
+    "component_generic_payloads": 16,
+    "exact_selected_byte_and_mode_matches": 99,
+    "selected_regular_mode": "100644",
+    "selected_symlinks": 0,
+    "strict_patch_edges_replayed": 388,
+    "distinct_patch_files_needed_and_rehashed": 155,
+    "historical_generators_executed": false,
+    "private_selector_read_or_imported": false,
+    "full_upstream_ancestry_present": true,
+    "repository_shallow": false,
+    "upstream_readme_preserved_as_prefix": true,
+    "git_diff_check": "passed"
+  },
+  "shared_exports": {
+    "pear-runtime/include/PearAbortObservation.h": "da52c81da2051d3c255dc953f1c49758d76920f065de076de2adfa53c6f324a5",
+    "pear-wine/include/wine/pear_fex_memory.h": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+    "status": "both exact provider bytes checked"
+  },
+  "tests": {
+    "command": "python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v",
+    "passed": 45,
+    "failed": 0,
+    "scope": "Synthetic diagnostic readers and source-checkpoint refusal controls; no compiler, FEX or game execution."
+  },
+  "notice_review": {
+    "new_source_files_checked": 3,
+    "new_source_notice_errors": 0,
+    "copied_files": 8,
+    "incremental_checker_legacy_diagnostics": 13,
+    "full_incremental_checker_pass_claimed": false,
+    "handling": "The root Pear checker defaults new files to GPL and requires inline copyright. Imported MIT/no-copyright legacy headers are retained and recorded in auxiliary-source.json, not relabeled or assigned invented holders. Exact source imports have a separate manual notice boundary."
+  },
+  "privacy": {
+    "changed_or_added_paths_scanned": 117,
+    "personal_absolute_path_or_private_key_matches": 0,
+    "tracked_private_selector": false,
+    "private_selector_ignore_controls_passed": true,
+    "final_parent_privacy_review_required_before_push": true
+  },
+  "builds": 0,
+  "runtime_execution": false,
+  "game_or_distribution_qualification": false
+}
