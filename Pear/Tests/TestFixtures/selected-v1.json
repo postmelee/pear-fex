@@ -1,0 +1,1062 @@
+{
+  "cases": {
+    "attach-branch": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "-I{wine}/include",
+            "-I{fex}/Pear/Diagnostics/include",
+            "{output}/attach_branch_probe.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "attach_branch_fixture.inc": "attach_fixture",
+        "attach_branch_probe.cpp": "fixture_attach-branch",
+        "original-attach-functions.inc": "attach_baseline"
+      },
+      "fixture": "fixture_attach-branch",
+      "generated": {
+        "attach_branch_fixture.inc": {
+          "sha256": "1652326484eca149466980b1585d6a071419dc8d6fbbd11fdabde7a487b75da3",
+          "size_bytes": 7206
+        },
+        "attach_branch_probe.cpp": {
+          "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+          "size_bytes": 4277
+        },
+        "observed-attach-functions.inc": {
+          "sha256": "185475e2e3120217dcd1e89e72d6a40098a2253176db6964852e19a297f5b304",
+          "size_bytes": 11354
+        },
+        "original-attach-functions.inc": {
+          "sha256": "e2afd3e770c241ea16c088c8aaaa1e2d0652057ca22de0d808235a4394d081c1",
+          "size_bytes": 7930
+        }
+      },
+      "generator": "attach",
+      "inputs": [
+        "fixture_attach-branch",
+        "memory",
+        "wire",
+        "PearAttachObservation.h",
+        "PearBindingCensus.h",
+        "attach_fixture",
+        "attach_baseline"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "29 original result/side-effect branch comparisons plus matching-row case; selected observed body must retain added census call",
+      "source_correspondence": "export exact probe plus exact fixture include; current selected extraction adds census copy relative toD33, requiring a fresh controlled run"
+    },
+    "attach-diagnostic": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "-I{fex}/Pear/Diagnostics/include",
+            "{output}/attach_diagnostic_probe.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "attach_diagnostic_probe.cpp": "fixture_attach-diagnostic"
+      },
+      "fixture": "fixture_attach-diagnostic",
+      "generated": {
+        "attach_diagnostic_probe.cpp": {
+          "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+          "size_bytes": 6143
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_attach-diagnostic",
+        "PearThreadCreateObservation.h",
+        "PearThreadCreateRuntime.inc",
+        "PearAttachObservation.h",
+        "PearBindingCensus.h"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "single-record race winner, bounded diagnostics, errors preserved and first-failure/capacity/identity assertions",
+      "source_correspondence": "export exact probe and bind existing canonical diagnostic headers; current compile/run unperformed"
+    },
+    "checked-data-memory": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "-I{fex}/FEXCore/include",
+            "-I{wine}/include",
+            "{output}/checked_data_memory.cpp",
+            "-o",
+            "{output}/ordinary"
+          ],
+          "expected_exit": 0,
+          "id": "ordinary-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/ordinary"
+          ],
+          "expected_exit": 0,
+          "id": "ordinary-run"
+        },
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-D_M_ARM64EC=1",
+            "-I{output}",
+            "-I{fex}/FEXCore/include",
+            "-I{wine}/include",
+            "{output}/checked_data_memory.cpp",
+            "-o",
+            "{output}/ec_branch"
+          ],
+          "expected_exit": 0,
+          "id": "ec_branch-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/ec_branch"
+          ],
+          "expected_exit": 0,
+          "id": "ec_branch-run"
+        },
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-D_M_ARM64EC=1",
+            "-DPEAR_FEX_MEMORY_OWNER=1",
+            "-I{output}",
+            "-I{fex}/FEXCore/include",
+            "-I{wine}/include",
+            "{output}/checked_data_memory.cpp",
+            "-o",
+            "{output}/ec_owner"
+          ],
+          "expected_exit": 0,
+          "id": "ec_owner-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/ec_owner"
+          ],
+          "expected_exit": 0,
+          "id": "ec_owner-run"
+        }
+      ],
+      "copies": {
+        "checked_data_memory.cpp": "fixture_checked-data-memory"
+      },
+      "fixture": "fixture_checked-data-memory",
+      "generated": {
+        "checked_data_memory.cpp": {
+          "sha256": "6be44cf170529bc9c66c4f6544f4ac5c54314d4128c35213f6fd47e3c4d7cd19",
+          "size_bytes": 3516
+        },
+        "checked_data_memory_under_test.inc": {
+          "sha256": "6a9c2fb388356da59dc8fca5c1ea025b971c99fec4c7401b70d94134212985bf",
+          "size_bytes": 1802
+        }
+      },
+      "generator": "checked",
+      "inputs": [
+        "fixture_checked-data-memory",
+        "alloc",
+        "memory_header",
+        "wire"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "all eight original reservation/release/error/output assertions; ordinary and ARM64EC-owner compiler defines are explicit recipe variants",
+      "source_correspondence": "current source changes the ARM64EC owner allocation branch; old execution cannot be carried forward"
+    },
+    "configuration-lifetime": {
+      "commands": [],
+      "copies": {
+        "configuration_lifetime.cpp": "fixture_configuration-lifetime"
+      },
+      "fixture": "fixture_configuration-lifetime",
+      "generated": {
+        "configuration_lifetime.cpp": {
+          "sha256": "21ac15711a4bf149222930d8e9aa286ad541b05b25dbbb57c555d19f88e36809",
+          "size_bytes": 2632
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_configuration-lifetime",
+        "config",
+        "config_allocator",
+        "config_policy",
+        "config_policy_header"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease.",
+        "FEX configuration headers and exact MinGW include/library closure",
+        "Original target-specific compile/link operands and their full transitive dependency closure are not imported by this source-only preparation."
+      ],
+      "oracle": "normal and empty configuration ownership, fixed policy settings, seal/refusal/shutdown/reuse",
+      "source_correspondence": "export exact source; Windows CRT/toolchain/link recipe and paired runtime execution remain separate"
+    },
+    "emitter-labels": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-O1",
+            "-DPEAR_FEX_MEMORY_OWNER=1",
+            "-DFMT_HEADER_ONLY=1",
+            "-I{output}/shim",
+            "-I{fex}/FEXCore/include",
+            "-I{output}",
+            "-I{fex}/CodeEmitter",
+            "-I{fex}/FEXHeaderUtils",
+            "-I{fex}/External/fmt/include",
+            "{output}/emitter_labels.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        },
+        {
+          "argv_template": [
+            "{output}/control",
+            "private-into-direct"
+          ],
+          "expected_exit": 97,
+          "id": "private-into-direct"
+        }
+      ],
+      "copies": {
+        "emitter_labels.cpp": "fixture_emitter-labels"
+      },
+      "fixture": "fixture_emitter-labels",
+      "generated": {
+        "emitter_labels.cpp": {
+          "sha256": "553a482d35a29be0c04e28d74c98e8cf97ee3853e486190f610dc0c1c2ac32e4",
+          "size_bytes": 2110
+        },
+        "shim/FEXCore/Utils/AllocatorHooks.h": {
+          "sha256": "745cc6e4e30c762abb8f4fabd992515ee7e64a6dfed89589b66bd986860502c2",
+          "size_bytes": 215
+        }
+      },
+      "generator": "emitter",
+      "inputs": [
+        "fixture_emitter-labels",
+        "emitter",
+        "vector",
+        "allocator"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease.",
+        "Exact fmt gitlink/header tree is not materialized in the source-only development worktree; no fallback to another checkout."
+      ],
+      "oracle": "direct 18-label allocation-free behavior; 256 private references; private-to-direct refusal exit97; generated bytes remain NX",
+      "source_correspondence": "export exact source; new compile/run pending explicit host-tool and fmt input admission"
+    },
+    "empty-object-storage": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "{output}/empty_object_storage.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "empty_object_storage.cpp": "fixture_empty-object-storage"
+      },
+      "fixture": "fixture_empty-object-storage",
+      "generated": {
+        "empty_object_storage.cpp": {
+          "sha256": "9095e524df2f1cfb32736b9e5585e119f19332a42a004ef29dcb2d41bf16d82d",
+          "size_bytes": 2637
+        },
+        "empty_object_storage_under_test.inc": {
+          "sha256": "49323e4a7c669aad47e0c6cc43b70a64778853569193e9831240d92834b3dc4d",
+          "size_bytes": 2931
+        }
+      },
+      "generator": "storage",
+      "inputs": [
+        "fixture_empty-object-storage",
+        "empty_storage"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "finite backing, allocation-free initialized path, thread/alignment/capacity/refusal, shutdown and reinitialization",
+      "source_correspondence": "selected extracted body exactly equals retained control fragment; new run not performed"
+    },
+    "finite-construction": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}/shim",
+            "-I{fex}/FEXCore/include",
+            "-I{output}",
+            "{output}/finite_construction.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "finite_construction.cpp": "fixture_finite-construction"
+      },
+      "fixture": "fixture_finite-construction",
+      "generated": {
+        "finite-selected-body.inc": {
+          "sha256": "82432bec4d7c684cc1836b449fe6e4813bf7ca5fb2fea383b059508040498c49",
+          "size_bytes": 2647
+        },
+        "finite_construction.cpp": {
+          "sha256": "ebc55a081a3fc4a6a321d3e3ee0da4716e5b7ad7e4d2a48d8cb6c45c374c0a0d",
+          "size_bytes": 2008
+        },
+        "finite_construction_under_test.inc": {
+          "sha256": "04ca930ee65b3f4cd2677c9002a764129be75d9d42922d63c42dc0e39c852802",
+          "size_bytes": 475
+        },
+        "shim/FEXCore/Utils/AllocatorHooks.h": {
+          "sha256": "745cc6e4e30c762abb8f4fabd992515ee7e64a6dfed89589b66bd986860502c2",
+          "size_bytes": 215
+        }
+      },
+      "generator": "finite",
+      "inputs": [
+        "fixture_finite-construction",
+        "shared_code",
+        "emitter",
+        "cpuid",
+        "cpuid_header",
+        "vector",
+        "allocator"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "strong/weak allocation lifetime, direct-label capacity/overflow and CPU-brand zeroing; no private-NX execution claim",
+      "source_correspondence": "current emitter adds PrivateNX extra vector; exact historical fixture lacks its dependency; preserve fixture and declare current adapter requirement"
+    },
+    "guest-map-lifetime": {
+      "commands": [],
+      "copies": {
+        "guest_map_lifetime.cpp": "fixture_guest-map-lifetime"
+      },
+      "fixture": "fixture_guest-map-lifetime",
+      "generated": {
+        "guest_map_lifetime.cpp": {
+          "sha256": "9c46e8cc670092d0c947b905a274fbb7d1def95a704bf7dc71b18706cfe55724",
+          "size_bytes": 3650
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_guest-map-lifetime",
+        "lookup",
+        "lookup_header",
+        "memory_resource",
+        "fextl_memory"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease.",
+        "FEX configuration headers and exact MinGW include/library closure",
+        "Original target-specific compile/link operands and their full transitive dependency closure are not imported by this source-only preparation."
+      ],
+      "oracle": "two ordinary-CRT map destruction cycles and empty ClearCache; executable retirement/engine initialization outside scope",
+      "source_correspondence": "export exact source; actual LookupCache/VM/rpmalloc link and paired runtime execution remain separate"
+    },
+    "integration-layout": {
+      "commands": [],
+      "copies": {
+        "integration_layout.cpp": "fixture_integration-layout"
+      },
+      "fixture": "fixture_integration-layout",
+      "generated": {
+        "integration_layout.cpp": {
+          "sha256": "2db3edcd6ce6f6299e4339f8cb1f2d3e37db663d586f8c3a9f4bcdaf2dc52974",
+          "size_bytes": 1050
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_integration-layout",
+        "lookup_header",
+        "memory_header",
+        "wire"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease.",
+        "current generated configuration and exact ARM64EC include/toolchain closure",
+        "Original target-specific compile/link operands and their full transitive dependency closure are not imported by this source-only preparation."
+      ],
+      "oracle": "full-object sizes only; no constructors, execution, RSS or aggregate memory qualification",
+      "source_correspondence": "export exact source; fresh target-specific layout observation unperformed"
+    },
+    "owner-preparation": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "-I{wine}/include",
+            "{output}/owner_preparation.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "owner_preparation.cpp": "fixture_owner-preparation"
+      },
+      "fixture": "fixture_owner-preparation",
+      "generated": {
+        "owner_preparation.cpp": {
+          "sha256": "a4c766ce8c743291938753845833287f0f1323699e866ec893fb953d56713ec5",
+          "size_bytes": 4353
+        },
+        "owner_preparation_under_test.inc": {
+          "sha256": "423a144f467139f85856a37ea9f42ed2bf25aa3582611858972579660c6cfb0c",
+          "size_bytes": 1761
+        }
+      },
+      "generator": "owner",
+      "inputs": [
+        "fixture_owner-preparation",
+        "memory",
+        "wire"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "prepare/register/observe/cleanup errors, poisoning and lifetime refusals with substituted bridge",
+      "source_correspondence": "selected extracted body exactly equals retained successful fragment; paired wire remains an explicit dependency"
+    },
+    "pmr-layout": {
+      "commands": [],
+      "copies": {
+        "pmr_layout.cpp": "fixture_pmr-layout"
+      },
+      "fixture": "fixture_pmr-layout",
+      "generated": {
+        "pmr_layout.cpp": {
+          "sha256": "c3352090e261c59beb90bb2255503e09e49b2ebbf017dfff155547b4725dcce2",
+          "size_bytes": 954
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_pmr-layout",
+        "lookup_header",
+        "memory_resource",
+        "fextl_memory"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease.",
+        "current generated configuration and exact libc++ internal-type include closure",
+        "Original target-specific compile/link operands and their full transitive dependency closure are not imported by this source-only preparation."
+      ],
+      "oracle": "owner/non-owner map, node, resource and allocator sizes/alignment; no runtime claim",
+      "source_correspondence": "export exact source; fresh same-toolchain object and section-reader evidence unperformed"
+    },
+    "pmr-lifetime": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-O1",
+            "-g",
+            "-fno-exceptions",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-I{output}/baseline",
+            "{output}/pmr_lifetime.cpp",
+            "-o",
+            "{output}/baseline/control"
+          ],
+          "expected_exit": 0,
+          "id": "baseline-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/baseline/control",
+            "baseline"
+          ],
+          "expected_exit": 0,
+          "id": "baseline-run"
+        },
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-DPEAR_PMR_CANDIDATE=1",
+            "-O1",
+            "-g",
+            "-fno-exceptions",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-I{output}/candidate",
+            "{output}/pmr_lifetime.cpp",
+            "-o",
+            "{output}/candidate/control"
+          ],
+          "expected_exit": 0,
+          "id": "candidate-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/candidate/control",
+            "candidate"
+          ],
+          "expected_exit": 0,
+          "id": "candidate-run"
+        }
+      ],
+      "copies": {
+        "baseline/resource_under_test.inc": "pmr_baseline",
+        "pmr_lifetime.cpp": "fixture_pmr-lifetime"
+      },
+      "fixture": "fixture_pmr-lifetime",
+      "generated": {
+        "baseline/resource_under_test.inc": {
+          "sha256": "451824a8cadda89b476897b2fb9c056086810d28970bbfbc3de611462c514242",
+          "size_bytes": 2472
+        },
+        "candidate/resource_under_test.inc": {
+          "sha256": "4fd44ce3350b43de036dfec4fb5a34eb2ce6dbae65e6064524f4b6d3fe82e917",
+          "size_bytes": 3080
+        },
+        "pmr_lifetime.cpp": {
+          "sha256": "893587f5d5fa11f083eed2059e4732cc748018964612f7e2b317e32849ef9840",
+          "size_bytes": 3235
+        }
+      },
+      "generator": "pmr",
+      "inputs": [
+        "fixture_pmr-lifetime",
+        "memory_resource",
+        "pmr_baseline"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": {
+        "baseline": {
+          "cycle_retained_buffers": "greater_than32",
+          "scope_retained_buffers": 1
+        },
+        "candidate": {
+          "cycle_retained_buffers": 0,
+          "scope_retained_buffers": 0
+        },
+        "cycles": 32,
+        "fixture_assertions": "all original assertions preserved",
+        "scope": "isolated_host_resource"
+      },
+      "source_correspondence": "candidate extracted class exactly equals retained successful candidate fragment; new run not performed"
+    },
+    "slot-lifetime": {
+      "commands": [
+        {
+          "argv_template": [
+            "{compiler}",
+            "-arch",
+            "arm64",
+            "-std=c++20",
+            "-isysroot",
+            "{sdk}",
+            "-I{output}",
+            "-I{fex}/Pear/Diagnostics/include",
+            "{output}/slot_lifetime_probe.cpp",
+            "-o",
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-compile"
+        },
+        {
+          "argv_template": [
+            "{output}/control"
+          ],
+          "expected_exit": 0,
+          "id": "control-run"
+        }
+      ],
+      "copies": {
+        "slot_lifetime_probe.cpp": "fixture_slot-lifetime"
+      },
+      "fixture": "fixture_slot-lifetime",
+      "generated": {
+        "slot_lifetime_probe.cpp": {
+          "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+          "size_bytes": 3614
+        }
+      },
+      "generator": "copies_only",
+      "inputs": [
+        "fixture_slot-lifetime",
+        "PearSlotLifetime.h",
+        "PearSlotLifetimeRuntime.inc",
+        "PearSlotLifetimeMemory.inc"
+      ],
+      "native_input_gaps": [
+        "Exact host compiler driver, resource-directory headers, SDK header/library inventory and actual implicit-library closure are not yet admitted.",
+        "No compiler or native process is authorized by this preparation receipt; later execution requires a reviewed recipe and shared operation lease."
+      ],
+      "oracle": "slot lifecycle snapshots, registry lock, bounded truncation/loss, error-state preservation; no native-liveness claim",
+      "source_correspondence": "export exact probe and bind existing canonical diagnostic headers; current compile/run unperformed"
+    }
+  },
+  "inputs": {
+    "PearAttachObservation.h": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearAttachObservation.h",
+      "root": "fex",
+      "sha256": "8d084762e3b6d58d195b91c191cce0ad4154cc41f5762671aeb6aae10ce0a854",
+      "size_bytes": 2178
+    },
+    "PearBindingCensus.h": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearBindingCensus.h",
+      "root": "fex",
+      "sha256": "1efaebc7bf521a2af1b3de5e77ebb8e74d7f65192cf564a87bfdc990b032502c",
+      "size_bytes": 1854
+    },
+    "PearSlotLifetime.h": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearSlotLifetime.h",
+      "root": "fex",
+      "sha256": "da0a68d651adbafbebc03f196b6da2533ad1231814a03bab4d8729b10cf9f43d",
+      "size_bytes": 2061
+    },
+    "PearSlotLifetimeMemory.inc": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeMemory.inc",
+      "root": "fex",
+      "sha256": "87a7c0731e08f043600a048334df4187bb4a8aba0fca7652de1b9a83b6bbabd6",
+      "size_bytes": 1495
+    },
+    "PearSlotLifetimeRuntime.inc": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearSlotLifetimeRuntime.inc",
+      "root": "fex",
+      "sha256": "a389e934d0bba22b98a3e0d1b32290e6afedc4a9dae715cc707c9a1f2e0932e9",
+      "size_bytes": 2559
+    },
+    "PearThreadCreateObservation.h": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearThreadCreateObservation.h",
+      "root": "fex",
+      "sha256": "4e845abacb95bd4c85aee18cecbf22671ce89416c998083b63039ba4d153c041",
+      "size_bytes": 1478
+    },
+    "PearThreadCreateRuntime.inc": {
+      "mode": "100644",
+      "path": "Pear/Diagnostics/include/PearThreadCreateRuntime.inc",
+      "root": "fex",
+      "sha256": "d6bfa37d532b5e0765c01801585845e45c3a970c1b3b07ce661bff2525313354",
+      "size_bytes": 3776
+    },
+    "alloc": {
+      "mode": "100644",
+      "path": "Source/Windows/Common/WinAPI/Alloc.cpp",
+      "root": "fex",
+      "sha256": "319e789426f98f4a607e8f6ab7b063f824b36661ae3c3f663c36503b84463681",
+      "size_bytes": 8402
+    },
+    "allocator": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/fextl/allocator.h",
+      "root": "fex",
+      "sha256": "f58c1b4e8ba1d9eabfcf132927aebc0dc4f223996f8ef4e6192a2c0d589b22a5",
+      "size_bytes": 852
+    },
+    "attach_baseline": {
+      "mode": "100644",
+      "path": "Pear/Tests/Diagnostics/Baselines/d32-attach-functions.inc",
+      "root": "fex",
+      "sha256": "e2afd3e770c241ea16c088c8aaaa1e2d0652057ca22de0d808235a4394d081c1",
+      "size_bytes": 7930
+    },
+    "attach_fixture": {
+      "mode": "100644",
+      "path": "Pear/Tests/Diagnostics/attach_branch_fixture.inc",
+      "root": "fex",
+      "sha256": "1652326484eca149466980b1585d6a071419dc8d6fbbd11fdabde7a487b75da3",
+      "size_bytes": 7206
+    },
+    "config": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Interface/Config/Config.cpp",
+      "root": "fex",
+      "sha256": "3dfaf99dbdc0165ab8c6dead751bf5c0ba17a7dc566fe1663b7e3684d588acf4",
+      "size_bytes": 23567
+    },
+    "config_allocator": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/Config/PearConfigAllocator.h",
+      "root": "fex",
+      "sha256": "fe9b0d5fdca9c198738fcec9f86cb09a50a60257d2ce2bb1a88f83bc8d50ad77",
+      "size_bytes": 2886
+    },
+    "config_policy": {
+      "mode": "100644",
+      "path": "Source/Windows/Common/DarwinConfigPolicy.cpp",
+      "root": "fex",
+      "sha256": "6a0d801be1f77abe01a2605a9b04a13ae156f85dd4554d30ca48d1af52d26dd3",
+      "size_bytes": 2000
+    },
+    "config_policy_header": {
+      "mode": "100644",
+      "path": "Source/Windows/Common/DarwinConfigPolicy.h",
+      "root": "fex",
+      "sha256": "24a09f91b100112da8076fa5099929e80e0ad44e1882e4feb795fb49986904d3",
+      "size_bytes": 2032
+    },
+    "cpuid": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Interface/Core/CPUID.cpp",
+      "root": "fex",
+      "sha256": "7b3d3d9f381a4ba49a7e4c23ccb923e8cdcc188f748b4712a4eae08a53c2dba5",
+      "size_bytes": 59753
+    },
+    "cpuid_header": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/Core/CPUID.h",
+      "root": "fex",
+      "sha256": "643b2ac46fa7995c78832a6d60fc7694461b68eb85866fd1b5c781a7175fa079",
+      "size_bytes": 226
+    },
+    "emitter": {
+      "mode": "100644",
+      "path": "CodeEmitter/CodeEmitter/Emitter.h",
+      "root": "fex",
+      "sha256": "080edca22cba5563e40188fd5cbf97c8d7c7cfee5fbc23713b453a74359c0243",
+      "size_bytes": 31147
+    },
+    "empty_storage": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Utils/PearEmptyObjectStorage.cpp",
+      "root": "fex",
+      "sha256": "4094c7633ea0da4ee032fe223eeea35e8f1fbd68029632833ad9f41ac26091c9",
+      "size_bytes": 3171
+    },
+    "fextl_memory": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/fextl/memory.h",
+      "root": "fex",
+      "sha256": "c8fade6eb37b9526e0a6e516cb2f5e39c9ad1d18bb88f398a6d605506c6d2553",
+      "size_bytes": 1370
+    },
+    "fixture_attach-branch": {
+      "mode": "100644",
+      "path": "Pear/Tests/Diagnostics/attach_branch_probe.cpp",
+      "root": "fex",
+      "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+      "size_bytes": 4277
+    },
+    "fixture_attach-diagnostic": {
+      "mode": "100644",
+      "path": "Pear/Tests/Diagnostics/attach_diagnostic_probe.cpp",
+      "root": "fex",
+      "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+      "size_bytes": 6143
+    },
+    "fixture_checked-data-memory": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/checked_data_memory.cpp",
+      "root": "fex",
+      "sha256": "6be44cf170529bc9c66c4f6544f4ac5c54314d4128c35213f6fd47e3c4d7cd19",
+      "size_bytes": 3516
+    },
+    "fixture_configuration-lifetime": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/configuration_lifetime.cpp",
+      "root": "fex",
+      "sha256": "21ac15711a4bf149222930d8e9aa286ad541b05b25dbbb57c555d19f88e36809",
+      "size_bytes": 2632
+    },
+    "fixture_emitter-labels": {
+      "mode": "100644",
+      "path": "Pear/Tests/CPU/emitter_labels.cpp",
+      "root": "fex",
+      "sha256": "553a482d35a29be0c04e28d74c98e8cf97ee3853e486190f610dc0c1c2ac32e4",
+      "size_bytes": 2110
+    },
+    "fixture_empty-object-storage": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/empty_object_storage.cpp",
+      "root": "fex",
+      "sha256": "9095e524df2f1cfb32736b9e5585e119f19332a42a004ef29dcb2d41bf16d82d",
+      "size_bytes": 2637
+    },
+    "fixture_finite-construction": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/finite_construction.cpp",
+      "root": "fex",
+      "sha256": "ebc55a081a3fc4a6a321d3e3ee0da4716e5b7ad7e4d2a48d8cb6c45c374c0a0d",
+      "size_bytes": 2008
+    },
+    "fixture_guest-map-lifetime": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/guest_map_lifetime.cpp",
+      "root": "fex",
+      "sha256": "9c46e8cc670092d0c947b905a274fbb7d1def95a704bf7dc71b18706cfe55724",
+      "size_bytes": 3650
+    },
+    "fixture_integration-layout": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/integration_layout.cpp",
+      "root": "fex",
+      "sha256": "2db3edcd6ce6f6299e4339f8cb1f2d3e37db663d586f8c3a9f4bcdaf2dc52974",
+      "size_bytes": 1050
+    },
+    "fixture_owner-preparation": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/owner_preparation.cpp",
+      "root": "fex",
+      "sha256": "a4c766ce8c743291938753845833287f0f1323699e866ec893fb953d56713ec5",
+      "size_bytes": 4353
+    },
+    "fixture_pmr-layout": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/pmr_layout.cpp",
+      "root": "fex",
+      "sha256": "c3352090e261c59beb90bb2255503e09e49b2ebbf017dfff155547b4725dcce2",
+      "size_bytes": 954
+    },
+    "fixture_pmr-lifetime": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/pmr_lifetime.cpp",
+      "root": "fex",
+      "sha256": "893587f5d5fa11f083eed2059e4732cc748018964612f7e2b317e32849ef9840",
+      "size_bytes": 3235
+    },
+    "fixture_slot-lifetime": {
+      "mode": "100644",
+      "path": "Pear/Tests/Diagnostics/slot_lifetime_probe.cpp",
+      "root": "fex",
+      "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+      "size_bytes": 3614
+    },
+    "lookup": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Interface/Core/LookupCache.cpp",
+      "root": "fex",
+      "sha256": "ac5cabe4a257920eb79f91c16ad8b9c539470690b2329f3316749f5ac57cdab4",
+      "size_bytes": 6599
+    },
+    "lookup_header": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Interface/Core/LookupCache.h",
+      "root": "fex",
+      "sha256": "01e8616f208521ca01091487bc5ff213773829cf2513dfa9d16066f97b001a7d",
+      "size_bytes": 22116
+    },
+    "memory": {
+      "mode": "100644",
+      "path": "Source/Windows/Common/PearFEXMemory.cpp",
+      "root": "fex",
+      "sha256": "380ca354c1d424fb8f94278f834e81e339a8008a5d1c43b89e16d3376edf3f7f",
+      "size_bytes": 108871
+    },
+    "memory_header": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/Utils/PearFEXMemory.h",
+      "root": "fex",
+      "sha256": "532f1b06365a3d65f719c6f1ce0df3d5431e3d51bed0fdddb3270fdfbca4b65d",
+      "size_bytes": 16776
+    },
+    "memory_resource": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "root": "fex",
+      "sha256": "e441ca2dacaaeb28d03b81ea8e51a16067670499ff28390395279bb925910eeb",
+      "size_bytes": 5725
+    },
+    "pmr_baseline": {
+      "mode": "100644",
+      "path": "Pear/Tests/Memory/Baselines/pmr-before-lifetime.inc",
+      "root": "fex",
+      "sha256": "451824a8cadda89b476897b2fb9c056086810d28970bbfbc3de611462c514242",
+      "size_bytes": 2472
+    },
+    "shared_code": {
+      "mode": "100644",
+      "path": "FEXCore/Source/Interface/Core/SharedCodeBufferManager.cpp",
+      "root": "fex",
+      "sha256": "8fec80eef79c9662ef76dd72054ed3d97b11c3c2c9baf2566547b5aafd680657",
+      "size_bytes": 10518
+    },
+    "vector": {
+      "mode": "100644",
+      "path": "FEXCore/include/FEXCore/fextl/vector.h",
+      "root": "fex",
+      "sha256": "175785c04909dc8d2094b14fe6f9981512092fe16111a566c5eb19de723002e2",
+      "size_bytes": 220
+    },
+    "wire": {
+      "mode": "100644",
+      "path": "include/wine/pear_fex_memory.h",
+      "root": "wine",
+      "sha256": "a089b475fe6d6f2401977319eb4f0702e85c0753063f5748093131088f9f8b55",
+      "size_bytes": 8507
+    }
+  },
+  "kind": "pear_fex_component_source_preparation",
+  "policy": {
+    "generated_notice": "New selected excerpts carry an MIT SPDX prefix; source-correspondence records identify the unchanged underlying extracted bodies. Historical baselines and imported fixture bytes remain exact.",
+    "native_execution_admitted": false,
+    "preparation_only": true,
+    "private_inputs_required": false,
+    "upstream_contribution": "Private Pear downstream test work; no upstream FEX contribution is authorized."
+  },
+  "schema_version": 1,
+  "source_basis": {
+    "pin_policy": "Versioned exact file identities; a reviewed successor recipe can bind changed editable sources. This recipe never patches source.",
+    "production_source_commit": "c62ed75aa6a33809ddb76c7f40aabbe4f4fbdda6",
+    "repository": "pear-fex",
+    "test_source_base_commit": "9c9b602c07b57a08500862abfdf62e1bac351640"
+  }
+}

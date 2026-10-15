@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "kind": "pear_fex_original_source_origin_erratum",
+  "task": 56,
+  "stage": "4.3",
+  "scope": "Correct the origin classification of eleven FEX-owned diagnostic readers, tests and probes. Exact source bytes, notices and selected executable artifacts do not change.",
+  "preserved_historical_manifests": [
+    {
+      "path": "Pear/Provenance/test-ownership.json",
+      "sha256": "882ecdc87a6721475a97058122e8f161fba32088d0ffa0d7062df155fbf496bd",
+      "size_bytes": 194880,
+      "commit": "9c9b602c07b57a08500862abfdf62e1bac351640",
+      "erroneous_claim": "The source.checkpoint field for these eleven rows implied that the exact paths existed in commit951264bf5be4b9d2afb87320f5fac74778b2dd58."
+    },
+    {
+      "path": "Pear/Provenance/auxiliary-source.json",
+      "sha256": "718b0a47785675afac2c8775d9c8d884807e01f29f4e18704dc98aa211a260c3",
+      "size_bytes": 4432,
+      "commit": "9c9b602c07b57a08500862abfdf62e1bac351640",
+      "clarification": "pear_checkpoint names the historical worktree base; the eight listed diagnostic reader/test origins were retained untracked files, not paths in that commit."
+    }
+  ],
+  "corrections": [
+    {
+      "id": "pear:tools/steam/thread_create_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/thread_create_observation.py",
+        "sha256": "817bbf8d021a049430b3bef517c033d007cc06f7662d89836a401795f128a9ff",
+        "size_bytes": 2539
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tools/steam/thread_create_observation.py",
+        "sha256": "817bbf8d021a049430b3bef517c033d007cc06f7662d89836a401795f128a9ff",
+        "size_bytes": 2539,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/thread_create_observation.py",
+        "exists": true,
+        "sha256": "cfbd2e406759cfd0fd2cc65850c911c2c9c2dc3747ef706d358b0d43db702479",
+        "size_bytes": 2538
+      }
+    },
+    {
+      "id": "pear:tools/steam/attach_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/attach_observation.py",
+        "sha256": "c43c17b25ddd35feb589ae3ec8871da91a3c3b563cca5aec625a43e949152c9a",
+        "size_bytes": 4709
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tools/steam/attach_observation.py",
+        "sha256": "c43c17b25ddd35feb589ae3ec8871da91a3c3b563cca5aec625a43e949152c9a",
+        "size_bytes": 4709,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/attach_observation.py",
+        "exists": true,
+        "sha256": "f6006cd17e765ab8a2c6d70d25a3ae4654974702a9d629338f6cab60669c63ac",
+        "size_bytes": 4713
+      }
+    },
+    {
+      "id": "pear:tools/steam/binding_census_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/binding_census_observation.py",
+        "sha256": "c9da546422484d3aaa2bf9470eb30f323340ca5d34299850561d8eaafc6bc494",
+        "size_bytes": 3549
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tools/steam/binding_census_observation.py",
+        "sha256": "c9da546422484d3aaa2bf9470eb30f323340ca5d34299850561d8eaafc6bc494",
+        "size_bytes": 3549,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/binding_census_observation.py",
+        "exists": true,
+        "sha256": "813cc4f000f091e79e8288967b216b8fa3c64d8c45463730ae97f1cebea32b85",
+        "size_bytes": 3553
+      }
+    },
+    {
+      "id": "pear:tools/steam/slot_lifetime_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/steam/slot_lifetime_observation.py",
+        "sha256": "edc026b9fbbd33ad949c29149ea00536920434eaa16584240afc869998061c44",
+        "size_bytes": 4161
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tools/steam/slot_lifetime_observation.py",
+        "sha256": "edc026b9fbbd33ad949c29149ea00536920434eaa16584240afc869998061c44",
+        "size_bytes": 4161,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Diagnostics/slot_lifetime_observation.py",
+        "exists": true,
+        "sha256": "cdb5b186bb1659fad54502fc772ef37403822620756d2b87fdcc37922c7897b4",
+        "size_bytes": 4160
+      }
+    },
+    {
+      "id": "pear:tests/steam/test_thread_create_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_thread_create_observation.py",
+        "sha256": "fb9a11f5583d92632c5ae91337671d9f24a63948f62995fd567b21595090ed7b",
+        "size_bytes": 2714
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/test_thread_create_observation.py",
+        "sha256": "fb9a11f5583d92632c5ae91337671d9f24a63948f62995fd567b21595090ed7b",
+        "size_bytes": 2714,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_thread_create_observation.py",
+        "exists": true,
+        "sha256": "1ec40e8accf750eea04c8490289e8da0d195b826b0c123c84f9c0737d7757cf7",
+        "size_bytes": 2719
+      }
+    },
+    {
+      "id": "pear:tests/steam/test_attach_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_attach_observation.py",
+        "sha256": "b8040c70b8bcbdbfd434a112b415367e656c4677b11148ce3c7cd7cfaa143585",
+        "size_bytes": 4948
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/test_attach_observation.py",
+        "sha256": "b8040c70b8bcbdbfd434a112b415367e656c4677b11148ce3c7cd7cfaa143585",
+        "size_bytes": 4948,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_attach_observation.py",
+        "exists": true,
+        "sha256": "4fbfcbc35debe6a896eeb2d485d654bf24a7328f739a56195b90d6315be9d6c2",
+        "size_bytes": 4952
+      }
+    },
+    {
+      "id": "pear:tests/steam/test_binding_census.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_binding_census.py",
+        "sha256": "c70c080611c2b3f03fa828a46ccff6b487a122b91b003c823caa7029452fd1e6",
+        "size_bytes": 3476
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/test_binding_census.py",
+        "sha256": "c70c080611c2b3f03fa828a46ccff6b487a122b91b003c823caa7029452fd1e6",
+        "size_bytes": 3476,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_binding_census.py",
+        "exists": true,
+        "sha256": "ed3eb19f882d0756d12c2df0dbe3b9975c9b1275bb5741ce79e2884b8388e98f",
+        "size_bytes": 3480
+      }
+    },
+    {
+      "id": "pear:tests/steam/test_slot_lifetime_observation.py",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/test_slot_lifetime_observation.py",
+        "sha256": "ba077c58e4c4ebd7839560d6ab019338ec74c582ffae7aea377420ebf159df9e",
+        "size_bytes": 3473
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/test_slot_lifetime_observation.py",
+        "sha256": "ba077c58e4c4ebd7839560d6ab019338ec74c582ffae7aea377420ebf159df9e",
+        "size_bytes": 3473,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/test_slot_lifetime_observation.py",
+        "exists": true,
+        "sha256": "8751a2d45267921c63e7b6e797e2152f3db5dad88c85c7b24d8811cb887d8b5a",
+        "size_bytes": 3478
+      }
+    },
+    {
+      "id": "pear:tests/steam/attach_diagnostic_probe.cpp",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/attach_diagnostic_probe.cpp",
+        "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+        "size_bytes": 6143
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/attach_diagnostic_probe.cpp",
+        "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+        "size_bytes": 6143,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/attach_diagnostic_probe.cpp",
+        "exists": true,
+        "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+        "size_bytes": 6143
+      }
+    },
+    {
+      "id": "pear:tests/steam/slot_lifetime_probe.cpp",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/slot_lifetime_probe.cpp",
+        "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+        "size_bytes": 3614
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/slot_lifetime_probe.cpp",
+        "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+        "size_bytes": 3614,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/slot_lifetime_probe.cpp",
+        "exists": true,
+        "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+        "size_bytes": 3614
+      }
+    },
+    {
+      "id": "pear:tests/steam/attach_branch_probe.cpp",
+      "previous_source_claim": {
+        "repository": "https://github.com/postmelee/pear",
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/steam/attach_branch_probe.cpp",
+        "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+        "size_bytes": 4277
+      },
+      "corrected_source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/attach_branch_probe.cpp",
+        "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+        "size_bytes": 4277,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "canonical_destination": {
+        "repository": "pear-fex",
+        "path": "Pear/Tests/Diagnostics/attach_branch_probe.cpp",
+        "exists": true,
+        "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+        "size_bytes": 4277
+      }
+    }
+  ],
+  "audit": {
+    "FEX_owned_rows": 47,
+    "exact_recorded_git_blobs": 36,
+    "recorded_path_absent": 11,
+    "retained_original_identity_matches": 11,
+    "local_reachable_history_for_corrected_paths": "No commits containing these paths were found by the bounded --all path history query. This is not a claim about inaccessible remote or lost history."
+  },
+  "limits": [
+    "This erratum does not rewrite the frozen CPU/source/provenance manifests or prior execution receipts.",
+    "No commit is invented for the retained uncommitted original files.",
+    "Source-owner final handoff remains pending; accepted isolated imports and byte identities do not establish that handoff.",
+    "No compilation, native execution, relicensing, deletion or upstream contribution is performed by this correction."
+  ]
+}

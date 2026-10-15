@@ -1,0 +1,520 @@
+{
+  "adapters": [
+    {
+      "destination": "Pear/Tools/TestFixtures/run_pmr_lifetime.py",
+      "license": "GPL-3.0-or-later",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/run_pmr_lifetime.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "10956159a796f1d4bd8cb2e7c1da6a797ee51c7e015ac341c5e4bc8c474f0994",
+        "size_bytes": 6283
+      },
+      "transformation": "preserve baseline versus current-candidate assertions; no implicit xcrun, git apply, old source fallback or automatic native execution",
+      "sha256": "5f178e5d9f1330ae98f96fb6d485158f08f6b68eaa0aa18055eb274da5a01dfe",
+      "size_bytes": 594,
+      "mode": "100644"
+    },
+    {
+      "destination": "Pear/Tools/TestFixtures/emitter_check.py",
+      "license": "MIT",
+      "origin": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tools/cpu/emitter_check.py",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "33645cecd4dde7c8c8d4603674ec1d005c48b9aebbc74928db187b3a70e50e64",
+        "size_bytes": 2367
+      },
+      "transformation": "no historical CPU series/patch application; actual canonical emitter plus pinned fmt; no executable-code execution",
+      "sha256": "49f447a54d7c87cbdedaeb3dbcabfabe4c93fa6f6097c9a306682091b3b1b24c",
+      "size_bytes": 515,
+      "mode": "100644"
+    }
+  ],
+  "attach_source_correspondence": {
+    "current_derived": {
+      "sha256": "51061d5aac5b97e8951268013e08bff2d6e16f46f95f55a25f2b67447f2d2951",
+      "size_bytes": 11242
+    },
+    "current_derived_equals_d33_observed": false,
+    "observed_derived": {
+      "sha256": "3cd1055aec4f666bed2cc55f4a22d1f7f93dcaa1bb7698549e12b701321321cc",
+      "size_bytes": 11166
+    },
+    "original_derived": {
+      "sha256": "e2afd3e770c241ea16c088c8aaaa1e2d0652057ca22de0d808235a4394d081c1",
+      "size_bytes": 7930
+    }
+  },
+  "builds_performed": false,
+  "copies": [
+    {
+      "destination": "Pear/Tests/Memory/configuration_lifetime.cpp",
+      "license": "MIT",
+      "sha256": "21ac15711a4bf149222930d8e9aa286ad541b05b25dbbb57c555d19f88e36809",
+      "size_bytes": 2632,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/configuration_lifetime.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "21ac15711a4bf149222930d8e9aa286ad541b05b25dbbb57c555d19f88e36809",
+        "size_bytes": 2632
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/pmr_lifetime.cpp",
+      "license": "MIT",
+      "sha256": "893587f5d5fa11f083eed2059e4732cc748018964612f7e2b317e32849ef9840",
+      "size_bytes": 3235,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/pmr_lifetime.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "893587f5d5fa11f083eed2059e4732cc748018964612f7e2b317e32849ef9840",
+        "size_bytes": 3235
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/empty_object_storage.cpp",
+      "license": "MIT",
+      "sha256": "9095e524df2f1cfb32736b9e5585e119f19332a42a004ef29dcb2d41bf16d82d",
+      "size_bytes": 2637,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/empty_object_storage.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "9095e524df2f1cfb32736b9e5585e119f19332a42a004ef29dcb2d41bf16d82d",
+        "size_bytes": 2637
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/checked_data_memory.cpp",
+      "license": "MIT",
+      "sha256": "6be44cf170529bc9c66c4f6544f4ac5c54314d4128c35213f6fd47e3c4d7cd19",
+      "size_bytes": 3516,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/checked_data_memory.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "6be44cf170529bc9c66c4f6544f4ac5c54314d4128c35213f6fd47e3c4d7cd19",
+        "size_bytes": 3516
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/finite_construction.cpp",
+      "license": "MIT",
+      "sha256": "ebc55a081a3fc4a6a321d3e3ee0da4716e5b7ad7e4d2a48d8cb6c45c374c0a0d",
+      "size_bytes": 2008,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/finite_construction.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "ebc55a081a3fc4a6a321d3e3ee0da4716e5b7ad7e4d2a48d8cb6c45c374c0a0d",
+        "size_bytes": 2008
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/guest_map_lifetime.cpp",
+      "license": "MIT",
+      "sha256": "9c46e8cc670092d0c947b905a274fbb7d1def95a704bf7dc71b18706cfe55724",
+      "size_bytes": 3650,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/guest_map_lifetime.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "9c46e8cc670092d0c947b905a274fbb7d1def95a704bf7dc71b18706cfe55724",
+        "size_bytes": 3650
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/pmr_layout.cpp",
+      "license": "MIT",
+      "sha256": "c3352090e261c59beb90bb2255503e09e49b2ebbf017dfff155547b4725dcce2",
+      "size_bytes": 954,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/pmr_layout.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "c3352090e261c59beb90bb2255503e09e49b2ebbf017dfff155547b4725dcce2",
+        "size_bytes": 954
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/integration_layout.cpp",
+      "license": "MIT",
+      "sha256": "2db3edcd6ce6f6299e4339f8cb1f2d3e37db663d586f8c3a9f4bcdaf2dc52974",
+      "size_bytes": 1050,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/integration_layout.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "2db3edcd6ce6f6299e4339f8cb1f2d3e37db663d586f8c3a9f4bcdaf2dc52974",
+        "size_bytes": 1050
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/owner_preparation.cpp",
+      "license": "MIT",
+      "sha256": "a4c766ce8c743291938753845833287f0f1323699e866ec893fb953d56713ec5",
+      "size_bytes": 4353,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/fex/memory/owner_preparation.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "a4c766ce8c743291938753845833287f0f1323699e866ec893fb953d56713ec5",
+        "size_bytes": 4353
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/CPU/emitter_labels.cpp",
+      "license": "MIT",
+      "sha256": "553a482d35a29be0c04e28d74c98e8cf97ee3853e486190f610dc0c1c2ac32e4",
+      "size_bytes": 2110,
+      "source": {
+        "checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "path": "tests/cpu/emitter_labels.cpp",
+        "repository": "https://github.com/postmelee/pear",
+        "sha256": "553a482d35a29be0c04e28d74c98e8cf97ee3853e486190f610dc0c1c2ac32e4",
+        "size_bytes": 2110
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Diagnostics/attach_diagnostic_probe.cpp",
+      "license": "MIT",
+      "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+      "size_bytes": 6143,
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/attach_diagnostic_probe.cpp",
+        "sha256": "afe016d515b5655a1c4daf32211798402010667629238162b7c1d820cd898723",
+        "size_bytes": 6143,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Diagnostics/slot_lifetime_probe.cpp",
+      "license": "MIT",
+      "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+      "size_bytes": 3614,
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/slot_lifetime_probe.cpp",
+        "sha256": "e879b807e864346c251bdb60aa17ee2f42fd285dd4cbdcd40d08494a5b0d96bb",
+        "size_bytes": 3614,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Diagnostics/attach_branch_probe.cpp",
+      "license": "MIT",
+      "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+      "size_bytes": 4277,
+      "source": {
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/attach_branch_probe.cpp",
+        "sha256": "e47d849551ac1d356eec676634f25f9a776316cb64d973cb778a80d9c16655d6",
+        "size_bytes": 4277,
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "previously_claimed_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Untracked at the recorded Task11 worktree base; exact retained source bytes, not a commit-backed original.",
+        "erratum": "Pear/Provenance/test-origin-errata.json"
+      },
+      "transformation": "none; exact original bytes"
+    },
+    {
+      "destination": "Pear/Tests/Diagnostics/attach_branch_fixture.inc",
+      "license": "MIT",
+      "origin_path": "tests/steam/attach_branch_fixture.inc",
+      "sha256": "1652326484eca149466980b1585d6a071419dc8d6fbbd11fdabde7a487b75da3",
+      "size_bytes": 7206,
+      "source": {
+        "sha256": "1652326484eca149466980b1585d6a071419dc8d6fbbd11fdabde7a487b75da3",
+        "size_bytes": 7206,
+        "repository": "https://github.com/postmelee/pear",
+        "path": "tests/steam/attach_branch_fixture.inc",
+        "capture_kind": "retained_selected_worktree_file",
+        "worktree_base_commit": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+        "checkpoint_contains_exact_bytes": false,
+        "origin_state": "Retained untracked Task11 fixture include; no commit-backed origin claimed."
+      },
+      "transformation": "exact original MIT bytes"
+    },
+    {
+      "destination": "Pear/Tests/Memory/Baselines/pmr-before-lifetime.inc",
+      "license": "MIT",
+      "origin_path": "Task5 stage3-pmr-lifetime-public1/baseline/resource_under_test.inc",
+      "sha256": "451824a8cadda89b476897b2fb9c056086810d28970bbfbc3de611462c514242",
+      "size_bytes": 2472,
+      "source": {
+        "sha256": "451824a8cadda89b476897b2fb9c056086810d28970bbfbc3de611462c514242",
+        "size_bytes": 2472
+      },
+      "transformation": "immutable derived MIT source baseline, separately attributed and hash-bound; never editable candidate authority"
+    },
+    {
+      "destination": "Pear/Tests/Diagnostics/Baselines/d32-attach-functions.inc",
+      "license": "MIT",
+      "origin_path": "Task11 d32-source4/PearFEXMemory.cpp",
+      "sha256": "e2afd3e770c241ea16c088c8aaaa1e2d0652057ca22de0d808235a4394d081c1",
+      "size_bytes": 7930,
+      "source": {
+        "sha256": "8e6d5edf1cb8a9c4585cff57898335d061fc844f893f712db79033c84fc3a603",
+        "size_bytes": 104913
+      },
+      "transformation": "Exact attach() extraction from original D32 MIT source; immutable historical test baseline"
+    }
+  ],
+  "extraction_origins": [
+    {
+      "id": "checked_data_memory",
+      "origin_control": "stage3-checked-data-control1",
+      "producer": {
+        "sha256": "0ed756faa2c722689fc25d8f45da381db839f3ea7decc14619a80d81a9278926",
+        "size_bytes": 2735
+      },
+      "retained_generated": {
+        "sha256": "54795ae231771b11b88141eb4005150f6a31eab03ef4fbef67c1608db332d8da",
+        "size_bytes": 1632
+      },
+      "selected_body": {
+        "sha256": "0c6a8c7d294e7fdfe747d26522cb4502fd223d18d81af673ba7638b0737fa016",
+        "size_bytes": 1690
+      },
+      "selected_body_equals_retained": false
+    },
+    {
+      "id": "finite_construction",
+      "origin_control": "stage3-finite-storage-control2",
+      "producer": {
+        "sha256": "c17f0c89dba147e423225b053b56b57ab05f8a5e0a09b1e4ab836bf40c03b2bc",
+        "size_bytes": 2595
+      },
+      "retained_generated": {
+        "sha256": "174754ef46c1ae3d4063f360d079f21f2b44633f060534a0636ccc6c04f19631",
+        "size_bytes": 2406
+      },
+      "selected_body": {
+        "sha256": "3fe8b2eb45c68875d9919caff46f5d995c8c2a24667cb01110f40f54feb70e92",
+        "size_bytes": 2535
+      },
+      "selected_body_equals_retained": false
+    },
+    {
+      "id": "empty_object_storage",
+      "origin_control": "stage3-object-backing-control3",
+      "producer": {
+        "sha256": "3aed8098a54ad419b32eff53c48679952f194bfdf5ac9a7893272c133e961c51",
+        "size_bytes": 1965
+      },
+      "retained_generated": {
+        "sha256": "65ec3c1dc33bca771945e3162cd88197d7f3d8cca0e43e212d0dfc8dce2c0b93",
+        "size_bytes": 2819
+      },
+      "selected_body": {
+        "sha256": "65ec3c1dc33bca771945e3162cd88197d7f3d8cca0e43e212d0dfc8dce2c0b93",
+        "size_bytes": 2819
+      },
+      "selected_body_equals_retained": true
+    },
+    {
+      "id": "owner_preparation",
+      "origin_control": "stage3-owner-preparation-control1",
+      "producer": {
+        "sha256": "631d99d8c4eaf38502476b5bc634afe4e6c90976cb8ad1f25029d49041c3567a",
+        "size_bytes": 2017
+      },
+      "retained_generated": {
+        "sha256": "cf7d70192db783e3daba302550ab43e1e18f38c93d694e433d3e2c4d5144a4ed",
+        "size_bytes": 1649
+      },
+      "selected_body": {
+        "sha256": "cf7d70192db783e3daba302550ab43e1e18f38c93d694e433d3e2c4d5144a4ed",
+        "size_bytes": 1649
+      },
+      "selected_body_equals_retained": true
+    },
+    {
+      "id": "pmr_candidate",
+      "origin_control": "fex",
+      "producer": {
+        "sha256": "10956159a796f1d4bd8cb2e7c1da6a797ee51c7e015ac341c5e4bc8c474f0994",
+        "size_bytes": 6283
+      },
+      "retained_generated": {
+        "sha256": "01630cb63cbd9c44ad8f0f01bda5be4c05cb9d90dc20f2f013d9ee72416ae5ed",
+        "size_bytes": 2968
+      },
+      "selected_body": {
+        "sha256": "01630cb63cbd9c44ad8f0f01bda5be4c05cb9d90dc20f2f013d9ee72416ae5ed",
+        "size_bytes": 2968
+      },
+      "selected_body_equals_retained": true
+    }
+  ],
+  "frozen_source_policy": "Only the separate development worktree advances; CPU source root remains detached at9c9b602. Existing runtime provenance and captured producers are not edited.",
+  "import_base": "9c9b602c07b57a08500862abfdf62e1bac351640",
+  "native_execution": false,
+  "notices": {
+    "baselines": "Exact generated historical MIT excerpts retain original bytes; origin/source-generator identities and upstream license accompany them.",
+    "exact_cpp_and_fixture": "Original MIT bytes/notices preserved; absence of an original inline copyright is a manual exact-import exception.",
+    "new_glue": "GPL-3.0-or-later; extraction portions retain MIT. Generated current fragments carry their source MIT marker.",
+    "pmr_adapter": "Original unmarked runner is byte-identical in the current Pear GPL-default tree. New adapter is GPL-3.0-or-later, not retroactively MIT.",
+    "upstream_license": "LICENSE"
+  },
+  "pending": [
+    "Later reviewed compiler/SDK/resource/implicit-library closure and shared lease for native controls.",
+    "Target-specific Windows lifetime/layout build/run inputs and runtime-owned orchestration.",
+    "Final source-owner handoff; test export is not authority cutover."
+  ],
+  "schema_version": 1,
+  "scope": "editable_component_test_sources_and_preparation_only",
+  "source_authority_cutover": false,
+  "source_checkpoint": "951264bf5be4b9d2afb87320f5fac74778b2dd58",
+  "source_repository": "https://github.com/postmelee/pear",
+  "stage": "4.3",
+  "task": 56,
+  "recipe": {
+    "path": "Pear/Tests/TestFixtures/selected-v1.json",
+    "sha256": "9dd98e6ff9939d0790ec4a6796bb521bf79be24da71c33aa38f21d23013570f9",
+    "size_bytes": 38308
+  },
+  "implementation": [
+    {
+      "path": "Pear/Tools/TestFixtures/prepare.py",
+      "sha256": "aad05f774206790c13a3273a56a96a867a8ec471c3fce4b574163102f94cb0f4",
+      "size_bytes": 17878,
+      "mode": "100644"
+    },
+    {
+      "path": "Pear/Tools/TestFixtures/run_pmr_lifetime.py",
+      "sha256": "5f178e5d9f1330ae98f96fb6d485158f08f6b68eaa0aa18055eb274da5a01dfe",
+      "size_bytes": 594,
+      "mode": "100644"
+    },
+    {
+      "path": "Pear/Tools/TestFixtures/emitter_check.py",
+      "sha256": "49f447a54d7c87cbdedaeb3dbcabfabe4c93fa6f6097c9a306682091b3b1b24c",
+      "size_bytes": 515,
+      "mode": "100644"
+    },
+    {
+      "path": "Pear/Tests/TestFixtures/test_prepare.py",
+      "sha256": "ca626d8700136d8c48a1c548cf0f112cf080afb71886719957871fd780827cad",
+      "size_bytes": 16796,
+      "mode": "100644"
+    }
+  ],
+  "verification": {
+    "new_portable_tests": 28,
+    "existing_unique_component_tests": 66,
+    "unique_total": 94,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "source_preparations": 13,
+    "prepared_output_files": 25,
+    "compiler_processes": 0,
+    "native_processes": 0,
+    "selected_production_files_checked": 99,
+    "commands": [
+      "PEAR_TEST_WINE_ROOT=<canonical-wine-root> PYTHONPATH=<development-fex-root>:<runtime-root> python3 -B -m unittest discover -s Pear/Tests/TestFixtures -p 'test_*.py' -v",
+      "PYTHONPATH=<development-fex-root>:<runtime-root> python3 -B -m unittest discover -s Pear/Tests -p 'test_*.py' -v",
+      "python3 -B Pear/Tools/check_source.py --root <development-fex-root> --runtime-root <runtime-root> --wine-root <wine-root>"
+    ],
+    "repeated_cpu_tests": 21,
+    "repeated_cpu_tests_counted_again": false,
+    "final_adapter_tests": "28 passed after primary-error preservation, exact-integer tool sizes and bounded-reader review; 66 existing component checks retain their recorded pass; 21 repeated CPU checks are not counted twice.",
+    "runtime_owned_rows_changed": 0,
+    "new_tests_before_parent_review": 24,
+    "parent_review_regressions": 4,
+    "source_preparation_record_version": "v2; previousv1 receipts retained",
+    "origin_identity_review": {
+      "FEX_owned_rows_checked": 47,
+      "exact_recorded_git_blobs": 36,
+      "exact_retained_untracked_sources": 11,
+      "erratum": "Pear/Provenance/test-origin-errata.json",
+      "source_bytes_or_licenses_changed": false
+    }
+  },
+  "preparation_example": {
+    "command": "PYTHONPATH=<development-fex-root> python3 -B -m Pear.Tools.TestFixtures.run_pmr_lifetime --source-root <development-fex-root> --recipe <development-fex-root>/Pear/Tests/TestFixtures/selected-v1.json --output <fresh-external-output>",
+    "other_controls": "Use Pear.Tools.TestFixtures.prepare with --case <recipe-case-id>; add explicit --wine-root when required. Optional --tool-bindings records exact supplied identities but never grants build/execution admission.",
+    "scope": "Commands prepare sources/command templates only; no compiler or native control runs."
+  },
+  "baseline_derivation": {
+    "pmr_before_lifetime": {
+      "original_header": "FEXCore/include/FEXCore/fextl/memory_resource.h",
+      "original_header_sha256": "075a098eb77a428797a9b6a123fc6273c32bead8cc00273d925d99b6abeacaa6",
+      "producer": "tests/fex/run_pmr_lifetime.py",
+      "producer_sha256": "10956159a796f1d4bd8cb2e7c1da6a797ee51c7e015ac341c5e4bc8c474f0994",
+      "record": "Task5 stage3-pmr-lifetime-public1/control.json",
+      "record_identity": {
+        "sha256": "aee584368c710ab1aab7b9f3d5bc9980ed2f0afbd3e7fde48dba509b8469f0a8",
+        "size_bytes": 6473
+      },
+      "extraction": "resource() class boundaries, namespace wrapper; imported exact historical generated bytes, not patch replay"
+    },
+    "d32_attach": {
+      "producer": "tools/steam/attach_control_sources.py",
+      "producer_identity": {
+        "sha256": "88cb6d024bd1bcadc915e4da5070d9d5630d73315b13c127cd90ed799df23ec2",
+        "size_bytes": 3180
+      },
+      "extraction": "attach() exact predicates, BindActual, RegisterActualExecutor, wrapper and lifecycle block; source identity is recorded with the copied baseline"
+    }
+  },
+  "license_files": {
+    "MIT": "LICENSE",
+    "GPL-3.0-or-later": "Pear/Tests/CPU/LICENSES/Madeira-GPL-3.0.txt",
+    "note": "The GPL text is reused as license text only. No Madeira-specific exception is claimed for these adapters."
+  },
+  "storage": {
+    "source_only_additional_allowance_bytes": 16777216,
+    "reserve_bytes": 6442450944,
+    "native_build_storage_admitted": false,
+    "old_artifacts_released": false
+  },
+  "follow_up_requirements": {
+    "tool_purpose": "These adapters are source-preparation and command-template tools, not completed compile/run replacements.",
+    "native_steps_not_implemented": [
+      "Admit the complete compiler driver/resource and SDK/header/implicit-library closure.",
+      "For Windows lifetime/layout controls, reconstruct exact target configuration plus full link/section-reader operands.",
+      "After concrete input/capacity review, bind and run the recorded argv templates under the shared lease; retain original expected exits and every fixture assertion."
+    ],
+    "source_only_command": "PYTHONPATH=<development-fex-root> python3 -B -m Pear.Tools.TestFixtures.prepare --source-root <development-fex-root> --wine-root <canonical-wine-root> --recipe <development-fex-root>/Pear/Tests/TestFixtures/selected-v1.json --case <one-of13-recipe-ids> --output <fresh-external-output>",
+    "compiler_native_execution_in_this_slice": false,
+    "source_owner_cutover": false
+  },
+  "source_checkpoint_scope": "Historical tracked-source base only. Three probe files and their fixture include were retained untracked Task11 inputs. Each source record distinguishes a Git blob from a working-tree capture.",
+  "origin_identity_review": {
+    "FEX_owned_rows_checked": 47,
+    "exact_recorded_git_blobs": 36,
+    "exact_retained_untracked_sources": 11,
+    "erratum": "Pear/Provenance/test-origin-errata.json",
+    "source_bytes_or_licenses_changed": false
+  }
+}

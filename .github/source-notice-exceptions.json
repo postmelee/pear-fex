@@ -1,0 +1,77 @@
+{
+  "Pear/Tests/CPU/emitter_labels.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Diagnostics/attach_branch_probe.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Diagnostics/attach_diagnostic_probe.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Diagnostics/slot_lifetime_probe.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/checked_data_memory.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/configuration_lifetime.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/empty_object_storage.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/finite_construction.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/guest_map_lifetime.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/integration_layout.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/owner_preparation.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/pmr_layout.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tests/Memory/pmr_lifetime.cpp": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tools/TestFixtures/emitter_check.py": {
+    "license": "MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  },
+  "Pear/Tools/TestFixtures/prepare.py": {
+    "license": "GPL-3.0-or-later AND MIT",
+    "notice": "Pear/Provenance/test-control-import.json",
+    "reason": "Retain existing GPL-3.0-or-later AND MIT terms; exact current bytes and original import/adaptation are recorded in Pear/Provenance/test-control-import.json. This changes expected license metadata only and does not waive missing legacy leading headers or invent attribution."
+  }
+}

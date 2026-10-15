@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "kind": "cross_repository_runtime_test_source_reconciliation",
+  "task": 56,
+  "stage": "4.3",
+  "date": "2026-10-16",
+  "scope": "Concise source-level reconciliation only. Runtime provenance remains the single method/function disposition owner.",
+  "reviewed_previous_ownership": {
+    "repository": "pear-fex",
+    "path": "Pear/Provenance/test-ownership.json",
+    "sha256": "95d70335cc1dae60e3b3691354cd38fb060c0d68aa4b8edd31b242cd1dd2a305",
+    "size_bytes": 261339
+  },
+  "rows": {
+    "FEX_rows_preserved_exactly": 47,
+    "runtime_rows_updated": 44,
+    "exact_runtime_fixture_exports": 25,
+    "runtime_source_original_blob_checks": 44,
+    "method_AST_equalities": 77
+  },
+  "paired_memory_method_accounting": {
+    "declared_original_IDs": 196,
+    "dispositions": {
+      "adopt_current_contract_test": 32,
+      "adopt_original_body": 67,
+      "adopt_selected_compatible_path_test": 6,
+      "retire_specific_implementation_policy": 34,
+      "reuse_bounded_current_contract": 49,
+      "reuse_exact_selected_inputs_only": 7,
+      "reuse_selected_command_construction": 1
+    },
+    "remaining_IDs_pending_final_disposition": 0,
+    "pending_breakdown": {},
+    "details_owner": {
+      "repository": "pear-runtime",
+      "path": "provenance/paired-memory-methods.json",
+      "sha256": "b680df7bbfc2203f3c7ab099f3cf04e15c508fe159691f5ef2eff072d74555ca",
+      "size_bytes": 293592
+    },
+    "raw_path_status": "Six methods use the accepted selected-compatible current policy; original blanket-rpath equivalence is not claimed.",
+    "required_header_status": "Three original header-related methods join mandatory canonical owner/export/private header use and real depfile-token checks. Private identities remain outside Git.",
+    "generic_retirement_acceptance": false,
+    "specific_implementation_policy_retirements_accepted": 34,
+    "selected_only_limits": "Seven semantic/input mappings and one command-construction mapping remain bound to accepted FEX06 evidence. A changed hash or passed future build does not renew them.",
+    "test_execution_claim": "196 source-method dispositions are not 196 newly executed tests. Use exact method/provider/test receipts in the canonical map."
+  },
+  "cpu_test_scope": {
+    "historical_test_only_methods": 10,
+    "current_D36_execution_counterparts": 4,
+    "ordering_methods_relocated": 9,
+    "mixed_harness": "Runtime result assertions and FEX source-generator assertions retain distinct providers.",
+    "old_hosted_builders_executed": false,
+    "old_qualifier_executed": false,
+    "Windows_native_reference_collector_adopted": false,
+    "cpu_qualified": false
+  },
+  "provenance_refs": [
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/memory-fixture-source-import.json",
+      "sha256": "9159ad6ffa49cbb38535ed42e4227dbf21e4334cd0fe2c1eca843dbf14bd39fc",
+      "size_bytes": 12551
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/paired-memory-tests-import.json",
+      "sha256": "8573899c7e106215caf97081e5e62c1e542faf2b3c87e6ac69c0d4dc1dceb12a",
+      "size_bytes": 38418
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/memory-current-input-tests.json",
+      "sha256": "25405c727f1bc28ed13c990409f14f72c248e98ff3c4d87b0db0f5498e5b7bac",
+      "size_bytes": 30195
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/wine-integration-tests-import.json",
+      "sha256": "838c9ea6c6a94731249f30630a4bc4663e8a9ed45b4c958d516e07127edbe84a",
+      "size_bytes": 189091
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/cpu-source-import.json",
+      "sha256": "c7a2b0eb5bfdbdfc9feda9871796b38e2cf10c648816cafce8d842510d840a4e",
+      "size_bytes": 8081
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/cpu-test-reconciliation.json",
+      "sha256": "821254b25c671cb728d08ed9d4025f0814c1707c7ac3145b1df6926c0b581eef",
+      "size_bytes": 19559
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/fixture-controls-import.json",
+      "sha256": "c022409344249005fc1c5d84102e0907212721087deb4ded5575aba7dcda8b7b",
+      "size_bytes": 80068
+    },
+    {
+      "repository": "pear-fex",
+      "path": "Pear/Provenance/cpu-source-import.json",
+      "sha256": "3d87c5f308057a2fb5584d0e0808e651fae7d59fe344aee1bc2e1eeb7db998c2",
+      "size_bytes": 14672
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/fixture-cpu-import.json",
+      "sha256": "1661a225145f9b52aa73957385bc5977cf3d89804ae829570874987ded0e909a",
+      "size_bytes": 8399
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/assembly-import.json",
+      "sha256": "ee7ac54da46de2966319f9ba5c3aedf93445bba721f1426a78a9fbae056bc6a9",
+      "size_bytes": 27196
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/fixture-provider-import.json",
+      "sha256": "9400b7272bc3891e626b4aa9cf5ececefafcbcf67b0ef98877ae35f9c6db588e",
+      "size_bytes": 38823
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/paired-memory-methods.json",
+      "sha256": "b680df7bbfc2203f3c7ab099f3cf04e15c508fe159691f5ef2eff072d74555ca",
+      "size_bytes": 293592
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/memory-remaining-input-tests.json",
+      "sha256": "824329e56c37f9e650dedc722be6dd99f2bce5237fefde7fe0d92d372e8da018",
+      "size_bytes": 4024
+    },
+    {
+      "repository": "pear-runtime",
+      "path": "provenance/fixture-context-import.json",
+      "sha256": "338eb89ccb9ee2dde46546f08a8f217830a2fa586d05abe25711280ada7f8526",
+      "size_bytes": 25196
+    }
+  ],
+  "limits": [
+    "No compiler, test, native or game process is launched by this metadata amendment.",
+    "Source imports and portable checks do not establish fresh fixture PE builds, current ABI3 memory qualification, gameplay or distribution support.",
+    "Only the five explicitly named old selected-development routes are proposed as superseded source authorities. Broad qualification, Windows-native collection and historical cold-prefix/build APIs remain unadopted or historical as stated per row. No source, private input, artifact or failure evidence is released.",
+    "The frozen primary CPU/source/producer manifests and historical receipts remain unchanged. Current counterpart hashes are development identities, not substitutions for historical component producer pins.",
+    "The accepted runtime map closes all 196 method dispositions with explicit limits. Its seven selected-input rows and one selected command-construction row do not establish generic future semantic enforcement.",
+    "The 47 FEX-owned rows remain exactly as reviewed before this amendment, including their bounded unperformed/unsupported controls and retained legacy nested dependency labels."
+  ],
+  "source_cutover": false,
+  "native_build_claims_created": false,
+  "method_reconciliation_status": "accepted_runtime_method_map_referenced_with_preserved_limits",
+  "runtime_metadata_refresh": {
+    "scope": "44 runtime-owned rows reviewed; only changed rows updated. No FEX-owned row or production source mutation.",
+    "previous_ownership": {
+      "repository": "pear-fex",
+      "path": "Pear/Provenance/test-ownership.json",
+      "sha256": "b61fd2f85fc03c1e74ee061fd2195404d4e63c86f6ebcebd25fecfc0f269a402",
+      "size_bytes": 358706
+    },
+    "previous_reconciliation": {
+      "repository": "pear-fex",
+      "path": "Pear/Provenance/runtime-test-reconciliation.json",
+      "sha256": "50e72a25e0e00fb9355119361120206a465679e44398522e7a130ec1bbad925b",
+      "size_bytes": 5107
+    },
+    "canonical_method_map": {
+      "repository": "pear-runtime",
+      "path": "provenance/paired-memory-methods.json",
+      "sha256": "b680df7bbfc2203f3c7ab099f3cf04e15c508fe159691f5ef2eff072d74555ca",
+      "size_bytes": 293592
+    },
+    "source_owner_final_gate": "Applying this proposal accepts the named route-supersession metadata only; overall Task56 cutover and publication remain parent-owned."
+  }
+}
