@@ -6,7 +6,7 @@ Stage: 6
 
 ## Stage Purpose
 
-Accept the mapped imported source and tests as the sole future editable authority, with existing owner review. The canonical [cutover record](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/source-cutover-task56.json) separates source, build and executed-tool identities. Context: approved Task #56 scope, recorded owner decisions and stage-report/artifact-retention procedures.
+Accept the mapped imported source and tests as the sole future editable authority, with existing owner review. The canonical [cutover record](https://github.com/postmelee/pear-runtime/blob/9be1545f5a0845d3b14d4b845bf6bd413a224df3/provenance/source-cutover-task56.json) separates source, build and executed-tool identities. Context: approved Task #56 scope, recorded owner decisions and stage-report/artifact-retention procedures.
 
 ## Artifacts
 
