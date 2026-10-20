@@ -160,3 +160,8 @@ verification code is GPL-3.0-or-later, with its license text in [COPYING](COPYIN
 `Provenance/auxiliary-source.json` records copied/adapted test and reader origins
 and the limited import-path adaptations. This is a mixed-notice repository;
 moving a file here does not convert its license.
+
+The [adjacent notice for three diagnostic headers](Diagnostics/include/NOTICE.md)
+binds their exact outputs to retained MIT-marked templates and records the absent
+original holder notice. It supplements the historical inline-notice inventory
+without changing the frozen headers, manifests or build inputs.
