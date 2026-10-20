@@ -4,10 +4,16 @@ This public downstream checkout carries the accepted Pear FEX layers and the
 owner-approved Task #11 D36 source candidate. The source is editable here;
 historical patch/generator records are frozen provenance, not an alternate
 implementation to regenerate over current edits. The
-[accepted source-owner handoff](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/source-cutover-task56.json)
+[accepted source-owner handoff](https://github.com/postmelee/pear-runtime/blob/master/provenance/source-cutover-task56.json)
 records this fork as the future editing authority for the exact imported scope.
 Original source, patch and recovery inputs remain retained under their recorded
 consumer obligations.
+
+Use `master` for current Pear downstream development and as the pull-request base.
+Retain existing local `codex/task56` debug branches and detached checkouts at their
+recorded paths and commits. Historical source/build/tool pins below remain the
+inputs for their recorded recipes; changing the integration branch does not admit
+new runtime bytes.
 
 The upstream base is FEX commit
 `59f85d6b7df4eb053d2cc1b9d33411b4f31bfbaa`. Its full history, original authors,
@@ -61,7 +67,7 @@ python3 -B Pear/Tools/check_source.py --runtime-root "$RUNTIME_SOURCE_ROOT" --wi
 identities, canonical destinations, dependencies and per-file execution limits.
 The selected component-control exports and explicit source-preparation adapters
 are present; unperformed compilation/native controls remain unperformed. Runtime
-owns the [accepted 196-method reconciliation](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/paired-memory-methods.json).
+owns the [accepted 196-method reconciliation](https://github.com/postmelee/pear-runtime/blob/master/provenance/paired-memory-methods.json).
 A source disposition or new hash does not qualify a changed implementation.
 The Stage 4 metadata amendment was originally published privately at
 `a8ba1cbd0148b46817842f3b7307689d4b2acbd7`; [its report](../mydocs/working/task_m1_56_stage4.md)
@@ -100,7 +106,7 @@ The selected build commit remains `c62ed75aa6a33809ddb76c7f40aabbe4f4fbdda6`.
 The later CPU fixture-source export is `9c9b602c07b57a08500862abfdf62e1bac351640`. Those revisions have different
 roles; the later test commit does not relabel the old built DLL. Runtime builder
 `c8887f9edaba57dffe7772cc26fd19aa9571d451` and seven-fixture checkpoint `c13c7030ec3b780df12373cb9e0460bbcb5b0652` are separate pins as well.
-Use the [revision and recovery guide](https://github.com/postmelee/pear-runtime/blob/codex/task56/docs/development.md) for exact source acquisition and
+Use the [revision and recovery guide](https://github.com/postmelee/pear-runtime/blob/master/docs/development.md) for exact source acquisition and
 input binding. Original receipts are immutable.
 
 Candidate3 assembly and the fifteen Stage 4 controls passed: four native
