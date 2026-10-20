@@ -1,6 +1,6 @@
 # Pear FEX component
 
-This private downstream checkout carries the accepted Pear FEX layers and the
+This public downstream checkout carries the accepted Pear FEX layers and the
 owner-approved Task #11 D36 source candidate. The source is editable here;
 historical patch/generator records are frozen provenance, not an alternate
 implementation to regenerate over current edits. The
@@ -31,7 +31,7 @@ schema and `include/PearAbortObservation.h`, pairing, immutable inputs, portable
 build recipes and cross-component fixtures.
 [pear-dxmt](https://github.com/postmelee/pear-dxmt) owns rendering, while
 [Pear](https://github.com/postmelee/pear) owns the manager and integration plans.
-The component repositories require collaborator access.
+The four component source repositories are publicly readable.
 
 The game-derived `PearPhaseSelection.h` is an explicit external private input.
 It must never be committed, including to a private repository. A synthetic
@@ -63,7 +63,7 @@ The selected component-control exports and explicit source-preparation adapters
 are present; unperformed compilation/native controls remain unperformed. Runtime
 owns the [accepted 196-method reconciliation](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/paired-memory-methods.json).
 A source disposition or new hash does not qualify a changed implementation.
-The Stage 4 metadata amendment is published privately at
+The Stage 4 metadata amendment was originally published privately at
 `a8ba1cbd0148b46817842f3b7307689d4b2acbd7`; [its report](../mydocs/working/task_m1_56_stage4.md)
 retains the exact limits. The runtime development entrypoints are recorded at
 `6f0202b457f0e585c5c7621a63d203e77d07386d`. Source-owner acceptance covers the

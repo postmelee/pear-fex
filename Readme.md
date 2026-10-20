@@ -39,11 +39,12 @@ See the [Source Outline](docs/SourceOutline.md) for more information.
 
 ## Pear downstream development
 
-This private downstream fork preserves the upstream history and documentation.
+This public downstream fork preserves the upstream history and documentation.
 See [Pear component notes](Pear/README.md) for the selected source checkpoint,
 verification commands, shared dependencies, per-file notices and current build
 and runtime limits. The [common runtime](https://github.com/postmelee/pear-runtime)
 owns the exercised reconstruction and separate diagnostic controls. The
 [accepted source-owner handoff](https://github.com/postmelee/pear-runtime/blob/codex/task56/provenance/source-cutover-task56.json)
-records the imported scope and retention limits. Component repositories currently
-require collaborator access.
+records the imported scope and retention limits. The four Pear component source
+repositories are publicly readable. Runtime reconstruction still requires the
+explicitly retained inputs described in the component notes.
